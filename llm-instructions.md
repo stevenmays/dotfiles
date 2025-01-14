@@ -1,23 +1,26 @@
 # Coding Instructions for LLM tools
 
-Original source: https://github.com/tom-doerr/dotfiles/blob/master/instruction.md
+Inspiration: https://github.com/tom-doerr/dotfiles/blob/master/instruction.md
 
 Keep it simple!
 
-## 1. Embrace Simplicity Over Cleverness
+## Core Principles
+
+### 1. Embrace Simplicity Over Cleverness
 - Write code that's immediately understandable to others
 - If a solution feels complex, it probably needs simplification
 - Optimize for readability first, performance second unless proven otherwise
 - Avoid premature optimization
+- Write code for humans first, computers second
 
+Example of simplicity:
 ```typescript
-// Avoid clever one-liners
-// Bad
+// Avoid clever one-liners like this:
 const getPrimes = (maxNum: number): number[] => 
   [...Array(maxNum)].map((_, i) => i).filter(n => 
     n > 1 && [...Array(n)].map((_, i) => i + 1).slice(1).every(i => n % i !== 0));
 
-// Good
+// Instead, write clear, readable code:
 function findPrimeNumbers(maxNum: number): number[] {
     const primes: number[] = [];
     for (let number = 2; number < maxNum; number++) {
@@ -37,44 +40,13 @@ function isPrime(n: number): boolean {
 }
 ```
 
-## 2. Focus on Core Functionality
-- Start with the minimum viable solution
-- Question every feature: "Is this really necessary?"
-- Build incrementally based on actual needs, not hypothetical ones
-- Delete unnecessary code and features
-
-```typescript
-// Bad: Overengineered from the start
-interface IUserManager {
-    db: Database;
-    cache: Cache;
-    logger: Logger;
-    metrics: MetricsService;
-    notification: NotificationService;
-}
-
-class UserManager implements IUserManager {
-    constructor(
-        public db: Database,
-        public cache: Cache,
-        public logger: Logger,
-        public metrics: MetricsService,
-        public notification: NotificationService
-    ) {}
-}
-
-// Good: Start simple, expand when needed
-class UserManager {
-    constructor(private db: Database) {}
-}
-```
-
-## 3. Leverage Existing Solutions
+### 2. Leverage Existing Solutions
 - Use standard libraries whenever possible
 - Don't reinvent the wheel
 - Choose well-maintained, popular libraries for common tasks
 - Keep dependencies minimal but practical
 
+Example:
 ```typescript
 // Bad: Custom implementation
 const parseJsonFile = (filePath: string): unknown => {
@@ -91,19 +63,25 @@ function readConfig<T>(filePath: string): T {
 }
 ```
 
-## 4. Function Design
+### 3. Focus on Core Functionality
+- Start with the minimum viable solution
+- Question every feature: "Is this really necessary?"
+- Build incrementally based on actual needs, not hypothetical ones
+- Delete unnecessary code and features
+- Leverage existing solutions and standard libraries
+- Don't reinvent the wheel
+
+### 3. Function Design
 - Each function should have a single responsibility
-- Keep functions short (typically under 20 lines)
+- Keep functions focused and relatively short (aim for under 20 lines)
 - Use descriptive names that indicate purpose
 - Limit number of parameters (3 or fewer is ideal)
+- Write pure functions where possible
+- Return consistent types (don't mix returned types)
+- Avoid terminating awaits - return promises instead
 
+Example:
 ```typescript
-interface UserData {
-    id: string;
-    email: string;
-    name: string;
-}
-
 // Bad: Multiple responsibilities
 async function processUserData(userData: UserData): Promise<void> {
     if (validateUser(userData)) {
@@ -122,48 +100,24 @@ async function saveUser(userData: UserData): Promise<string> {
 }
 ```
 
-## 5. Project Structure
-- Keep related code together
-- Use consistent file organization
-- Maintain a flat structure where possible
-- Group by feature rather than type
+### 4. Error Handling
+- Handle errors explicitly - don't rely on top-level handlers
+- Use try/catch blocks appropriately but don't make them overly large
+- Always throw real Error objects, not strings or other types
+- Add useful context to error messages
+- Don't use errors for control flow
 
-```plaintext
-# Good project structure
-project/
-├── src/
-│   ├── index.ts
-│   ├── config.ts
-│   ├── users/
-│   │   ├── models.ts
-│   │   ├── services.ts
-│   │   └── __tests__/
-│   └── utils/
-│       └── helpers.ts
-├── package.json
-└── tsconfig.json
-```
-
-## 6. Code Review Guidelines
-- Review for simplicity first
-- Question complexity and overengineering
-- Look for duplicate code and abstraction opportunities
-- Ensure consistent style and naming conventions
-
-## 7. Maintenance Practices
-- Regularly remove unused code
-- Keep dependencies updated
-- Refactor when code becomes unclear
-- Document only what's necessary and likely to change
-
-## 8. Type System Best Practices
+### 5. Data Structures and Type System
+- Keep data structures as simple as possible
+- Prefer shallow object hierarchies over deep nesting
+- Use consistent property naming
 - Use TypeScript's type system to make code self-documenting
 - Prefer interfaces over type aliases for object types
 - Use union types instead of enums when possible
-- Leverage generics for reusable code
+- Don't mutate parameters during iteration/mapping
 
+Example:
 ```typescript
-// Good use of TypeScript features
 interface Repository<T> {
     find(id: string): Promise<T | null>;
     save(item: T): Promise<void>;
@@ -178,39 +132,42 @@ interface User {
     status: Status;
     metadata: Record<string, unknown>;
 }
-
-class UserRepository implements Repository<User> {
-    async find(id: string): Promise<User | null> {
-        // Implementation
-        return null;
-    }
-
-    async save(user: User): Promise<void> {
-        // Implementation
-    }
-
-    async delete(id: string): Promise<boolean> {
-        // Implementation
-        return true;
-    }
-}
 ```
 
-Remember:
-- Simple code is easier to maintain and debug
-- Write code for humans first, computers second
-- Add complexity only when justified by requirements
-- If you can't explain your code simply, it's probably too complex
-- Use TypeScript's type system to catch errors early
+### 6. Code Organization
+- Keep related code together
+- Use consistent file organization
+- Maintain a flat structure where possible
+- Group by feature rather than type
+- Follow consistent naming conventions:
+  - camelCase for local variables and functions
+  - kebab-case for files and folders
 
-## 9. Prefer Functions Over Classes
+Example structure:
+```
+project/
+├── src/
+│   ├── index.ts
+│   ├── config.ts
+│   ├── users/
+│   │   ├── models.ts
+│   │   ├── services.ts
+│   │   └── __tests__/
+│   └── utils/
+│       └── helpers.ts
+├── package.json
+└── tsconfig.json
+```
+
+### 7. Prefer Functions Over Classes
 - Functions are simpler to test and compose
 - Avoid unnecessary class abstractions
 - Use objects and closures for state management when needed
 - Classes often add unnecessary complexity
 
+Example:
 ```typescript
-// Bad: Unnecessary class abstraction
+// Bad: Unnecessary class
 class PriceCalculator {
     constructor(private taxRate: number) {}
     
@@ -219,45 +176,41 @@ class PriceCalculator {
     }
 }
 
-const calculator = new PriceCalculator(0.2);
-const price = calculator.calculatePrice(100);
-
 // Good: Simple function
 function calculatePrice(basePrice: number, taxRate: number): number {
     return basePrice * (1 + taxRate);
 }
 
-const price = calculatePrice(100, 0.2);
-
-// If you need to maintain state, use closures
+// If you need state, use closures
 function createPriceCalculator(taxRate: number) {
     return (basePrice: number) => basePrice * (1 + taxRate);
 }
-
-const calculateWithTax = createPriceCalculator(0.2);
-const price = calculateWithTax(100);
-
-// Bad: Class with unnecessary abstraction
-class UserService {
-    constructor(private db: Database) {}
-
-    async getUser(id: string): Promise<User> {
-        return this.db.findUser(id);
-    }
-    
-    async saveUser(user: User): Promise<void> {
-        await this.db.saveUser(user);
-    }
-}
-
-// Good: Direct functions using dependency injection
-type GetUser = (db: Database) => (id: string) => Promise<User>;
-const getUser: GetUser = (db) => (id) => db.findUser(id);
-
-type SaveUser = (db: Database) => (user: User) => Promise<void>;
-const saveUser: SaveUser = (db) => (user) => db.saveUser(user);
-
-// Usage
-const findUserById = getUser(database);
-const user = await findUserById("123");
 ```
+
+### 8. Promise/Async Handling
+- Prefer async/await over raw promises where appropriate
+- Handle promise rejections explicitly
+- Don't mix promise chain syntax with async/await
+- Only await promises, not regular values
+
+### 9. Comments and Documentation
+- Comment complex logic that isn't immediately clear
+- Keep comments focused on explaining why, not what
+- Avoid redundant or obvious comments
+- Document public APIs and interfaces
+- Document only what's necessary and likely to change
+
+### Patterns to Avoid
+- Don't use global state/variables
+- Avoid deeply nested callbacks
+- Don't mix sync and async code styles
+- Avoid complex/clever one-liners
+- Don't overuse optional chaining
+- Avoid redundant type assertions
+
+## Remember
+- If you can't explain your code simply, it's probably too complex
+- Simple code is easier to maintain and debug
+- Add complexity only when justified by requirements
+- Use TypeScript's type system to catch errors early
+- Regular code review and maintenance are essential
