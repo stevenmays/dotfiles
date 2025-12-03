@@ -33,6 +33,13 @@ async function handleInternal(event: AWSLambda.APIGatewayProxyEvent) {
 ```typescript
 import { get } from '@org/aws-secrets-client';
 
+interface ServiceAuth {
+    username: string;
+    password: string;
+    api_key: string;
+}
+
+// Cache at module level for Lambda reuse
 let cachedAuth: ServiceAuth;
 
 export async function getAuth() {
@@ -49,6 +56,8 @@ Initialize clients outside handler:
 
 ```typescript
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+
+// Outside handler - reused across invocations
 const dynamoClient = new DynamoDBClient({ region: 'us-east-1' });
 
 let configCache: Config;
@@ -71,7 +80,59 @@ export async function handle(event: SQSEvent) {
 
     switch (type) {
         case 'ORDER_UPDATE': return handleOrderUpdate(message);
+        case 'CUSTOMER_SYNC': return handleCustomerSync(message);
         default: console.warn('Unknown message type', type);
     }
+}
+```
+
+## External API Calls
+
+```typescript
+export async function callExternalAPI(endpoint: string, data: any) {
+    const config = await getServiceConfig();
+    
+    try {
+        const response = await fetch(`${config.base_url}${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${config.api_key}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new StatusCodeError(response.status, await response.text());
+        }
+        
+        return response.json();
+    } catch (error) {
+        await trace.error('External API call failed', { endpoint, error });
+        throw error;
+    }
+}
+```
+
+## Deduplication
+
+```typescript
+const processedEvents = new Map<string, number>();
+
+function isDuplicate(eventId: string): boolean {
+    const now = Date.now();
+    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    
+    // Clean old entries
+    for (const [id, timestamp] of processedEvents.entries()) {
+        if (timestamp < fiveMinutesAgo) {
+            processedEvents.delete(id);
+        }
+    }
+    
+    if (processedEvents.has(eventId)) return true;
+    
+    processedEvents.set(eventId, now);
+    return false;
 }
 ```
