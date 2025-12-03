@@ -11,7 +11,8 @@ Simplify this code while keeping behavior identical.
 5. Remove dead code and unused variables
 6. Reduce function length (aim for under 20 lines)
 7. Inline single-use helper functions
-8. Remove redundant type assertions
+8. Inline single-use variables (unless inlining makes the line excessively long)
+9. Remove redundant type assertions
 
 ## Output
 
