@@ -20,12 +20,6 @@ dot-claude/                    → rename to .claude
     ├── code-review/SKILL.md   # Auto-applied during code review
     ├── serverless-aws/SKILL.md
     └── typescript-patterns/SKILL.md
-
-dot-cursor/                    → rename to .cursor
-└── rules/
-    ├── coding-guidelines.mdc  # Always applied
-    ├── serverless-aws.mdc     # Applied to handlers/, lib/
-    └── typescript-patterns.mdc # Applied to *.ts, *.tsx
 ```
 
 ## Setup
@@ -34,7 +28,6 @@ dot-cursor/                    → rename to .cursor
 
 ```bash
 cp -r dot-claude /your/project/.claude
-cp -r dot-cursor /your/project/.cursor
 ```
 
 ### 2. Enable Cursor imports (one-time)
@@ -43,17 +36,16 @@ In Cursor Settings → Rules:
 - Enable "Include CLAUDE.md in context"
 - Enable "Import Claude Commands"
 
-This lets Cursor read CLAUDE.md and use the same `/fix-types`, `/review-diff`, `/simplify` commands.
+This lets Cursor read CLAUDE.md (which references agent_docs/) and use the same `/fix-types`, `/review-diff`, `/simplify` commands.
 
 ## What Each Tool Reads
 
 | File | Claude Code | Cursor |
 |------|-------------|--------|
 | `.claude/CLAUDE.md` | ✅ | ✅ (with import setting) |
-| `.claude/agent_docs/*.md` | ✅ (on demand) | ❌ |
+| `.claude/agent_docs/*.md` | ✅ (on demand) | ✅ (via CLAUDE.md reference) |
 | `.claude/commands/*.md` | ✅ | ✅ (with import setting) |
 | `.claude/skills/*/SKILL.md` | ✅ | ❌ |
-| `.cursor/rules/*.mdc` | ❌ | ✅ |
 
 ## Commands
 
@@ -73,17 +65,4 @@ Skills auto-activate based on context:
 
 ## Customization
 
-### Project-specific rules
-
 Create `.claude/CLAUDE.local.md` for project-specific overrides.
-
-### Edit glob patterns
-
-In `.cursor/rules/*.mdc`, adjust the `globs` field to match your project:
-
-```yaml
----
-description: AWS Lambda patterns
-globs: ["src/handlers/**", "src/lib/**"]
----
-```
