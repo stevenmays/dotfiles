@@ -1,0 +1,148 @@
+---
+description: TypeScript type patterns, interfaces, assertions, enums
+globs: ["**/*.ts", "**/*.tsx"]
+alwaysApply: false
+---
+
+# TypeScript Patterns
+
+## Type Inference
+Let TypeScript infer return types. Specify only when it adds clarity.
+
+```typescript
+// ✅ Inferred
+function calculateTotal(items: OrderItem[]) {
+    return items.reduce((sum, item) => sum + item.price, 0);
+}
+
+// ❌ Explicit (usually unnecessary)
+function calculateTotal(items: OrderItem[]): number { ... }
+```
+
+## Runtime Validation
+Never hard cast `JSON.parse`. Use type guards:
+
+```typescript
+// ❌ Hard cast
+const value: MyType = JSON.parse(message);
+
+// ✅ Type guard
+function isMyType(value: unknown): value is MyType {
+    return typeof value === 'object' &&
+        value !== null &&
+        typeof (<MyType>value).prop === 'string';
+}
+
+const value = JSON.parse(message);
+assert(isMyType(value), 'Invalid format');
+```
+
+## Type Guard Conventions
+- Parameter: `value: unknown`
+- Return boolean, never throw
+- Use with `assert()` for concise validation
+
+```typescript
+import assert from 'node:assert';
+
+function isStrategy(value: unknown): value is Strategy {
+    return typeof value === 'object' &&
+        value !== null &&
+        typeof (<Strategy>value).name === 'string';
+}
+
+// Usage
+assert(isStrategy(value), 'Invalid Strategy');
+console.log(value.name); // value is now typed as Strategy
+```
+
+## Casting Syntax
+Use angle brackets: `<Type>value` not `as Type`
+
+```typescript
+// ✅ Angle bracket
+const config = <ConfigType>JSON.parse(json);
+
+// ❌ as syntax
+const config = JSON.parse(json) as ConfigType;
+```
+
+## Interfaces vs Types
+
+```typescript
+// ✅ Interface for objects
+export interface Strategy {
+    _id: mongodb.ObjectId;
+    active: boolean;
+    name: string;
+}
+
+// ✅ Type for unions
+type Status = 'pending' | 'active' | 'inactive';
+
+// ✅ Type for local function-scoped
+function validate(input: unknown) {
+    type Result = { errors: string[]; valid: boolean };
+    const output: Result = { errors: [], valid: true };
+    // ...
+}
+```
+
+## Interface Conventions
+- No `I` prefix: `User` not `IUser`
+- No `Data` suffix: `Product` not `ProductData`
+- Properties in alphabetical order
+- Think as adjectives: `Shippable`, `Refundable`
+- When extending, inherit ALL properties (no `Omit`)
+
+```typescript
+// Adjective interfaces
+interface Shippable {
+    shipping_address: string;
+    shipping_cost: number;
+}
+
+interface Order extends Shippable {
+    id: string;
+    total: number;
+}
+```
+
+## Enums
+- Always explicit values: `STATUS = 'status'`
+- Use union types for 2-3 values
+- Validate with `Object.values()` not `Object.keys()`
+
+```typescript
+// ✅ Union for small sets
+type Status = 'active' | 'inactive';
+
+// ✅ Enum for larger sets
+export enum AttributionModel {
+    LAST_CLICK = 'last_click',
+    FIRST_CLICK = 'first_click',
+    ALL_CLICK = 'all_click',
+    DATA_DRIVEN = 'data_driven'
+}
+
+// ✅ Validation
+if (!Object.values(AttributionModel).includes(model)) {
+    throw new Error('Invalid model');
+}
+```
+
+## Imports
+Prefer namespace: `import * as lib from 'lib'`
+
+```typescript
+// ✅ Namespace
+import * as mongodb from 'mongodb';
+
+// ❌ Default
+import MongoDB from 'mongodb';
+```
+
+## Organization
+- Keep types with related code (not in `types/` directories)
+- Only export public API types
+- Use `ReturnType<typeof fn>` to access private return types

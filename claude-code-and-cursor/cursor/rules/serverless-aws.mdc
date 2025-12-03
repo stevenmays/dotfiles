@@ -1,0 +1,77 @@
+---
+description: AWS Lambda, DynamoDB, SQS patterns for serverless projects
+globs: ["src/handlers/**", "src/lib/**"]
+alwaysApply: false
+---
+
+# Serverless AWS Patterns
+
+## Lambda Handler Structure
+
+```typescript
+export async function handle(event: AWSLambda.APIGatewayProxyEvent) {
+    try {
+        return await handleInternal(event);
+    } catch (error) {
+        await trace.error(error, { headers: event.headers, body: event.body });
+        return createErrorResponse(error);
+    }
+}
+
+async function handleInternal(event: AWSLambda.APIGatewayProxyEvent) {
+    const isAuthenticated = await authenticateRequest(event);
+    if (!isAuthenticated) return unauthorizedResponse();
+
+    const body = JSON.parse(event.body);
+    assert(isValidInput(body), 'Invalid request body');
+    return processRequest(body);
+}
+```
+
+## Secrets Management
+
+```typescript
+import { get } from '@org/aws-secrets-client';
+
+let cachedAuth: ServiceAuth;
+
+export async function getAuth() {
+    if (!cachedAuth) {
+        cachedAuth = await get<ServiceAuth>('service-secrets', { path: 'auth' });
+    }
+    return cachedAuth;
+}
+```
+
+## Cold Start Optimization
+
+Initialize clients outside handler:
+
+```typescript
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+const dynamoClient = new DynamoDBClient({ region: 'us-east-1' });
+
+let configCache: Config;
+
+export async function handle(event: any) {
+    if (!configCache) configCache = await loadConfig();
+    return process(event, configCache);
+}
+```
+
+## SQS Processing
+
+```typescript
+export async function handle(event: SQSEvent) {
+    assert(event.Records.length === 1, 'Expected single record');
+    
+    const record = event.Records[0];
+    const message = JSON.parse(record.body);
+    const type = record.messageAttributes?.type?.stringValue;
+
+    switch (type) {
+        case 'ORDER_UPDATE': return handleOrderUpdate(message);
+        default: console.warn('Unknown message type', type);
+    }
+}
+```
