@@ -124,6 +124,23 @@ if (!Object.values(AttributionModel).includes(model)) {
 }
 ```
 
+## Iteration
+```typescript
+// ✅ for...of loop
+for (const item of items) {
+    processItem(item);
+}
+
+// ❌ forEach
+items.forEach((item) => {
+    processItem(item);
+});
+```
+
+**Why:** `for...of` works with `break`, `continue`, `return`, `await`, and has better debugging/stack traces.
+
+Use `map`/`filter`/`reduce` for transformations, not side effects.
+
 ## Import Style
 ```typescript
 // ✅ Namespace imports

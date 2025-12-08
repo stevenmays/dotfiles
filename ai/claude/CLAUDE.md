@@ -59,7 +59,7 @@ src/
 
 ## Before You Start
 
-Read the relevant reference docs in `agent_docs/`:
+Read the relevant reference docs in `.agent_docs/`:
 
 | File | When to Read |
 |------|--------------|

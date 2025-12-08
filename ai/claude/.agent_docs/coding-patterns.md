@@ -121,6 +121,37 @@ function createPriceCalculator(taxRate: number) {
 }
 ```
 
+## Iteration
+
+**Prefer `for...of` over `.forEach()`**
+```typescript
+// Bad: forEach
+items.forEach((item) => {
+    processItem(item);
+});
+
+// Good: for...of
+for (const item of items) {
+    processItem(item);
+}
+```
+
+**Why `for...of` is better:**
+- Works with `break`, `continue`, `return`, and `await`
+- Better debugging experience (can step through iterations)
+- Cleaner stack traces on errors
+- More consistent with other control flow
+
+**Use functional methods for transforms:**
+```typescript
+// Good: map/filter for transformations
+const prices = items.map((item) => item.price);
+const expensive = items.filter((item) => item.price > 100);
+
+// Good: reduce when accumulating
+const total = items.reduce((sum, item) => sum + item.price, 0);
+```
+
 ## Import Style
 
 ```typescript
