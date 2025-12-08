@@ -1,0 +1,127 @@
+# Claude Sync Makefile - Copy to target repos
+# Usage: make -f Makefile.claude sync
+#
+# This pulls Claude configuration from your dotfiles into this repo.
+# Customize COMPONENTS below to sync only what you need.
+
+# Source location (adjust if your dotfiles are elsewhere)
+DOTFILES_DIR := $(HOME)/Git/dotfiles
+DOTFILES_CLAUDE := $(DOTFILES_DIR)/ai/claude
+
+# Target location in this repo (typically .claude at repo root)
+TARGET_DIR := .claude
+
+# Components to sync (comment out lines to skip)
+COMPONENTS := \
+	claude.md \
+	commands \
+	skills \
+	agent_docs
+
+.PHONY: all help sync sync-claude.md sync-commands sync-skills sync-agent_docs clean status dry-run pull-dotfiles
+
+# Default target - pull dotfiles and sync everything
+all: sync
+
+help:
+	@echo "Claude Sync - Pull config from dotfiles"
+	@echo ""
+	@echo "Commands:"
+	@echo "  make -f Makefile.claude sync      - Sync all components"
+	@echo "  make -f Makefile.claude dry-run   - Show what would be synced"
+	@echo "  make -f Makefile.claude status    - Check sync status"
+	@echo "  make -f Makefile.claude clean     - Remove synced Claude files"
+	@echo ""
+	@echo "Selective sync:"
+	@echo "  make -f Makefile.claude sync-commands"
+	@echo "  make -f Makefile.claude sync-skills"
+	@echo "  make -f Makefile.claude sync-agent_docs"
+	@echo "  make -f Makefile.claude sync-claude.md"
+	@echo ""
+	@echo "Source: $(DOTFILES_CLAUDE)"
+	@echo "Target: $(TARGET_DIR)"
+
+# Pull latest dotfiles before syncing
+pull-dotfiles:
+	@echo "Updating dotfiles..."
+	@cd $(DOTFILES_DIR) && \
+		current_branch=$$(git rev-parse --abbrev-ref HEAD) && \
+		if [ "$$current_branch" != "master" ]; then \
+			echo "  Warning: dotfiles on branch '$$current_branch', switching to master..."; \
+			git checkout master || exit 1; \
+		fi && \
+		git pull --ff-only && \
+		echo "  ✓ dotfiles up to date"
+
+sync: pull-dotfiles sync-claude.md sync-commands sync-skills sync-agent_docs
+	@echo ""
+	@echo "Sync complete!"
+
+sync-claude.md:
+	@echo "Syncing CLAUDE.md..."
+	@mkdir -p $(TARGET_DIR)
+	@cp $(DOTFILES_CLAUDE)/CLAUDE.md $(TARGET_DIR)/CLAUDE.md
+	@echo "  ✓ CLAUDE.md"
+
+sync-commands:
+	@echo "Syncing commands..."
+	@mkdir -p $(TARGET_DIR)/commands
+	@cp $(DOTFILES_CLAUDE)/commands/*.md $(TARGET_DIR)/commands/ 2>/dev/null || true
+	@echo "  ✓ commands/ ($(shell ls $(DOTFILES_CLAUDE)/commands/*.md 2>/dev/null | wc -l | tr -d ' ') files)"
+
+sync-skills:
+	@echo "Syncing skills..."
+	@mkdir -p $(TARGET_DIR)/skills
+	@cp -R $(DOTFILES_CLAUDE)/skills/* $(TARGET_DIR)/skills/ 2>/dev/null || true
+	@echo "  ✓ skills/ ($(shell find $(DOTFILES_CLAUDE)/skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ') skills)"
+
+sync-agent_docs:
+	@echo "Syncing agent_docs..."
+	@mkdir -p $(TARGET_DIR)/.agent_docs
+	@cp $(DOTFILES_CLAUDE)/.agent_docs/*.md $(TARGET_DIR)/.agent_docs/ 2>/dev/null || true
+	@echo "  ✓ .agent_docs/ ($(shell ls $(DOTFILES_CLAUDE)/.agent_docs/*.md 2>/dev/null | wc -l | tr -d ' ') files)"
+
+dry-run:
+	@echo "=== Dry Run - Would sync: ==="
+	@echo ""
+	@echo "CLAUDE.md:"
+	@echo "  $(DOTFILES_CLAUDE)/CLAUDE.md -> $(TARGET_DIR)/CLAUDE.md"
+	@echo ""
+	@echo "Commands:"
+	@for f in $(DOTFILES_CLAUDE)/commands/*.md; do \
+		echo "  $$f -> $(TARGET_DIR)/commands/$$(basename $$f)"; \
+	done 2>/dev/null || echo "  (none)"
+	@echo ""
+	@echo "Skills:"
+	@find $(DOTFILES_CLAUDE)/skills -type f -name "*.md" | while read f; do \
+		rel=$${f#$(DOTFILES_CLAUDE)/skills/}; \
+		echo "  $$f -> $(TARGET_DIR)/skills/$$rel"; \
+	done 2>/dev/null || echo "  (none)"
+	@echo ""
+	@echo "Agent Docs:"
+	@for f in $(DOTFILES_CLAUDE)/.agent_docs/*.md; do \
+		echo "  $$f -> $(TARGET_DIR)/.agent_docs/$$(basename $$f)"; \
+	done 2>/dev/null || echo "  (none)"
+
+status:
+	@echo "=== Sync Status ==="
+	@echo ""
+	@echo "Source: $(DOTFILES_CLAUDE)"
+	@test -d $(DOTFILES_CLAUDE) && echo "  ✓ exists" || echo "  ✗ NOT FOUND"
+	@echo ""
+	@echo "Target: $(TARGET_DIR)"
+	@test -d $(TARGET_DIR) && echo "  ✓ exists" || echo "  ✗ not yet created"
+	@echo ""
+	@echo "Local files:"
+	@test -f $(TARGET_DIR)/CLAUDE.md && echo "  ✓ CLAUDE.md" || echo "  - CLAUDE.md (not synced)"
+	@test -d $(TARGET_DIR)/commands && echo "  ✓ commands/" || echo "  - commands/ (not synced)"
+	@test -d $(TARGET_DIR)/skills && echo "  ✓ skills/" || echo "  - skills/ (not synced)"
+	@test -d $(TARGET_DIR)/.agent_docs && echo "  ✓ .agent_docs/" || echo "  - .agent_docs/ (not synced)"
+
+clean:
+	@echo "Removing Claude files from $(TARGET_DIR)..."
+	@rm -rf $(TARGET_DIR)/CLAUDE.md
+	@rm -rf $(TARGET_DIR)/commands
+	@rm -rf $(TARGET_DIR)/skills
+	@rm -rf $(TARGET_DIR)/.agent_docs
+	@echo "Done. ($(TARGET_DIR) directory preserved)"
