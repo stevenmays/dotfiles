@@ -20,8 +20,10 @@ COMPONENTS := \
 
 .PHONY: all help sync sync-claude.md sync-commands sync-skills sync-agent_docs clean status dry-run pull-dotfiles
 
-# Default target - pull dotfiles and sync everything
-all: sync
+# Default target - pull dotfiles and sync core files
+all: pull-dotfiles sync-claude.md sync-agent_docs
+	@echo ""
+	@echo "Sync complete! (Run 'make -f Makefile.claude sync' for commands + skills too)"
 
 help:
 	@echo "Claude Sync - Pull config from dotfiles"
