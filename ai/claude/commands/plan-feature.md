@@ -1,6 +1,6 @@
 # Plan Feature
 
-Break a complex feature into implementable stages before coding.
+Break a feature into implementable stages before coding. For complex features with architectural decisions, consider using `/feature-dev` which provides a full 7-phase workflow with specialized agents.
 
 ## Process
 

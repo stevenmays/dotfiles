@@ -1,124 +1,67 @@
 # Claude Sync Makefile - Copy to target repos
 # Usage: make -f Makefile.claude sync
 #
-# This pulls Claude configuration from your dotfiles into this repo.
-# Customize COMPONENTS below to sync only what you need.
+# Commands are prefixed with custom- to distinguish from plugin commands
 
-# Source location (adjust if your dotfiles are elsewhere)
-DOTFILES_DIR := $(HOME)/Git/dotfiles
-DOTFILES_CLAUDE := $(DOTFILES_DIR)/ai/claude
+DOTFILES := $(HOME)/Git/dotfiles/ai/claude
+USER_DIR := $(HOME)/.claude
+RSYNC := rsync -av --delete
 
-# Target locations
-# - CLAUDE.md goes to repo root (required by Claude Code)
-# - agent_docs go to .claude/ in the repo (project-specific)
-# - commands and skills go to ~/.claude/ (user-level, shared across repos)
-REPO_ROOT := .
-REPO_CLAUDE_DIR := .claude
-USER_CLAUDE_DIR := $(HOME)/.claude
+.PHONY: all sync sync-force dry-run clean help
 
-.PHONY: all help sync sync-claude.md sync-commands sync-skills sync-agent_docs clean status dry-run pull-dotfiles
+all: sync
 
-# Default target - pull dotfiles and sync repo files only
-all: pull-dotfiles sync-claude.md sync-agent_docs
-	@echo ""
-	@echo "Sync complete! (Run 'make -f Makefile.claude sync' for user-level commands + skills too)"
+sync:
+	@cd $(DOTFILES)/../.. && git pull --ff-only
+	@if [ -f ./CLAUDE.md ]; then \
+		echo "CLAUDE.md exists. Replace? [y/N] " && read ans && \
+		if [ "$$ans" = "y" ] || [ "$$ans" = "Y" ]; then \
+			cp $(DOTFILES)/CLAUDE.md ./CLAUDE.md; \
+			echo "✓ CLAUDE.md replaced"; \
+		else \
+			echo "→ CLAUDE.md skipped"; \
+		fi; \
+	else \
+		cp $(DOTFILES)/CLAUDE.md ./CLAUDE.md; \
+		echo "✓ CLAUDE.md created"; \
+	fi
+	@mkdir -p .claude/.agent_docs $(USER_DIR)/commands $(USER_DIR)/skills $(USER_DIR)/hooks
+	@$(RSYNC) $(DOTFILES)/.agent_docs/ .claude/.agent_docs/
+	@for f in $(DOTFILES)/commands/*.md; do \
+		name=$$(basename "$$f"); \
+		cp "$$f" "$(USER_DIR)/commands/custom-$$name"; \
+	done
+	@$(RSYNC) $(DOTFILES)/skills/ $(USER_DIR)/skills/
+	@$(RSYNC) $(DOTFILES)/hooks/ $(USER_DIR)/hooks/
+	@echo "✓ Synced"
 
-help:
-	@echo "Claude Sync - Pull config from dotfiles"
-	@echo ""
-	@echo "Commands:"
-	@echo "  make -f Makefile.claude sync      - Sync all components"
-	@echo "  make -f Makefile.claude dry-run   - Show what would be synced"
-	@echo "  make -f Makefile.claude status    - Check sync status"
-	@echo "  make -f Makefile.claude clean     - Remove synced Claude files"
-	@echo ""
-	@echo "Selective sync:"
-	@echo "  make -f Makefile.claude sync-claude.md   (-> ./CLAUDE.md)"
-	@echo "  make -f Makefile.claude sync-agent_docs  (-> ./.claude/.agent_docs/)"
-	@echo "  make -f Makefile.claude sync-commands    (-> ~/.claude/commands/)"
-	@echo "  make -f Makefile.claude sync-skills      (-> ~/.claude/skills/)"
-	@echo ""
-	@echo "Source: $(DOTFILES_CLAUDE)"
-	@echo "Repo targets: ./CLAUDE.md, ./.claude/.agent_docs/"
-	@echo "User targets: ~/.claude/commands/, ~/.claude/skills/"
-
-# Pull latest dotfiles before syncing
-pull-dotfiles:
-	@echo "Updating dotfiles..."
-	@cd $(DOTFILES_DIR) && \
-		current_branch=$$(git rev-parse --abbrev-ref HEAD) && \
-		if [ "$$current_branch" != "master" ]; then \
-			echo "  Warning: dotfiles on branch '$$current_branch', switching to master..."; \
-			git checkout master || exit 1; \
-		fi && \
-		git pull --ff-only && \
-		echo "  ✓ dotfiles up to date"
-
-sync: pull-dotfiles sync-claude.md sync-agent_docs sync-commands sync-skills
-	@echo ""
-	@echo "Sync complete!"
-
-sync-claude.md:
-	@echo "Syncing CLAUDE.md to repo root..."
-	@cp $(DOTFILES_CLAUDE)/CLAUDE.md $(REPO_ROOT)/CLAUDE.md
-	@echo "  ✓ ./CLAUDE.md"
-
-sync-commands:
-	@echo "Syncing commands to ~/.claude/..."
-	@mkdir -p $(USER_CLAUDE_DIR)/commands
-	@cp $(DOTFILES_CLAUDE)/commands/*.md $(USER_CLAUDE_DIR)/commands/ 2>/dev/null || true
-	@echo "  ✓ ~/.claude/commands/ ($(shell ls $(DOTFILES_CLAUDE)/commands/*.md 2>/dev/null | wc -l | tr -d ' ') files)"
-
-sync-skills:
-	@echo "Syncing skills to ~/.claude/..."
-	@mkdir -p $(USER_CLAUDE_DIR)/skills
-	@cp -R $(DOTFILES_CLAUDE)/skills/* $(USER_CLAUDE_DIR)/skills/ 2>/dev/null || true
-	@echo "  ✓ ~/.claude/skills/ ($(shell find $(DOTFILES_CLAUDE)/skills -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ') skills)"
-
-sync-agent_docs:
-	@echo "Syncing agent_docs to .claude/..."
-	@mkdir -p $(REPO_CLAUDE_DIR)/.agent_docs
-	@cp $(DOTFILES_CLAUDE)/.agent_docs/*.md $(REPO_CLAUDE_DIR)/.agent_docs/ 2>/dev/null || true
-	@echo "  ✓ ./.claude/.agent_docs/ ($(shell ls $(DOTFILES_CLAUDE)/.agent_docs/*.md 2>/dev/null | wc -l | tr -d ' ') files)"
+sync-force:
+	@cd $(DOTFILES)/../.. && git pull --ff-only
+	@cp $(DOTFILES)/CLAUDE.md ./CLAUDE.md
+	@mkdir -p .claude/.agent_docs $(USER_DIR)/commands $(USER_DIR)/skills $(USER_DIR)/hooks
+	@$(RSYNC) $(DOTFILES)/.agent_docs/ .claude/.agent_docs/
+	@for f in $(DOTFILES)/commands/*.md; do \
+		name=$$(basename "$$f"); \
+		cp "$$f" "$(USER_DIR)/commands/custom-$$name"; \
+	done
+	@$(RSYNC) $(DOTFILES)/skills/ $(USER_DIR)/skills/
+	@$(RSYNC) $(DOTFILES)/hooks/ $(USER_DIR)/hooks/
+	@echo "✓ Synced (forced)"
 
 dry-run:
-	@echo "=== Dry Run - Would sync: ==="
-	@echo ""
-	@echo "To repo root:"
-	@echo "  $(DOTFILES_CLAUDE)/CLAUDE.md -> ./CLAUDE.md"
-	@echo ""
-	@echo "To .claude/.agent_docs/:"
-	@for f in $(DOTFILES_CLAUDE)/.agent_docs/*.md; do \
-		echo "  $$f -> ./.claude/.agent_docs/$$(basename $$f)"; \
-	done 2>/dev/null || echo "  (none)"
-	@echo ""
-	@echo "To ~/.claude/commands/:"
-	@for f in $(DOTFILES_CLAUDE)/commands/*.md; do \
-		echo "  $$f -> ~/.claude/commands/$$(basename $$f)"; \
-	done 2>/dev/null || echo "  (none)"
-	@echo ""
-	@echo "To ~/.claude/skills/:"
-	@find $(DOTFILES_CLAUDE)/skills -type f -name "*.md" | while read f; do \
-		rel=$${f#$(DOTFILES_CLAUDE)/skills/}; \
-		echo "  $$f -> ~/.claude/skills/$$rel"; \
-	done 2>/dev/null || echo "  (none)"
-
-status:
-	@echo "=== Sync Status ==="
-	@echo ""
-	@echo "Source: $(DOTFILES_CLAUDE)"
-	@test -d $(DOTFILES_CLAUDE) && echo "  ✓ exists" || echo "  ✗ NOT FOUND"
-	@echo ""
-	@echo "Repo files:"
-	@test -f $(REPO_ROOT)/CLAUDE.md && echo "  ✓ ./CLAUDE.md" || echo "  - ./CLAUDE.md (not synced)"
-	@test -d $(REPO_CLAUDE_DIR)/.agent_docs && echo "  ✓ ./.claude/.agent_docs/" || echo "  - ./.claude/.agent_docs/ (not synced)"
-	@echo ""
-	@echo "User files (~/.claude/):"
-	@test -d $(USER_CLAUDE_DIR)/commands && echo "  ✓ commands/" || echo "  - commands/ (not synced)"
-	@test -d $(USER_CLAUDE_DIR)/skills && echo "  ✓ skills/" || echo "  - skills/ (not synced)"
+	@echo "=== CLAUDE.md ===" && diff -q $(DOTFILES)/CLAUDE.md ./CLAUDE.md 2>/dev/null || echo "Would update"
+	@echo "=== .agent_docs ===" && $(RSYNC) --dry-run $(DOTFILES)/.agent_docs/ .claude/.agent_docs/ 2>/dev/null || true
+	@echo "=== commands (will be prefixed with custom-) ==="
+	@for f in $(DOTFILES)/commands/*.md; do echo "  custom-$$(basename $$f)"; done
+	@echo "=== skills ===" && $(RSYNC) --dry-run $(DOTFILES)/skills/ $(USER_DIR)/skills/ 2>/dev/null || true
+	@echo "=== hooks ===" && $(RSYNC) --dry-run $(DOTFILES)/hooks/ $(USER_DIR)/hooks/ 2>/dev/null || true
 
 clean:
-	@echo "Removing repo Claude files..."
-	@rm -f $(REPO_ROOT)/CLAUDE.md
-	@rm -rf $(REPO_CLAUDE_DIR)/.agent_docs
-	@echo "Done. (User files in ~/.claude/ preserved)"
+	rm -f ./CLAUDE.md
+	rm -rf .claude/.agent_docs
+
+help:
+	@echo "make sync       - Sync config (prompts before replacing CLAUDE.md)"
+	@echo "make sync-force - Sync config (overwrites CLAUDE.md without prompt)"
+	@echo "make dry-run    - Preview changes"
+	@echo "make clean      - Remove repo Claude files"

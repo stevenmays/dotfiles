@@ -1,6 +1,6 @@
 # Review Diff
 
-Check the diff against main branch. Remove code that violates the anti-patterns in CLAUDE.md.
+Check the diff against main branch and remove anti-pattern violations. For deeper analysis, use pr-review-toolkit's specialized agents (silent-failure-hunter, type-design-analyzer, pr-test-analyzer).
 
 ## Process
 
