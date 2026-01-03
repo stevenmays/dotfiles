@@ -19,7 +19,7 @@ ai/claude/
 ├── CLAUDE.md              # Project guidelines template (synced to repo root)
 ├── Makefile.repo          # Sync makefile (copy to target repos)
 ├── README.md              # This file
-├── .agent_docs/           # Reference documentation (synced to .claude/.agent_docs/)
+├── .agent/                # Reference documentation (synced to .claude/.agent/)
 │   ├── anti-patterns.md
 │   ├── bug-investigation.md
 │   ├── code-review-checklist.md
@@ -56,7 +56,7 @@ ai/claude/
 | Source | Destination | Notes |
 |--------|-------------|-------|
 | `CLAUDE.md` | `./CLAUDE.md` | Prompts before overwrite |
-| `.agent_docs/` | `./.claude/.agent_docs/` | Per-repo |
+| `.agent/` | `./.claude/.agent/` | Per-repo |
 | `commands/` | `~/.claude/commands/` | Prefixed with `custom-` |
 | `skills/` | `~/.claude/skills/` | User-global |
 | `hooks/` | `~/.claude/hooks/` | User-global |

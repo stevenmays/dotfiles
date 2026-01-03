@@ -85,7 +85,7 @@ Hooks in `~/.claude/hooks/` enforce:
 
 ## Before You Start
 
-Read the relevant reference docs in `.claude/.agent_docs/`:
+Read the relevant reference docs in `.claude/.agent/`:
 
 | File | When to Read |
 |------|--------------|
