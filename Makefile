@@ -27,11 +27,11 @@ list:
 	@find $(CLAUDE_DIR)/skills -name "SKILL.md" 2>/dev/null || echo "  (none)"
 	@echo ""
 	@echo "=== Agent Docs ==="
-	@ls -1 $(CLAUDE_DIR)/.agent_docs/*.md 2>/dev/null || echo "  (none)"
+	@ls -1 $(CLAUDE_DIR)/.agent/*.md 2>/dev/null || echo "  (none)"
 
 check:
 	@echo "Checking Claude files..."
 	@test -f $(CLAUDE_DIR)/CLAUDE.md && echo "✓ CLAUDE.md" || echo "✗ CLAUDE.md missing"
 	@test -d $(CLAUDE_DIR)/commands && echo "✓ commands/" || echo "✗ commands/ missing"
 	@test -d $(CLAUDE_DIR)/skills && echo "✓ skills/" || echo "✗ skills/ missing"
-	@test -d $(CLAUDE_DIR)/.agent_docs && echo "✓ .agent_docs/" || echo "✗ .agent_docs/ missing"
+	@test -d $(CLAUDE_DIR)/.agent && echo "✓ .agent/" || echo "✗ .agent/ missing"

@@ -25,8 +25,8 @@ sync:
 		cp $(DOTFILES)/CLAUDE.md ./CLAUDE.md; \
 		echo "✓ CLAUDE.md created"; \
 	fi
-	@mkdir -p .claude/.agent_docs $(USER_DIR)/commands $(USER_DIR)/skills $(USER_DIR)/hooks
-	@$(RSYNC) $(DOTFILES)/.agent_docs/ .claude/.agent_docs/
+	@mkdir -p .claude/.agent $(USER_DIR)/commands $(USER_DIR)/skills $(USER_DIR)/hooks
+	@$(RSYNC) $(DOTFILES)/.agent/ .claude/.agent/
 	@for f in $(DOTFILES)/commands/*.md; do \
 		name=$$(basename "$$f"); \
 		cp "$$f" "$(USER_DIR)/commands/custom-$$name"; \
@@ -38,8 +38,8 @@ sync:
 sync-force:
 	@cd $(DOTFILES)/../.. && git pull --ff-only
 	@cp $(DOTFILES)/CLAUDE.md ./CLAUDE.md
-	@mkdir -p .claude/.agent_docs $(USER_DIR)/commands $(USER_DIR)/skills $(USER_DIR)/hooks
-	@$(RSYNC) $(DOTFILES)/.agent_docs/ .claude/.agent_docs/
+	@mkdir -p .claude/.agent $(USER_DIR)/commands $(USER_DIR)/skills $(USER_DIR)/hooks
+	@$(RSYNC) $(DOTFILES)/.agent/ .claude/.agent/
 	@for f in $(DOTFILES)/commands/*.md; do \
 		name=$$(basename "$$f"); \
 		cp "$$f" "$(USER_DIR)/commands/custom-$$name"; \
@@ -50,7 +50,7 @@ sync-force:
 
 dry-run:
 	@echo "=== CLAUDE.md ===" && diff -q $(DOTFILES)/CLAUDE.md ./CLAUDE.md 2>/dev/null || echo "Would update"
-	@echo "=== .agent_docs ===" && $(RSYNC) --dry-run $(DOTFILES)/.agent_docs/ .claude/.agent_docs/ 2>/dev/null || true
+	@echo "=== .agent ===" && $(RSYNC) --dry-run $(DOTFILES)/.agent/ .claude/.agent/ 2>/dev/null || true
 	@echo "=== commands (will be prefixed with custom-) ==="
 	@for f in $(DOTFILES)/commands/*.md; do echo "  custom-$$(basename $$f)"; done
 	@echo "=== skills ===" && $(RSYNC) --dry-run $(DOTFILES)/skills/ $(USER_DIR)/skills/ 2>/dev/null || true
@@ -58,7 +58,7 @@ dry-run:
 
 clean:
 	rm -f ./CLAUDE.md
-	rm -rf .claude/.agent_docs
+	rm -rf .claude/.agent
 
 help:
 	@echo "make sync       - Sync config (prompts before replacing CLAUDE.md)"
