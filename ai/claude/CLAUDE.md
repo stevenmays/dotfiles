@@ -51,6 +51,24 @@ src/
 
 **Philosophy**: Make it work → Make it right → Make it fast
 
+## Prompting Tips
+
+**Extended Thinking** (more compute for complex problems):
+- `think` → `think hard` → `think harder` → `ultrathink`
+- Use for: architecture decisions, subtle bugs, complex refactors
+
+**Session Management**:
+- `/rename <name>` — Name your session for easy retrieval
+- `/resume` — Continue a previous session
+- `/custom-scratchpad` — Track changes for cross-session continuity
+
+**Shortcuts**:
+- `!command` — Execute bash instantly (no model processing, faster)
+- `Shift+Tab` — Toggle between agent and manual tool approval
+
+**Parallel Exploration**:
+- "Use 3 subagents to explore [topic]" — Parallel codebase search
+
 ## Core Principles
 
 1. **Simplicity over cleverness** - Write code that's immediately understandable

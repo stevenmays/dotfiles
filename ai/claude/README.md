@@ -92,6 +92,7 @@ These plugins complement the custom commands:
 | `/custom-review-diff` | Quick diff review for anti-patterns |
 | `/custom-simplify` | Simplify code, preserve behavior |
 | `/custom-take-notes` | Document technical discoveries |
+| `/custom-scratchpad` | Track work for session continuity |
 
 ## Hooks (Hookify)
 
