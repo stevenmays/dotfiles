@@ -30,9 +30,11 @@ ai/claude/
 │       └── writing-style-examples.md
 ├── commands/              # Slash commands (synced with custom- prefix)
 │   ├── analyze-bug.md     → /custom-analyze-bug
+│   ├── fix-merge-conflict.md → /custom-fix-merge-conflict
 │   ├── fix-types.md       → /custom-fix-types
 │   ├── plan-feature.md    → /custom-plan-feature
 │   ├── review-diff.md     → /custom-review-diff
+│   ├── scratchpad.md      → /custom-scratchpad
 │   ├── simplify.md        → /custom-simplify
 │   └── take-notes.md      → /custom-take-notes
 ├── hooks/                 # Hookify rules (synced to ~/.claude/hooks/)
@@ -93,6 +95,7 @@ These plugins complement the custom commands:
 | `/custom-simplify` | Simplify code, preserve behavior |
 | `/custom-take-notes` | Document technical discoveries |
 | `/custom-scratchpad` | Track work for session continuity |
+| `/custom-fix-merge-conflict` | Resolve merge conflicts non-interactively |
 
 ## Hooks (Hookify)
 

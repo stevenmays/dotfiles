@@ -1,0 +1,15 @@
+{
+  "env": {
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "64000",
+    "MAX_THINKING_TOKENS": "31999"
+  },
+  "includeCoAuthoredBy": false,
+  "enabledPlugins": {
+    "frontend-design@claude-code-plugins": true,
+    "dev-browser@dev-browser-marketplace": true,
+    "ast-grep@ast-grep-marketplace": true,
+    "pg@aiguide": true,
+    "ralph-wiggum@claude-code-plugins": true
+  },
+  "alwaysThinkingEnabled": true
+}
