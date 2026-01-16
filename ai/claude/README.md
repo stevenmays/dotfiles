@@ -1,120 +1,105 @@
-# Claude Configuration
+# Claude Code Setup
 
-Personal Claude Code configuration synced across projects via `Makefile.repo`.
+Personal Claude Code configuration. Optimized for Opus 4.5.
 
-## Quick Start
+## Quick Install
 
 ```bash
-# Copy Makefile.repo to your project
-cp ~/Git/dotfiles/ai/claude/Makefile.repo ./Makefile.claude
+# 1. Install plugins
+claude mcp add frontend-design -- npx -y @anthropic-ai/claude-code-plugins@latest frontend-design
+claude mcp add dev-browser -- npx -y @anthropic-ai/dev-browser-mcp@latest
+claude mcp add ast-grep -- npx -y @anthropic-ai/ast-grep-mcp@latest
+claude mcp add pg -- npx -y @anthropic-ai/pg-mcp@latest
 
-# Sync all config
-make -f Makefile.claude sync
+# 2. Install skills (interactive - select all)
+npx add-skill vercel-labs/agent-skills
+
+# 3. Sync this dotfiles config
+./sync.sh
+```
+
+## What Gets Installed
+
+### Plugins (MCP servers)
+
+| Plugin | Purpose |
+|--------|---------|
+| `frontend-design` | Create production-grade UI components |
+| `dev-browser` | Browser automation and testing |
+| `ast-grep` | AST-based code search and analysis |
+| `pg` | PostgreSQL/TimescaleDB guidance |
+
+### Skills (from Vercel)
+
+| Skill | Purpose |
+|-------|---------|
+| `react-best-practices` | 45 React/Next.js performance rules |
+| `web-design-guidelines` | UI audit against 100+ best practices |
+
+### Skills (from this repo)
+
+| Skill | Purpose |
+|-------|---------|
+| `writing-style` | Personal writing voice for technical content |
+| `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
+| `gemini-image-generator` | Generate images via Gemini API |
+
+### Commands (from this repo)
+
+| Command | Purpose |
+|---------|---------|
+| `/custom-scratchpad` | Track work across sessions |
+| `/custom-take-notes` | Document technical discoveries |
+| `/custom-fix-merge-conflict` | Resolve merge conflicts automatically |
+
+### Hooks (from this repo)
+
+| Hook | Purpose |
+|------|---------|
+| `block-hardcoded-secrets` | Block commits with API keys/passwords |
+
+## Settings
+
+Recommended `~/.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "MAX_THINKING_TOKENS": "31999"
+  },
+  "includeCoAuthoredBy": false,
+  "alwaysThinkingEnabled": true
+}
 ```
 
 ## Structure
 
 ```
 ai/claude/
-├── CLAUDE.md              # Project guidelines template (synced to repo root)
-├── Makefile.repo          # Sync makefile (copy to target repos)
-├── README.md              # This file
-├── .agent/                # Reference documentation (synced to .claude/.agent/)
-│   ├── anti-patterns.md
-│   ├── bug-investigation.md
-│   ├── code-review-checklist.md
-│   ├── coding-patterns.md
-│   ├── error-handling.md
-│   ├── testing-patterns.md
-│   └── writing/
-│       └── writing-style-examples.md
-├── commands/              # Slash commands (synced with custom- prefix)
-│   ├── analyze-bug.md     → /custom-analyze-bug
-│   ├── fix-merge-conflict.md → /custom-fix-merge-conflict
-│   ├── fix-types.md       → /custom-fix-types
-│   ├── plan-feature.md    → /custom-plan-feature
-│   ├── review-diff.md     → /custom-review-diff
-│   ├── scratchpad.md      → /custom-scratchpad
-│   ├── simplify.md        → /custom-simplify
-│   └── take-notes.md      → /custom-take-notes
-├── hooks/                 # Hookify rules (synced to ~/.claude/hooks/)
-│   ├── block-as-any.md
-│   ├── block-hardcoded-secrets.md
-│   ├── warn-any-type.md
-│   ├── warn-as-syntax.md
-│   ├── warn-debug-code.md
-│   ├── warn-default-import.md
-│   ├── warn-foreach.md
-│   └── warn-interface-prefix.md
-└── skills/                # Domain skills (synced to ~/.claude/skills/)
-    ├── code-review/
+├── README.md           # This file
+├── CLAUDE.md           # Project template (copy to repos)
+├── sync.sh             # Sync script
+├── commands/           # → ~/.claude/commands/ (prefixed custom-)
+│   ├── scratchpad.md
+│   ├── take-notes.md
+│   └── fix-merge-conflict.md
+├── hooks/              # → ~/.claude/hooks/
+│   └── block-hardcoded-secrets.md
+└── skills/             # → ~/.claude/skills/
+    ├── writing-style/
     ├── serverless-aws/
-    ├── typescript-patterns/
-    └── writing-style/
+    └── gemini-image-generator/
 ```
 
-## Sync Destinations
-
-| Source | Destination | Notes |
-|--------|-------------|-------|
-| `CLAUDE.md` | `./CLAUDE.md` | Prompts before overwrite |
-| `.agent/` | `./.claude/.agent/` | Per-repo |
-| `commands/` | `~/.claude/commands/` | Prefixed with `custom-` |
-| `skills/` | `~/.claude/skills/` | User-global |
-| `hooks/` | `~/.claude/hooks/` | User-global |
-
-## Makefile Commands
+## Manual Sync
 
 ```bash
-make sync        # Sync all (prompts before replacing CLAUDE.md)
-make sync-force  # Sync all (overwrites CLAUDE.md)
-make dry-run     # Preview changes
-make clean       # Remove repo-specific files
-make help        # Show available commands
+# Commands (add custom- prefix)
+for f in commands/*.md; do
+  cp "$f" ~/.claude/commands/custom-$(basename "$f")
+done
+
+# Hooks and skills (direct copy)
+cp -r hooks/* ~/.claude/hooks/
+cp -r skills/* ~/.claude/skills/
 ```
-
-## Installed Plugins
-
-These plugins complement the custom commands:
-
-| Plugin | Commands | Purpose |
-|--------|----------|---------|
-| **hookify** | — | Runtime enforcement of TypeScript patterns |
-| **pr-review-toolkit** | — | 6 specialized review agents |
-| **commit-commands** | `/commit`, `/commit-push-pr`, `/clean_gone` | Git workflow |
-| **feature-dev** | `/feature-dev` | 7-phase feature development |
-
-## Custom Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/custom-analyze-bug` | Systematic root cause analysis |
-| `/custom-fix-types` | Fix TypeScript errors without `any` |
-| `/custom-plan-feature` | Break features into stages |
-| `/custom-review-diff` | Quick diff review for anti-patterns |
-| `/custom-simplify` | Simplify code, preserve behavior |
-| `/custom-take-notes` | Document technical discoveries |
-| `/custom-scratchpad` | Track work for session continuity |
-| `/custom-fix-merge-conflict` | Resolve merge conflicts non-interactively |
-
-## Hooks (Hookify)
-
-| Hook | Action | Trigger |
-|------|--------|---------|
-| `warn-any-type` | warn | `: any`, `<any>`, `any[]` |
-| `block-as-any` | **block** | `as any` casts |
-| `warn-as-syntax` | warn | `as Type` (use `<Type>`) |
-| `warn-foreach` | warn | `.forEach()` (use `for...of`) |
-| `warn-interface-prefix` | warn | `interface IFoo` |
-| `warn-debug-code` | warn | `console.log`, `debugger` |
-| `warn-default-import` | warn | Default imports |
-| `block-hardcoded-secrets` | **block** | Hardcoded API keys/passwords |
-
-## Skills
-
-| Skill | When to Use |
-|-------|-------------|
-| `typescript-patterns` | Writing/reviewing TypeScript |
-| `code-review` | Removing AI-generated anti-patterns |
-| `serverless-aws` | Lambda/DynamoDB/SQS patterns |
-| `writing-style` | Essays, blog posts, technical articles |
