@@ -41,12 +41,9 @@ The API key must be set via the `GEMINI_API_KEY` environment variable.
 
 ## Setup
 
-Before first use, set up the virtual environment:
-```bash
-cd scripts && python3 -m venv venv && ./venv/bin/pip install -r requirements.txt
-```
-
 Set your API key:
 ```bash
 export GEMINI_API_KEY="your-api-key-here"
 ```
+
+Requires [uv](https://docs.astral.sh/uv/) - dependencies are managed inline via PEP 723.

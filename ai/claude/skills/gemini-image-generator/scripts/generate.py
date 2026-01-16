@@ -1,5 +1,11 @@
-#!/bin/sh
-''''exec "`dirname $0`/venv/bin/python3" "$0" "$@" #'''
+#!/usr/bin/env -S uv run
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "google-genai",
+#     "Pillow",
+# ]
+# ///
 import argparse
 import base64
 import io
@@ -43,7 +49,6 @@ Examples:
     )
     args = parser.parse_args()
 
-    # Get API key from environment
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         print("Error: GEMINI_API_KEY environment variable not set.", file=sys.stderr)
@@ -51,11 +56,8 @@ Examples:
         sys.exit(1)
 
     client = genai.Client(api_key=api_key)
-
-    # Build content list
     contents = [args.prompt]
 
-    # Add reference image if provided
     if args.reference:
         try:
             reference_image = Image.open(args.reference)
@@ -68,7 +70,6 @@ Examples:
             print(f"Error loading reference image: {e}", file=sys.stderr)
             sys.exit(1)
 
-    # Create output directory if it doesn't exist
     output_dir = os.path.dirname(args.output)
     if output_dir and not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -88,13 +89,11 @@ Examples:
         print(f"Error generating image: {e}", file=sys.stderr)
         sys.exit(1)
 
-    # Process response
     image_saved = False
     for part in response.candidates[0].content.parts:
         if part.text is not None:
             print(f"Model response: {part.text}")
         elif part.inline_data is not None:
-            # Decode image data and save
             image_data = base64.b64decode(part.inline_data.data)
             generated_image = Image.open(io.BytesIO(image_data))
             generated_image.save(args.output)
