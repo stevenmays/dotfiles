@@ -3,7 +3,7 @@ name: block-hardcoded-secrets
 enabled: true
 event: file
 pattern: "(api[_-]?key|secret|password|token|credential)\\s*[:=]\\s*['\"][^'\"]{8,}['\"]"
-glob: "*.ts"
+glob: "*.{ts,tsx,js,jsx,py,rb,go,java,rs,yaml,yml,toml}"
 action: block
 ---
 
