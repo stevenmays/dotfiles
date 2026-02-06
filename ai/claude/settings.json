@@ -9,7 +9,7 @@
     "dev-browser@dev-browser-marketplace": true,
     "ast-grep@ast-grep-marketplace": true,
     "pg@aiguide": true,
-    "ralph-wiggum@claude-code-plugins": true
+    "ralph-wiggum@claude-code-plugins": false
   },
   "alwaysThinkingEnabled": true,
   "permissions": {

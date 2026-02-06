@@ -1,6 +1,6 @@
 # Claude Code Setup
 
-Personal Claude Code configuration. Optimized for Opus 4.5.
+Personal Claude Code configuration.
 
 ## Quick Install
 
@@ -11,7 +11,7 @@ claude mcp add dev-browser -- npx -y @anthropic-ai/dev-browser-mcp@latest
 claude mcp add ast-grep -- npx -y @anthropic-ai/ast-grep-mcp@latest
 claude mcp add pg -- npx -y @anthropic-ai/pg-mcp@latest
 
-# 2. Install skills (interactive - select all)
+# 2. Install marketplace skills (interactive - select all)
 npx add-skill vercel-labs/agent-skills
 
 # 3. Sync this dotfiles config
@@ -28,78 +28,90 @@ npx add-skill vercel-labs/agent-skills
 | `dev-browser` | Browser automation and testing |
 | `ast-grep` | AST-based code search and analysis |
 | `pg` | PostgreSQL/TimescaleDB guidance |
-
-### Skills (from Vercel)
-
-| Skill | Purpose |
-|-------|---------|
-| `react-best-practices` | 45 React/Next.js performance rules |
-| `web-design-guidelines` | UI audit against 100+ best practices |
-
-### Skills (from this repo)
-
-| Skill | Purpose |
-|-------|---------|
-| `writing-style` | Personal writing voice for technical content |
-| `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
-| `gemini-image-generator` | Generate images via Gemini API |
+| `ralph-wiggum` | AI coding patterns (disabled by default) |
 
 ### Commands (from this repo)
 
 | Command | Purpose |
 |---------|---------|
-| `/custom-scratchpad` | Track work across sessions |
-| `/custom-take-notes` | Document technical discoveries |
-| `/custom-fix-merge-conflict` | Resolve merge conflicts automatically |
+| `/cleanup` | Identify and remove AI-generated code patterns |
+| `/code-review` | Review code for quality, security, and style |
+| `/commit-push-pr` | Stage, commit, push, and create PR via `gh` |
+| `/fix-merge-conflict` | Resolve merge conflicts automatically |
+| `/quick-commit` | Stage + commit locally, no push |
+| `/scratchpad` | Track work across sessions |
+| `/take-notes` | Document technical discoveries |
+| `/test-and-fix` | Run tests and fix failures |
+
+### Skills (from this repo)
+
+| Skill | Purpose |
+|-------|---------|
+| `code-architect` | System design and architecture patterns |
+| `code-review` | Code review checklists and standards |
+| `gemini-image-generator` | Generate images via Gemini API |
+| `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
+| `verify-app` | Verify application builds and runs correctly |
+| `writing-style` | Personal writing voice for technical content |
+
+### Skills (from Vercel marketplace)
+
+| Skill | Purpose |
+|-------|---------|
+| `better-auth-best-practices` | TypeScript authentication framework |
+| `find-skills` | Discover and install agent skills |
+| `stripe-best-practices` | Stripe integration patterns |
+| `supabase-postgres-best-practices` | Postgres optimization from Supabase |
+| `upgrade-stripe` | Stripe API version upgrades |
+| `vercel-composition-patterns` | React composition patterns |
+| `vercel-react-best-practices` | React/Next.js performance rules |
+| `vercel-react-native-skills` | React Native and Expo best practices |
+| `web-design-guidelines` | UI audit against 100+ best practices |
 
 ### Hooks (from this repo)
 
 | Hook | Purpose |
 |------|---------|
 | `block-hardcoded-secrets` | Block commits with API keys/passwords |
+| `block-destructive-git` | Prevent force pushes and destructive git ops |
+| `post-edit-format` | Auto-format files after edits |
 
-## Settings
+### Settings
 
-Recommended `~/.claude/settings.json`:
+Full `settings.json` includes:
 
-```json
-{
-  "env": {
-    "MAX_THINKING_TOKENS": "31999"
-  },
-  "includeCoAuthoredBy": false,
-  "alwaysThinkingEnabled": true
-}
-```
+- Extended output tokens (64K) and thinking tokens (32K)
+- `includeCoAuthoredBy: false` — no co-author tags in commits
+- `alwaysThinkingEnabled: true` — extended thinking on every response
+- `permissions.allow` — pre-approved safe commands (git status, diff, log, npm run/test, prettier, eslint, tsc, gh)
+- Plugin configuration for all MCP servers
 
 ## Structure
 
 ```
 ai/claude/
-├── README.md           # This file
-├── CLAUDE.md           # Project template (copy to repos)
-├── sync.sh             # Sync script
-├── commands/           # → ~/.claude/commands/ (prefixed custom-)
+├── README.md
+├── CLAUDE.md              # Project template (copy to repos)
+├── sync.sh                # Sync config to ~/.claude/
+├── settings.json          # → ~/.claude/settings.json
+├── commands/              # → ~/.claude/commands/
+│   ├── cleanup.md
+│   ├── code-review.md
+│   ├── commit-push-pr.md
+│   ├── fix-merge-conflict.md
+│   ├── quick-commit.md
 │   ├── scratchpad.md
 │   ├── take-notes.md
-│   └── fix-merge-conflict.md
-├── hooks/              # → ~/.claude/hooks/
-│   └── block-hardcoded-secrets.md
-└── skills/             # → ~/.claude/skills/
-    ├── writing-style/
+│   └── test-and-fix.md
+├── hooks/                 # → ~/.claude/hooks/
+│   ├── block-destructive-git.md
+│   ├── block-hardcoded-secrets.md
+│   └── post-edit-format.md
+└── skills/                # → ~/.claude/skills/
+    ├── code-architect/
+    ├── code-review/
+    ├── gemini-image-generator/
     ├── serverless-aws/
-    └── gemini-image-generator/
-```
-
-## Manual Sync
-
-```bash
-# Commands (add custom- prefix)
-for f in commands/*.md; do
-  cp "$f" ~/.claude/commands/custom-$(basename "$f")
-done
-
-# Hooks and skills (direct copy)
-cp -r hooks/* ~/.claude/hooks/
-cp -r skills/* ~/.claude/skills/
+    ├── verify-app/
+    └── writing-style/
 ```
