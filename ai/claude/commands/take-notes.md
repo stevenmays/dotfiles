@@ -18,7 +18,7 @@ After you've:
 
 ## Output Location
 
-`docs/{feature}.md` (in current repo)
+`.claude/notes/{feature}.md` (in current repo)
 
 Use kebab-case for feature name.
 
@@ -50,3 +50,4 @@ Use kebab-case for feature name.
 - Focus on what's NOT obvious from reading the code
 - Include the "why" not just the "what"
 - Make it actionable for future-you
+- Run `qmd update` after writing

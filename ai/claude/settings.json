@@ -9,7 +9,14 @@
     "dev-browser@dev-browser-marketplace": true,
     "ast-grep@ast-grep-marketplace": true,
     "pg@aiguide": true,
-    "ralph-wiggum@claude-code-plugins": false
+    "ralph-wiggum@claude-code-plugins": false,
+    "skill-creator@claude-plugins-official": true
+  },
+  "mcpServers": {
+    "qmd": {
+      "command": "qmd",
+      "args": ["mcp"]
+    }
   },
   "alwaysThinkingEnabled": true,
   "permissions": {

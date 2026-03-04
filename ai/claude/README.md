@@ -29,6 +29,7 @@ npx add-skill vercel-labs/agent-skills
 | `ast-grep` | AST-based code search and analysis |
 | `pg` | PostgreSQL/TimescaleDB guidance |
 | `ralph-wiggum` | AI coding patterns (disabled by default) |
+| `qmd` | On-device hybrid search over markdown notes (MCP) |
 
 ### Commands (from this repo)
 
@@ -39,8 +40,10 @@ npx add-skill vercel-labs/agent-skills
 | `/commit-push-pr` | Stage, commit, push, and create PR via `gh` |
 | `/fix-merge-conflict` | Resolve merge conflicts automatically |
 | `/quick-commit` | Stage + commit locally, no push |
+| `/remember` | Quick-capture decisions, gotchas, context to `.claude/notes/` |
+| `/repo-init` | Bootstrap qmd memory for a repo (collections, gitignore, index) |
 | `/scratchpad` | Track work across sessions |
-| `/take-notes` | Document technical discoveries |
+| `/take-notes` | Document technical discoveries to `.claude/notes/` |
 | `/test-and-fix` | Run tests and fix failures |
 
 ### Skills (from this repo)
@@ -85,6 +88,9 @@ Full `settings.json` includes:
 - `alwaysThinkingEnabled: true` — extended thinking on every response
 - `permissions.allow` — pre-approved safe commands (git status, diff, log, npm run/test, prettier, eslint, tsc, gh)
 - Plugin configuration for all MCP servers
+- `mcpServers.qmd` — on-device search over project notes
+
+See [deep-memory.md](deep-memory.md) for the full qmd + Claude Code workflow.
 
 ## Structure
 
@@ -92,6 +98,7 @@ Full `settings.json` includes:
 ai/claude/
 ├── README.md
 ├── CLAUDE.md              # Project template (copy to repos)
+├── deep-memory.md         # qmd + Claude Code usage guide
 ├── sync.sh                # Sync config to ~/.claude/
 ├── settings.json          # → ~/.claude/settings.json
 ├── commands/              # → ~/.claude/commands/
@@ -100,6 +107,8 @@ ai/claude/
 │   ├── commit-push-pr.md
 │   ├── fix-merge-conflict.md
 │   ├── quick-commit.md
+│   ├── remember.md
+│   ├── repo-init.md
 │   ├── scratchpad.md
 │   ├── take-notes.md
 │   └── test-and-fix.md
