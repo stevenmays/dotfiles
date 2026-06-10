@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal Claude Code configuration, packaged as an installable plugin (`mays-tools`).
+Personal Claude Code configuration, packaged as an installable plugin (`mays`).
 
 ## Install
 
@@ -8,7 +8,7 @@ From within Claude Code:
 
 ```
 /plugin marketplace add stevenmays/dotfiles
-/plugin install mays-tools@dotfiles
+/plugin install mays@dotfiles
 ```
 
 Then sync personal settings (optional, overwrites `~/.claude/settings.json`):
@@ -24,10 +24,10 @@ Then sync personal settings (optional, overwrites `~/.claude/settings.json`):
 | Command | Purpose |
 |---------|---------|
 | `/commit-push-pr` | Stage, commit, push, and create PR via `gh` |
-| `/distill-standards [N]` | Mine the last N merged PRs for review patterns, distill into `.claude/standards.md` |
-| `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch |
+| `/distill-standards [N]` | Mine the last N merged PRs (asks how many, default 50) for review patterns, distill into `.claude/standards.md` |
+| `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch, standards-aware |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
-| `/pre-review` | Check the branch diff against distilled standards before opening a PR |
+| `/pre-review` | Check the branch diff against distilled standards before opening a PR, then offer to apply fixes |
 | `/quick-commit` | Stage + commit locally, no push |
 | `/test-and-fix` | Run tests and fix failures until green |
 

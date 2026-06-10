@@ -1,3 +1,7 @@
+---
+description: Stage, commit, push, and open a pull request via gh
+---
+
 # Commit, Push, and Create PR
 
 Stage all changes, create a commit with an auto-generated message, push to remote, and open a pull request.

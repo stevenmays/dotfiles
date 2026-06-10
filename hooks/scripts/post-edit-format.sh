@@ -7,5 +7,6 @@ command -v npx >/dev/null || exit 0
 file=$(jq -r '.tool_input.file_path // ""')
 [ -f "$file" ] || exit 0
 
-npx prettier --write "$file" 2>/dev/null || true
+# --no-install: only format if the project already depends on prettier
+npx --no-install prettier --write "$file" 2>/dev/null || true
 exit 0

@@ -1,3 +1,7 @@
+---
+description: Stage all changes and commit locally with a conventional commit message — no push
+---
+
 # Quick Commit
 
 Stage all changes and create a commit with an auto-generated message. Does not push.

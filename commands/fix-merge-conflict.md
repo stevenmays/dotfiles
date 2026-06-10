@@ -1,3 +1,7 @@
+---
+description: Resolve all merge conflicts non-interactively, then build and test
+---
+
 # Fix Merge Conflicts
 
 Resolve all merge conflicts on the current Git branch non-interactively and make the repo buildable and tested.

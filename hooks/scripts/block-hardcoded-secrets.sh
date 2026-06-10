@@ -10,6 +10,11 @@ case "$file" in
   *) exit 0 ;;
 esac
 
+# Test files and fixtures legitimately contain fake credentials
+case "$file" in
+  *.test.*|*.spec.*|*__tests__*|*__mocks__*|*fixtures*) exit 0 ;;
+esac
+
 content=$(echo "$input" | jq -r '.tool_input.content // .tool_input.new_string // ""')
 
 if echo "$content" | grep -qiE "(api[_-]?key|secret|password|token|credential)[[:space:]]*[:=][[:space:]]*['\"][^'\"]{8,}['\"]"; then

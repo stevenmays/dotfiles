@@ -1,3 +1,8 @@
+---
+description: Run tests and fix failures until green
+argument-hint: "[optional test file or pattern to scope the run]"
+---
+
 # Test and Fix
 
 Run tests and iteratively fix any failures until all tests pass.
@@ -5,7 +10,7 @@ Run tests and iteratively fix any failures until all tests pass.
 ## Steps
 
 1. **Detect test runner**: Look for package.json scripts, pytest, go test, cargo test, etc.
-2. **Run tests**: Execute the appropriate test command
+2. **Run tests**: Execute the appropriate test command. If `$ARGUMENTS` is given, scope the run to that file or pattern.
 3. **Analyze failures**: If tests fail, identify the root cause from error output
 4. **Fix issues**: Make minimal, targeted fixes to resolve failures
 5. **Re-run tests**: Verify the fix worked

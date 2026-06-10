@@ -14,7 +14,7 @@ Review the current branch's changes against the repo's distilled standards (`.cl
 3. **Check every changed file** against:
    - Each rule in `.claude/standards.md`
    - The baseline checks below
-4. **Report** — do not change code unless asked:
+4. **Report** — do not change code yet:
 
    ```markdown
    ## Pre-Review
@@ -30,6 +30,8 @@ Review the current branch's changes against the repo's distilled standards (`.cl
    ```
 
    For each violation cite the specific standard so it's clear this isn't generic opinion. If everything passes, say so briefly — don't manufacture findings.
+
+5. **Offer fixes**: If there are findings, ask via AskUserQuestion whether to apply them — Apply all / Standards violations only / Baseline issues only / None. Apply what's approved with minimal diffs, then confirm each fix resolved its finding. Skip the question entirely when there are no findings.
 
 ## Baseline Checks (always run)
 

@@ -3,7 +3,7 @@
 .PHONY: help list check
 
 help:
-	@echo "Claude plugin (mays-tools)"
+	@echo "Claude plugin (mays)"
 	@echo ""
 	@echo "Commands:"
 	@echo "  make list    - List plugin contents (commands, skills, agents, hooks)"
@@ -11,7 +11,7 @@ help:
 	@echo ""
 	@echo "Install (inside Claude Code):"
 	@echo "  /plugin marketplace add stevenmays/dotfiles"
-	@echo "  /plugin install mays-tools@dotfiles"
+	@echo "  /plugin install mays@dotfiles"
 
 list:
 	@echo "=== Commands ==="

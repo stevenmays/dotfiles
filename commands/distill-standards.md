@@ -1,13 +1,13 @@
 ---
 description: Distill coding standards from the repo's recent merged PRs into .claude/standards.md
-argument-hint: "[number of PRs to analyze, default 30]"
+argument-hint: "[number of PRs to analyze; asks if omitted, default 50]"
 ---
 
 # Distill Standards
 
 Mine the repo's recent merged PRs for recurring review feedback and conventions, then distill them into `.claude/standards.md`. The output is what `/pre-review` checks against.
 
-**N** = `$ARGUMENTS` if given, otherwise 30.
+**N** = `$ARGUMENTS` if given. Otherwise ask via AskUserQuestion how many merged PRs to analyze — options 25 / 50 (recommended) / 100 / 200. If asking isn't possible (non-interactive run), use 50.
 
 ## Steps
 
