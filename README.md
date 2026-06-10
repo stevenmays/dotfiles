@@ -57,15 +57,17 @@ Then sync personal settings (optional, overwrites `~/.claude/settings.json`):
 ## Standards Workflow
 
 ```
-/distill-standards 30   # once per repo (re-run as PRs accumulate)
+/distill-standards      # once per repo (asks how many PRs, default 50; re-run as PRs accumulate)
 /pre-review             # before every PR
 ```
 
-`distill-standards` reads the repo's merged PR history via `gh`, extracts recurring review feedback and conventions (distilled rules, not raw comments), and writes `.claude/standards.md`. `pre-review` checks your branch against those rules plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions).
+`distill-standards` reads the repo's merged PR history via `gh`, extracts recurring review feedback and conventions (distilled rules, not raw comments), and writes `.claude/standards.md`. `pre-review` checks your branch against those rules plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes.
+
+Every review surface consults `.claude/standards.md` when it exists: `/pre-review` and `/extreme-code-quality-review` load it directly, and `sync.sh` adds a note to `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
 
 ## Settings
 
-`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`):
+`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`; the script also appends the standards note to `~/.claude/CLAUDE.md` once):
 
 - Extended output tokens (64K) and thinking tokens (32K)
 - `includeCoAuthoredBy: false` — no co-author tags in commits
