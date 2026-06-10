@@ -10,13 +10,8 @@
     "ast-grep@ast-grep-marketplace": true,
     "pg@aiguide": true,
     "ralph-wiggum@claude-code-plugins": false,
-    "skill-creator@claude-plugins-official": true
-  },
-  "mcpServers": {
-    "qmd": {
-      "command": "qmd",
-      "args": ["mcp"]
-    }
+    "skill-creator@claude-plugins-official": true,
+    "mays-tools@dotfiles": true
   },
   "alwaysThinkingEnabled": true,
   "permissions": {

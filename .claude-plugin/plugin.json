@@ -1,0 +1,9 @@
+{
+  "name": "mays-tools",
+  "description": "Git workflow commands, PR-standards distillation, strict code-quality review, safety hooks, and personal skills.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Steven Mays",
+    "email": "stevenmays@gmail.com"
+  }
+}

@@ -1,37 +1,36 @@
-# Dotfiles Makefile - Manage Claude AI configuration files
-# Source: ~/Git/dotfiles/ai/claude
-
-CLAUDE_DIR := $(HOME)/Git/dotfiles/ai/claude
+# Dotfiles Makefile - Claude Code plugin management
 
 .PHONY: help list check
 
 help:
-	@echo "Claude Dotfiles Management"
+	@echo "Claude plugin (mays-tools)"
 	@echo ""
 	@echo "Commands:"
-	@echo "  make list    - List all Claude files (commands, skills, agents)"
-	@echo "  make check   - Verify all expected files exist"
+	@echo "  make list    - List plugin contents (commands, skills, agents, hooks)"
+	@echo "  make check   - Verify plugin structure"
 	@echo ""
-	@echo "To sync these files TO another repo:"
-	@echo "  1. Copy ai/claude/Makefile.repo to your target repo as Makefile.claude"
-	@echo "  2. cd /path/to/repo && make -f Makefile.claude sync"
+	@echo "Install (inside Claude Code):"
+	@echo "  /plugin marketplace add stevenmays/dotfiles"
+	@echo "  /plugin install mays-tools@dotfiles"
 
 list:
-	@echo "=== CLAUDE.md ==="
-	@ls -la $(CLAUDE_DIR)/CLAUDE.md 2>/dev/null || echo "  (not found)"
-	@echo ""
 	@echo "=== Commands ==="
-	@ls -1 $(CLAUDE_DIR)/commands/*.md 2>/dev/null || echo "  (none)"
+	@ls -1 commands/*.md 2>/dev/null || echo "  (none)"
 	@echo ""
 	@echo "=== Skills ==="
-	@find $(CLAUDE_DIR)/skills -name "SKILL.md" 2>/dev/null || echo "  (none)"
+	@find skills -name "SKILL.md" 2>/dev/null || echo "  (none)"
 	@echo ""
 	@echo "=== Agents ==="
-	@ls -1 $(CLAUDE_DIR)/agents/*.md 2>/dev/null || echo "  (none)"
+	@ls -1 agents/*.md 2>/dev/null || echo "  (none)"
+	@echo ""
+	@echo "=== Hooks ==="
+	@ls -1 hooks/scripts/*.sh 2>/dev/null || echo "  (none)"
 
 check:
-	@echo "Checking Claude files..."
-	@test -f $(CLAUDE_DIR)/CLAUDE.md && echo "✓ CLAUDE.md" || echo "✗ CLAUDE.md missing"
-	@test -d $(CLAUDE_DIR)/commands && echo "✓ commands/" || echo "✗ commands/ missing"
-	@test -d $(CLAUDE_DIR)/skills && echo "✓ skills/" || echo "✗ skills/ missing"
-	@test -d $(CLAUDE_DIR)/agents && echo "✓ agents/" || echo "✗ agents/ missing"
+	@echo "Checking plugin structure..."
+	@test -f .claude-plugin/plugin.json && echo "✓ plugin.json" || echo "✗ plugin.json missing"
+	@test -f .claude-plugin/marketplace.json && echo "✓ marketplace.json" || echo "✗ marketplace.json missing"
+	@test -d commands && echo "✓ commands/" || echo "✗ commands/ missing"
+	@test -d skills && echo "✓ skills/" || echo "✗ skills/ missing"
+	@test -d agents && echo "✓ agents/" || echo "✗ agents/ missing"
+	@test -f hooks/hooks.json && echo "✓ hooks/hooks.json" || echo "✗ hooks/hooks.json missing"

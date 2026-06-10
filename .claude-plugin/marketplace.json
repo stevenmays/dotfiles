@@ -1,0 +1,15 @@
+{
+  "name": "dotfiles",
+  "description": "Steven Mays' personal Claude Code plugin marketplace.",
+  "owner": {
+    "name": "Steven Mays",
+    "email": "stevenmays@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "mays-tools",
+      "source": "./",
+      "description": "Git workflow commands, PR-standards distillation, strict code-quality review, safety hooks, and personal skills."
+    }
+  ]
+}
