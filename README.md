@@ -39,12 +39,12 @@ claude plugin marketplace update dotfiles
 
 | Command | Purpose |
 |---------|---------|
-| `/commit-push-pr` | Stage, commit, push, and create PR via `gh` |
 | `/distill-standards [N]` | Mine the last N merged PRs (asks how many, default 50) for review patterns, distill into `.claude/standards.md` |
 | `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch, standards-aware |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
-| `/pre-review` | Check the branch diff against distilled standards before opening a PR, then offer to apply fixes |
-| `/quick-commit` | Stage + commit locally, no push |
+| `/learn-from-review [PR#]` | Distill human review feedback on your PR into `.claude/standards.md` |
+| `/pre-review` | Check the branch diff against distilled standards (with staleness warning), then offer to apply fixes |
+| `/security-audit` | Audit home-directory dotfiles for security issues (read-only report) |
 | `/test-and-fix` | Run tests and fix failures until green |
 
 ### Skills
@@ -73,17 +73,28 @@ claude plugin marketplace update dotfiles
 ## Standards Workflow
 
 ```
-/distill-standards      # once per repo (asks how many PRs, default 50; re-run as PRs accumulate)
-/pre-review             # before every PR
+/distill-standards          # once per repo (asks how many PRs, default 50)
+/pre-review                 # before every PR (warns when standards are stale)
+/learn-from-review <PR#>    # after a human reviews your PR
 ```
 
-`distill-standards` reads the repo's merged PR history via `gh`, extracts recurring review feedback and conventions (distilled rules, not raw comments), and writes `.claude/standards.md`. `pre-review` checks your branch against those rules plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes.
+`distill-standards` reads the repo's merged PR history via `gh`, extracts recurring review feedback and conventions (distilled rules, not raw comments), and writes `.claude/standards.md`. `pre-review` checks your branch against those rules plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. `learn-from-review` closes the loop: it distills the human feedback on your PR into the `## Manual` section of `standards.md`, which `distill-standards` carries forward on regeneration — so `pre-review` catches that feedback before the next reviewer has to.
 
-Every review surface consults `.claude/standards.md` when it exists: `/pre-review` and `/extreme-code-quality-review` load it directly, and `sync.sh` adds a note to `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
+Every review surface consults `.claude/standards.md` when it exists: `/pre-review` and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
+
+## The Golden Path (before every PR)
+
+```
+/pre-review                    # standards conformance — catches what reviewers flagged before
+/code-review high              # native correctness review — bugs, not style
+/extreme-code-quality-review   # structural audit — only for large or structural changes
+```
+
+Then commit, push, and open the PR (plain request — conventions live in the `~/.claude/CLAUDE.md` managed block). After human review lands, `/learn-from-review`.
 
 ## Settings
 
-`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`; the script also appends the standards note to `~/.claude/CLAUDE.md` once):
+`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`; the script also maintains a managed block in `~/.claude/CLAUDE.md` with the standards lookup and git conventions):
 
 - Extended output tokens (64K) and thinking tokens (32K)
 - `includeCoAuthoredBy: false` — no co-author tags in commits
@@ -119,3 +130,4 @@ These used to live here but are now handled natively by Claude Code:
 - `verify-app` skill → native `/verify`
 - `code-architect` skill → native plan mode
 - qmd integration (`/repo-init`, `deep-memory.md`, MCP server) → native memory
+- `/quick-commit`, `/commit-push-pr` → plain commit/PR requests + git conventions in the `~/.claude/CLAUDE.md` managed block (via `sync.sh`)
