@@ -17,6 +17,22 @@ Then sync personal settings (optional, overwrites `~/.claude/settings.json`):
 ./sync.sh
 ```
 
+## Update
+
+After new commits land in this repo, refresh the marketplace catalog — Claude Code re-pulls the source and upgrades the installed `mays` plugin in the same step:
+
+```
+/plugin marketplace update dotfiles
+```
+
+Then run `/reload-plugins` when prompted (or restart Claude Code) to load the new version. To make this automatic, enable auto-update for the marketplace under `/plugin` → Marketplaces → dotfiles.
+
+Non-interactive equivalent:
+
+```bash
+claude plugin marketplace update dotfiles
+```
+
 ## What's in the Plugin
 
 ### Commands
