@@ -11,7 +11,8 @@
     "pg@aiguide": true,
     "ralph-wiggum@claude-code-plugins": false,
     "skill-creator@claude-plugins-official": true,
-    "mays@dotfiles": true
+    "mays@dotfiles": true,
+    "codex@openai-codex": true
   },
   "alwaysThinkingEnabled": true,
   "permissions": {

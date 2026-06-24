@@ -9,6 +9,10 @@ A teaching-first voice that makes readers collaborators. Start with a concrete p
 
 ## Core Voice Principles
 
+**Write to be unsummarizable.** A summary shortens text by deleting words. Aim for prose so dense that any deletion costs an idea—if a paragraph survives a 50% cut intact, the cut half was fluff, so make the cut. The test: summarize your own draft. Whatever the summary drops without loss was never pulling weight; delete it from the original. What's left is writing a summary can only lengthen, not shorten.
+
+Density isn't terseness. Orientation, worked examples, and permission-giving earn their words by carrying ideas the reader needs—keep them. The enemy is filler: hedges, restatement, throat-clearing, and connective tissue that adds length without adding meaning. Cutting fluff often surfaces a sharper idea hiding underneath it—the dense version usually says *more*, not just less.
+
 **Hook with a number, then ask "how?"** Lead with a measurable claim and immediately pose the question the reader is already thinking.
 - "10x cheaper—but how does that actually work?"
 - "This dropped p95 by 40%. What's the mechanism?"
@@ -38,22 +42,26 @@ Don't just state a benefit. State it, then invite the reader into the mystery.
 
 ## Structure Patterns
 
-### Technical/Educational Pieces (default)
-1. **Hook** (1-2 paragraphs): Measurable claim + the question it raises
-2. **"By the end of this post..."** (2-3 bullets): What the reader will understand or be able to do
-3. **First principles**: Build the mental model from primitives
-4. **Worked example**: One small, concrete, end-to-end demonstration
-5. **Trade-offs**: Options and consequences, pick a side
-6. **In summary**: 3-5 sentences that compress the whole post
-7. **Resources/Further reading**: Links for going deeper
+These are a **menu, not a mandate.** The beats below are moves to reach for, not an arc to stamp on every piece. A draft may open cold on the claim, skip the learning-objectives block, bury the worked example mid-piece, drop the summary, or end flat. **Varying structure across pieces is the primary defense against sounding generated**—if your last few posts all ran hook → objectives → first principles → example → trade-offs → summary, break the pattern on this one. Pick the beats the argument needs and order them the way it wants, not the way the list happens to be numbered.
 
-### Essays/Personal Pieces
-1. **Open with personal context** — A real constraint (time, money, family, risk)
-2. **Practical question** — "What's actually happening?" or "What do you do about it?"
-3. **Build the model** — First principles, evidence, trade-offs
-4. **End with an operating principle** — Concrete, not moralistic
+### Technical/Educational moves
+- **Hook**: Measurable claim + the question it raises
+- **"By the end of this post..."**: What the reader will be able to do—only when there's a real payoff to promise
+- **First principles**: Build the mental model from primitives
+- **Worked example**: One small, concrete, end-to-end demonstration
+- **Trade-offs**: Options and consequences, pick a side
+- **In summary**: A few sentences that compress the whole post
+- **Resources/Further reading**: Links for going deeper
+
+### Essay/Personal moves
+- **Personal context** — A real constraint (time, money, family, risk)
+- **Practical question** — "What's actually happening?" or "What do you do about it?"
+- **Build the model** — First principles, evidence, trade-offs
+- **Operating principle** — Concrete, not moralistic
 
 ## Signature Techniques
+
+Reach for these when they do real work, not to hit a quota. A technique slotted in because the template expects it—an objectives block over thin content, a trade-off table with a single real axis, a transition the reader didn't need—is exactly the manufactured polish that reads as generated.
 
 **Learning objectives block.** Near the top, state what the reader will get:
 - "By the end of this post, you'll understand the mechanism behind prompt caching and know when to use it."
@@ -64,9 +72,11 @@ Don't just state a benefit. State it, then invite the reader into the mystery.
 
 **"In summary" compressions.** One paragraph that restates the core model in plain language. If you can't summarize it, you don't understand it yet.
 
-**Transitions that orient.** Regularly tell the reader where you are:
+**Transitions that orient.** When the reader genuinely needs reorientation, tell them where they are—one or two per piece, not a stock phrase after every section:
 - "Now that we've defined X, we can finally talk about Y."
 - "That's the theory. Let's see it in practice."
+
+**Name a pattern only when it's real.** Coining a memorable term—a label, an acronym, a "the X principle"—manufactures the feeling of insight, so it's the highest-risk move here. Do it only when the thing named is a genuine, defensible pattern you could point at twice. Never to fill a slot or make a thin point feel sticky.
 
 **Trade-off tables.** When comparing options:
 ```
@@ -82,6 +92,7 @@ Don't just state a benefit. State it, then invite the reader into the mystery.
 
 ## Evidence & Support
 
+- **Every section needs at least one concrete, checkable fact**—a real figure, a named source and its finding, a dated event—not merely the *shape* of evidence. A passage with the cadence of measurement but no number in it fails; "studies show," "significantly faster," and "many teams" are the tells. If you can't name a number or a source, you're asserting, not supporting.
 - Prefer your own measurements, even small ones, over assertions
 - Use actual numbers: token counts, latency, costs, percentages
 - Cite sources in a Resources section, not inline footnotes
@@ -92,8 +103,13 @@ Don't just state a benefit. State it, then invite the reader into the mystery.
 - `##` headers that match reader questions ("Tokenization", "The Caching Mechanism", "Trade-offs")
 - Short paragraphs (1-3 sentences)
 - Code blocks for pseudocode and minimal real code
-- Bullet lists for steps, assumptions, or outcomes
+- Bullet lists for steps, assumptions, or outcomes—vary their length; not everything comes in threes
 - Bold for key terms on first use, not for emphasis
+- **Ration em-dashes.** They're a rhythm tool, not a default connector: roughly one em-dash construction per paragraph at most. Rotate in colons, periods, parentheses, and semicolons. Each em-dash aside must carry something the main clause genuinely can't—if a comma or period would do, use it.
+
+## Sentence-Level Texture
+
+Vary sentences in **length and intensity.** Not every sentence should do rhetorical work—a draft where each line is equally sharpened reads as machine-made. Set a long, qualified sentence against a blunt three-word one. Leave plain, flat patches next to the sharp turns, and let an idiosyncratic word choice or a slightly uneven digression stand instead of sanding it smooth. Uniform excellence is the tell; engineered asymmetry reads as someone who wrote this once and meant it.
 
 ## What to Avoid
 
@@ -103,14 +119,26 @@ Don't just state a benefit. State it, then invite the reader into the mystery.
 - Long detours—link them instead
 - Wry closers that undercut clarity (save those for purely personal essays)
 - Pretending certainty where there is none
+- Stock connective phrases ("Now that we've defined X...", "By the end of this post...", "Let's work through...") more than once or twice—and never to paper over a point you haven't actually made
+- Fluff that survives summarizing—any sentence a reader could cut without losing an idea
 
 ## Final Check
 
-Before publishing, ask:
-- Did I open with a measurable payoff and the obvious question?
-- Did I state what the reader will get?
+Before publishing, ask (not every piece needs every beat—these test whether the moves you *did* use earned their place):
+- Did I open with a payoff and the obvious question, or otherwise earn the reader's attention?
+- If I promised the reader something up front, did I deliver it?
 - Did I build from primitives before abstractions?
-- Did I include at least one worked example?
+- If the idea is abstract, did I ground it in a concrete example?
 - Did I name trade-offs and pick a side?
-- Did I write an "in summary" compression?
-- Does each section transition cleanly to the next?
+- Is it unsummarizable—would a faithful summary have to run nearly as long as the original? Could I cut any paragraph in half without losing an idea? If yes, cut it.
+
+## Self-Review Before Returning
+
+Run this on your own draft to catch what reads as AI-generated. Each item maps to a rule above.
+- **Structure:** Does this piece follow the same arc as my last one? If so, break it. → Structure Patterns
+- **List variety:** Are parallel runs and lists all the same length—everything in threes? Vary them. → Signature Techniques / Formatting
+- **Em-dash density:** More than one em-dash construction in any paragraph? Convert some to colons, periods, or parentheses. → Formatting
+- **Substance:** Does every section carry at least one concrete, checkable fact, or is one running on cadence alone? → Evidence & Support
+- **Manufactured framework:** Did I coin a memorable term for something that isn't actually a pattern? Cut it. → Signature Techniques
+- **Canned phrasing:** More than one stock opener or transition, or one used to cover a missing argument? → What to Avoid
+- **Uniform polish:** Is every paragraph equally worked? Equal polish everywhere is the loudest tell—leave a plain patch. → Sentence-Level Texture

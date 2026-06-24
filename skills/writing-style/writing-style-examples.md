@@ -20,6 +20,16 @@ The teaching-first voice. Hook with a measurable claim, build mental models, use
 
 *Concrete numbers, then invites curiosity about the "why."*
 
+### Density: Write to Be Unsummarizable
+
+**Fluffy → dense (cutting words surfaces a sharper idea):**
+
+> *Before:* In this section, we're going to take a look at how caching actually works under the hood. It's important to understand that caching is a technique that can be useful in a lot of different situations. Essentially, the basic idea behind caching is that you store the results of expensive computations so you don't have to redo them later.
+
+> *After:* Caching stores the result of an expensive computation so you never pay for it twice. That's the whole idea—the rest is deciding what counts as "the same computation."
+
+*The "before" summarizes down to one sentence with no loss—proof it was mostly filler. The "after" can't be shortened without losing the punchline ("the rest is deciding what counts as the same computation"), and it's the shorter of the two. Density added an idea, it didn't just cut words.*
+
 ### Learning Objectives Block
 
 **Near the top of a technical post:**
