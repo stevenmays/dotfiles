@@ -19,7 +19,7 @@ Resolve all merge conflicts on the current Git branch non-interactively and make
 ### 1. Detect Conflicts
 
 ```bash
-git status --porcelain | cat
+git status --porcelain
 ```
 
 Collect files with:
@@ -68,11 +68,4 @@ Output summary of files touched and notable resolution choices.
 - If ambiguous and blocks build/tests, prefer the variant that compiles and green-tests
 - If file still contains conflict markers after first pass, revisit before proceeding
 - For large refactors: keep consistent imports, types, and module boundaries
-- Use exhaustive switch guards in TypeScript
 - Keep edits minimal; avoid reformatting unrelated code
-
-## Deliverables
-
-- Clean working tree with all conflicts resolved
-- Successful build/tests where applicable
-- One local commit containing the resolutions
