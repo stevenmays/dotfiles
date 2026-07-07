@@ -42,9 +42,11 @@ claude plugin marketplace update dotfiles
 | `/distill-standards [N \| #PR \| full]` | Mine merged PRs into `.claude/standards.md` — full regen from N PRs, delta since last run (no args), or absorb a single PR's feedback |
 | `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch, standards-aware |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
+| `/onboard-repo [N]` | Day-one bootstrap for a new codebase — CLAUDE.md, distilled standards, and a permissions allowlist in one run |
 | `/pre-review` | Check the branch diff against distilled standards (with staleness warning), then offer to apply fixes |
 | `/review-pr <PR#>` | Review someone else's PR against distilled standards; optionally post findings to GitHub |
 | `/security-audit` | Audit home-directory dotfiles for security issues (read-only report) |
+| `/ship` | The golden path as one command: pre-review → code-review → tests → commit → push → PR |
 | `/test-and-fix` | Run tests and fix failures until green |
 
 ### Skills
@@ -69,6 +71,7 @@ claude plugin marketplace update dotfiles
 | `block-destructive-git` | PreToolUse (Bash) | Block force pushes, hard resets, and other destructive git ops |
 | `block-hardcoded-secrets` | PreToolUse (Edit/Write) | Block edits that introduce hardcoded API keys/passwords |
 | `post-edit-format` | PostToolUse (Edit/Write) | Auto-format edited files with Prettier when the project uses it |
+| `load-standards` | SessionStart | Inject `.claude/standards.md` into context so code is written compliant on the first pass, not repaired at review |
 
 ## Standards Workflow
 
@@ -90,17 +93,25 @@ One system: distill the repo's review history once, write code against it, pre-r
 
 `pre-review` checks your branch against every rule (one-offs included) plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. The goal: by the time a human sees the PR, their past feedback has already been addressed.
 
-Every review surface consults `.claude/standards.md` when it exists: `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
+Every review surface consults `.claude/standards.md` when it exists: `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo. Standards also apply at **write time**: the `load-standards` SessionStart hook injects the file into context when a session opens in the repo, so code conforms on the first pass instead of being repaired at pre-review.
+
+New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the repo, writes a real CLAUDE.md, runs the full distill, and proposes a toolchain-matched permissions allowlist — with a choice between committing the files or keeping them local-only (`.git/info/exclude` + `settings.local.json`).
 
 ## The Golden Path (before every PR)
+
+```
+/ship                          # pre-review → code-review high → tests → commit → push → PR
+```
+
+`/ship` runs the whole path with one confirmation checkpoint before anything leaves the machine, opening the PR with the summary + test-plan format from the `~/.claude/CLAUDE.md` managed block. After human review lands, `/distill-standards #<PR>`.
+
+To run the gates individually:
 
 ```
 /pre-review                    # standards conformance — catches what reviewers flagged before
 /code-review high              # native correctness review — bugs, not style
 /extreme-code-quality-review   # structural audit — only for large or structural changes
 ```
-
-Then commit, push, and open the PR (plain request — conventions live in the `~/.claude/CLAUDE.md` managed block). After human review lands, `/distill-standards #<PR>`.
 
 ## Settings
 
