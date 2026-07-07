@@ -5,33 +5,18 @@ argument-hint: "[optional test file or pattern to scope the run]"
 
 # Test and Fix
 
-Run tests and iteratively fix any failures until all tests pass.
+Run the repo's tests and fix failures until the suite is green. This is the single test-fixing policy — `/ship`'s test gate delegates here.
 
 ## Steps
 
-1. **Detect test runner**: Look for package.json scripts, pytest, go test, cargo test, etc.
-2. **Run tests**: Execute the appropriate test command. If `$ARGUMENTS` is given, scope the run to that file or pattern.
-3. **Analyze failures**: If tests fail, identify the root cause from error output
-4. **Fix issues**: Make minimal, targeted fixes to resolve failures
-5. **Re-run tests**: Verify the fix worked
-6. **Iterate**: Repeat steps 3-5 until all tests pass (max 5 iterations)
-
-## Guidelines
-
-- Make the smallest possible fix that resolves the failure
-- Do not refactor unrelated code
-- Do not change test expectations unless the test is clearly wrong
-- If a fix requires changing multiple files, explain why before proceeding
-- If stuck after 3 iterations on the same error, stop and explain the situation
-
-## Test Commands by Ecosystem
-
-- Node.js: `npm test` or `npm run test`
-- Python: `pytest` or `python -m pytest`
-- Go: `go test ./...`
-- Rust: `cargo test`
-- Ruby: `bundle exec rspec` or `rake test`
+1. **Detect the test command from the repo itself** — package.json scripts, Makefile targets, CI config, or the ecosystem's standard runner. Never invent one; if nothing is found, say so and stop.
+2. **Run**, scoped to `$ARGUMENTS` when given.
+3. **Fix and re-run** until green, within these limits:
+   - Max 5 iterations total; if the same failure survives 3 attempts, stop and explain what's known.
+   - Make the smallest fix that resolves the failure; no unrelated refactors.
+   - Never change a test's expectations unless the test is demonstrably wrong — and say so when you do.
+   - A fix spanning multiple files gets one sentence of justification before it's made.
 
 ## Output
 
-Report final test results and summarize any fixes made.
+Final test results, plus each fix made and why.
