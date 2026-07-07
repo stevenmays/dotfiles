@@ -39,11 +39,11 @@ claude plugin marketplace update dotfiles
 
 | Command | Purpose |
 |---------|---------|
-| `/distill-standards [N]` | Mine the last N merged PRs (asks how many, default 50) for review patterns, distill into `.claude/standards.md` |
+| `/distill-standards [N \| #PR \| full]` | Mine merged PRs into `.claude/standards.md` — full regen from N PRs, delta since last run (no args), or absorb a single PR's feedback |
 | `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch, standards-aware |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
-| `/learn-from-review [PR#]` | Distill human review feedback on your PR into `.claude/standards.md` |
 | `/pre-review` | Check the branch diff against distilled standards (with staleness warning), then offer to apply fixes |
+| `/review-pr <PR#>` | Review someone else's PR against distilled standards; optionally post findings to GitHub |
 | `/security-audit` | Audit home-directory dotfiles for security issues (read-only report) |
 | `/test-and-fix` | Run tests and fix failures until green |
 
@@ -72,15 +72,25 @@ claude plugin marketplace update dotfiles
 
 ## Standards Workflow
 
+One system: distill the repo's review history once, write code against it, pre-review before posting, and feed every new round of human feedback back into the standards.
+
 ```
-/distill-standards          # once per repo (asks how many PRs, default 50)
-/pre-review                 # before every PR (warns when standards are stale)
-/learn-from-review <PR#>    # after a human reviews your PR
+/distill-standards             # once per repo (full regen; asks how many PRs, default 50)
+── write code ──
+/pre-review                    # standards + baseline checks before every PR
+/extreme-code-quality-review   # deep structural audit — for large or structural changes
+── open PR; after human review lands ──
+/distill-standards #<PR>       # absorb that PR's feedback immediately
+/distill-standards             # or: cheap delta over everything merged since the last run
+── reviewing someone else's PR ──
+/review-pr <PR# or URL>        # standards-aware review, optionally posted to GitHub
 ```
 
-`distill-standards` reads the repo's merged PR history via `gh`, extracts recurring review feedback and conventions (distilled rules, not raw comments), and writes `.claude/standards.md`. `pre-review` checks your branch against those rules plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. `learn-from-review` closes the loop: it distills the human feedback on your PR into the `## Manual` section of `standards.md`, which `distill-standards` carries forward on regeneration — so `pre-review` catches that feedback before the next reviewer has to.
+`distill-standards` reads PR review history via `gh` and writes distilled rules (never raw comments) to `.claude/standards.md`. Recurring feedback becomes conventions; substantive one-off feedback — edge cases, domain gotchas — lands in a `## One-offs` section and gets promoted to a convention if it recurs. Bare runs do a delta over only the PRs merged since the last run, so standards stay current without re-mining history.
 
-Every review surface consults `.claude/standards.md` when it exists: `/pre-review` and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
+`pre-review` checks your branch against every rule (one-offs included) plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. The goal: by the time a human sees the PR, their past feedback has already been addressed.
+
+Every review surface consults `.claude/standards.md` when it exists: `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
 
 ## The Golden Path (before every PR)
 
@@ -90,7 +100,7 @@ Every review surface consults `.claude/standards.md` when it exists: `/pre-revie
 /extreme-code-quality-review   # structural audit — only for large or structural changes
 ```
 
-Then commit, push, and open the PR (plain request — conventions live in the `~/.claude/CLAUDE.md` managed block). After human review lands, `/learn-from-review`.
+Then commit, push, and open the PR (plain request — conventions live in the `~/.claude/CLAUDE.md` managed block). After human review lands, `/distill-standards #<PR>`.
 
 ## Settings
 
