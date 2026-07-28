@@ -35,6 +35,7 @@ For a full regenerate with no N given, ask via AskUserQuestion how many merged P
      - Naming, file structure, error handling, and testing patterns evident from accepted changes
      - Blockers: things that forced changes before merge or got reverted
    - **One-offs** (→ One-offs section): substantive feedback seen only once — edge cases, domain gotchas, "this broke prod" learnings, non-obvious constraints a future diff could violate again. The bar: would a reviewer flag this again on a *different* diff? If yes, keep it even though it only appeared once.
+   - **Anti-rules** (→ Known False Positives): suggestions a reviewer — bot or human — made that the team visibly rejected: explicitly rebutted in the thread, or resolved with the flagged pattern still present in the merged code. Merely ignored or unaddressed comments don't qualify. Phrase each as "do not flag: [pattern]" with a one-line why, so review commands suppress the match instead of re-litigating a settled argument.
    - **Drop entirely**: pure style nitpicks, personal disputes, questions answered without a code change, and anything stale (contradicted by a later PR).
 5. **Write `.claude/standards.md`** (create `.claude/` if needed):
 
@@ -55,14 +56,18 @@ For a full regenerate with no N given, ask via AskUserQuestion how many merged P
    ## One-offs
    - [Substantive one-time feedback, phrased as a checkable rule] (#152, YYYY-MM-DD)
 
+   ## Known False Positives
+   - Do not flag: [pattern a reviewer suggested and the team rejected] — [one-line why] (#152, YYYY-MM-DD)
+
    ## Manual
    - [Hand-written rules — never touched by this command]
    ```
 
    Every rule gets at least one PR reference so it can be audited later. Per mode:
-   - **Full**: rewrite the three recurring sections from scratch. Carry `## One-offs` and `## Manual` forward untouched, then dedupe One-offs against the newly derived recurring rules (a one-off now covered by a recurring rule is deleted).
-   - **Delta / Single PR**: merge into the existing file — add new rules, strengthen existing ones with new PR refs, append new one-offs. Update the header's "Last update" line; delta also extends the covered PR range.
+   - **Full**: rewrite the three recurring sections from scratch. Carry `## One-offs`, `## Known False Positives`, and `## Manual` forward untouched, then dedupe One-offs against the newly derived recurring rules (a one-off now covered by a recurring rule is deleted).
+   - **Delta / Single PR**: merge into the existing file — add new rules, strengthen existing ones with new PR refs, append new one-offs and anti-rules. Update the header's "Last update" line; delta also extends the covered PR range.
    - **Promotion**: in any mode, when new evidence shows an existing one-off a second time, move it to the appropriate recurring section (keeping both PR refs) and remove the one-off entry.
+   - **Expiry**: in any mode, when new merged PRs show the team adopting a pattern a Known False Positive waves off — the stance reversed — delete that entry.
 6. **Report**: mode used, PRs analyzed, rules added/updated/promoted, and the two or three highest-signal findings.
 
 ## Guidelines

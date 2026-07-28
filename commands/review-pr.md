@@ -10,7 +10,7 @@ Review another author's pull request against the repo's distilled standards (`.c
 ## Steps
 
 1. **Resolve the PR**: `$ARGUMENTS` is required — a PR number or URL. If missing, stop and say this command reviews others' PRs by number (`/pre-review` covers the current branch). Confirm it exists: `gh pr view <n> --json number,title,author,state,baseRefName`.
-2. **Load standards**: Read `.claude/standards.md` — every section, including `## One-offs` and `## Manual`. If it doesn't exist, note that `/distill-standards` generates it and continue with only the baseline checks. Apply the same staleness check as `/pre-review`: if 15+ PRs merged since the header date (or it's over 90 days old), lead the report with a one-line suggestion to run `/distill-standards` (a bare run does a cheap delta). Skip silently if the check fails.
+2. **Load standards**: Read `.claude/standards.md` — every section, including `## One-offs` and `## Manual`. `## Known False Positives` is a suppression list, not a rule set: drop findings matching an entry there instead of reporting them. If it doesn't exist, note that `/distill-standards` generates it and continue with only the baseline checks. Apply the same staleness check as `/pre-review`: if 15+ PRs merged since the header date (or it's over 90 days old), lead the report with a one-line suggestion to run `/distill-standards` (a bare run does a cheap delta). Skip silently if the check fails.
 3. **Gather the change**:
    - Diff and file list: `gh pr diff <n>` and `gh pr view <n> --json files`
    - PR description and existing discussion: `gh pr view <n> --json body,reviews,comments` — don't re-raise points a reviewer already made.

@@ -11,9 +11,9 @@ Take the current work from done-coding to an opened PR with every quality gate a
 
 1. **Preflight**:
    - Base = `$ARGUMENTS` if given, else `main` (fall back to `master`).
-   - If there is nothing to ship (no commits ahead of base and no uncommitted changes), stop and say so.
+   - If there is nothing to ship (no commits ahead of base and no uncommitted changes per `git status --porcelain --untracked-files=all` — untracked files count), stop and say so.
    - If currently on the base branch, create a feature branch now, named `<type>/<short-slug>` after the change's conventional-commit type (e.g. `feat/retry-webhooks`). Never commit to or push the base branch.
-2. **Gate 1 — standards**: run the `pre-review` command against the base. Apply every fix it reports (standards violations and baseline issues) with minimal diffs — /ship applies fixes itself, so skip pre-review's own apply-fixes question. If a finding would change behavior rather than conform structure or style, hold it for the checkpoint instead of auto-applying.
+2. **Gate 1 — standards**: run the `pre-review` command against the base. Apply the standards-violation and baseline fixes it reports with minimal diffs — /ship applies fixes itself, so skip pre-review's own apply-fixes question. Correctness findings change behavior by definition: hold them for the checkpoint, along with any other finding that would change behavior rather than conform structure or style (Gate 2 independently deep-checks correctness). Surface Worth a Look items at the checkpoint too — never auto-apply anything for them.
 3. **Gate 2 — correctness**: run the native `code-review` skill at high effort on the branch diff. Apply fixes for confirmed correctness findings; hold uncertain ones for the checkpoint.
 4. **Gate 3 — tests**: run the `test-and-fix` command scoped to the code changed on the branch (its iteration limits and never-change-expectations rule apply). If the suite is still red when it stops, stop /ship and report — never ship a red branch.
 5. **Checkpoint** — one AskUserQuestion before anything leaves the machine. Show: gate results including any held findings, the planned commit message, and the PR title and body. Options: Ship it / Fix held findings first / Stop here (leave the working tree as-is, no commit).

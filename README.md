@@ -15,7 +15,7 @@ Personal Claude Code configuration, packaged as an installable plugin (`mays`). 
 /review-pr <PR# or URL>        # standards-aware review, optionally posted to GitHub
 ```
 
-`distill-standards` reads PR review history via `gh` and writes distilled rules (never raw comments) to `.claude/standards.md`. Recurring feedback becomes conventions; substantive one-off feedback — edge cases, domain gotchas — lands in a `## One-offs` section and gets promoted to a convention if it recurs. Bare runs do a delta over only the PRs merged since the last run, so standards stay current without re-mining history.
+`distill-standards` reads PR review history via `gh` and writes distilled rules (never raw comments) to `.claude/standards.md`. Recurring feedback becomes conventions; substantive one-off feedback — edge cases, domain gotchas — lands in a `## One-offs` section and gets promoted to a convention if it recurs. Suggestions the team visibly rejected become anti-rules in `## Known False Positives`, so reviews stop re-litigating settled arguments. Bare runs do a delta over only the PRs merged since the last run, so standards stay current without re-mining history.
 
 Standards apply at **write time**, not just review time: the `load-standards` SessionStart hook injects the file into context when a session opens in the repo, so code conforms on the first pass instead of being repaired at review.
 
@@ -27,7 +27,7 @@ Standards apply at **write time**, not just review time: the `load-standards` Se
 /extreme-code-quality-review   # structural audit — only for large or structural changes
 ```
 
-`pre-review` checks your branch against every rule (one-offs included) plus a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. The goal: by the time a human sees the PR, their past feedback has already been addressed.
+`pre-review` checks your branch against every rule (one-offs included), an always-on correctness checklist (inverted conditions, missing awaits, swallowed errors, untested branches), and a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. The goal: by the time a human sees the PR, their past feedback has already been addressed.
 
 Every review surface consults `.claude/standards.md` when it exists: `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
 
