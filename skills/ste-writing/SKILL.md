@@ -1,21 +1,62 @@
 ---
 name: ste-writing
-description: Simplified Technical English (ASD-STE100) adapted for software engineering. Use whenever writing or rewriting technical prose for other people — documentation, READMEs, runbooks, PR descriptions, commit bodies, release notes, incident updates, Slack messages, status reports — and whenever explaining anything technical, even if the user doesn't name a format. Also use when asked to simplify, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for other people — documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit bodies, release notes, incident updates, Slack messages, status reports — and whenever explaining anything technical, even if the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
 ---
 
 # Simplified Technical English for Software
 
-ASD-STE100 is the controlled language aerospace has used since the 1980s so that maintenance instructions cannot be misread. It has two parts: a small set of writing rules, and a dictionary where every word has exactly one meaning. This skill keeps the rules and swaps the aerospace dictionary for software conventions.
+ASD-STE100 is the controlled language aerospace has used since the 1980s so that maintenance instructions cannot be misread. It has two parts: a small set of writing rules, and a dictionary where every word has exactly one meaning. This skill keeps the rules, swaps the aerospace dictionary for software conventions, and adds economy rules for the failure STE never faced: too many sentences.
 
 The audiences match. Engineering text is read by on-call responders at 3 a.m., non-native English speakers, new hires without context, and people skimming Slack on a phone. Write for the least-rested, lowest-context reader — everyone else benefits too.
 
 ## The contract
 
-Every rule below serves one goal: a reader who parses a sentence once arrives at exactly one meaning.
+Every rule below serves two goals: a reader who parses a sentence once arrives at exactly one meaning, and never reads a sentence they do not need.
 
 - One word has one meaning.
 - One sentence carries one idea — or one instruction.
 - One paragraph covers one topic.
+- Every sentence is necessary — delete any sentence and the reader loses a fact or an action.
+
+## Economy rules
+
+The rules in the rest of this skill govern how to write a sentence. These rules govern which sentences exist. Compress by deleting sentences and ideas, never by deleting words inside a sentence you keep.
+
+**Answer first, within a budget.** Decide the reader's question and answer it in 1–3 sentences or at most 5 bullets. The budget is a default, not a cap — exceed it only when the extra sentences change what the reader does. Context the reader will not act on gets deleted, not summarized.
+
+**Collapse each paragraph to its consequence.** Most explanatory paragraphs are one fact plus restatements of it. Write the fact once, fused with its effect: "The cache key ignores the lockfile, so deploys reuse stale builds." Two paragraphs in, one sentence out.
+
+**Cut detail from the bottom.** Order detail as effect, then cause, then mechanism. Mechanism survives only when the reader will act on it.
+
+**No scaffolding.** Delete preamble ("This PR introduces…"), recaps, "note that", "importantly", and narration of your own structure. The first sentence carries content.
+
+Before — a typical first draft:
+
+> This PR makes some improvements to how we handle configuration loading. Previously, the configuration was loaded eagerly at startup, which meant that any error in an unused section would prevent the application from starting entirely. This was problematic because teams often have partial configurations in development environments.
+>
+> To address this, the loading logic has been refactored to be lazy. Each section is now parsed only when it is first accessed, so errors surface at the point of use rather than at startup. Additionally, error messages now include the file and line of the failing section.
+
+After:
+
+> - Config sections now parse on first access, not at startup, so an error in an unused section no longer blocks boot.
+> - Parse errors now name the file and line.
+
+The dev-environment motivation dropped out because it changes nothing the reader does. Every actionable fact survived — the fact list is the guard, not the word count.
+
+## Down-level by one
+
+Write for one level of expertise below the actual audience. A PR read by senior engineers is written so that QA or a new hire without context can follow it. This is not audience matching — it is a compression mechanism. To drop a level you must first collapse the concept into simpler terms, and that collapse is where complexity dies.
+
+Boundaries:
+
+- Facts stay exact. Technical names, numbers, and versions never get dumbed down.
+- The text still names the real mechanism, in plainer terms. No parables.
+
+At-level: "Memoize the selector to avoid re-renders caused by referential inequality in the subscription."
+
+One level down: "The selector returns a new object on every call, so React thinks the data changed and re-renders. Memoizing returns the same object when nothing changed."
+
+The test: a reader one ring outside the context — QA for a PR, support for a runbook, a new hire for a design doc — can act on the text without a follow-up question.
 
 ## Word rules
 
@@ -106,6 +147,16 @@ Keep the house shape — a 1–3 bullet summary plus a test plan — and write i
 
 Example bullet: "Retry token refresh once on 401, so clock skew no longer logs the user out."
 
+### Code comments
+
+- One sentence. State the constraint or the non-obvious why — never what the code does.
+- A comment that restates the code gets deleted, not rewritten.
+
+### PR review comments
+
+- At most 2 sentences: the defect, then the fix.
+- Backtick the exact name, line, or value — the author greps for it.
+
 ### Slack messages and status updates
 
 - The first sentence carries the point: the answer, the ask, or the status. Details follow or go in the thread.
@@ -127,7 +178,7 @@ Good: "Found the deploy bug: the pipeline reuses the old build artifact because 
 ## What this is not
 
 - **Not a tone flattener.** Greetings, contractions, and humor stay, especially in Slack. STE removes ambiguity, not personality.
-- **Not compression.** Restored articles and named actors sometimes make text longer. Shortness is a side effect; clarity is the goal.
+- **Not telegraphy.** Brevity comes from fewer sentences, never from dropping articles or actors in a sentence you keep. A kept sentence stays fully formed.
 - **Not for voice-driven prose.** Essays and blog posts use the writing-style skill.
 - **Not for quoted material.** Code, log output, error messages, and other people's words stay verbatim.
 
@@ -137,8 +188,9 @@ When asked to simplify or clarify a text:
 
 1. Read `references/word-substitutions.md`.
 2. List every technical fact in the original: names, numbers, conditions, caveats.
-3. Rewrite by the rules above.
-4. Check the rewrite against the fact list. A rewrite that drops a caveat is worse than the bloated original.
+3. Strike the restatements — most drafts state each fact more than once. Only the fact list survives.
+4. Rewrite by the rules above. Expect the result to be shorter: two paragraphs usually collapse to one or two sentences, or a few bullets.
+5. Check the rewrite against the fact list. A rewrite that drops a caveat is worse than the bloated original.
 
 ## Self-check
 
@@ -155,3 +207,6 @@ Before returning any text, scan for these — each one is countable:
 - A condition or warning after its instruction? Move it before.
 - A vague quantity where a number exists? Use the number.
 - Missing articles? Restore them.
+- A sentence whose deletion changes nothing the reader does? Delete it.
+- A paragraph that collapses to one sentence or 3 bullets with no fact lost? Collapse it.
+- Would a reader one level down (QA, support, a new hire) need a follow-up question? Down-level it.
