@@ -8,11 +8,12 @@ Personal Claude Code configuration, packaged as an installable plugin (`mays`). 
 /onboard-repo                  # day one in a new codebase: CLAUDE.md + standards + permissions
 ── write code ──               # the load-standards hook injects .claude/standards.md at session start
 /ship                          # pre-review → code-review high → tests → commit → push → PR
+/babysit-pr                    # keep the open PR merge-ready: conflicts, CI, review comments
 ── after human review lands ──
 /distill-standards #<PR>       # absorb that PR's feedback immediately
 /distill-standards             # or: cheap delta over everything merged since the last run
 ── reviewing someone else's PR ──
-/review-pr <PR# or URL>        # standards-aware review, optionally posted to GitHub
+/review-pr <PR# or URL>        # standards-aware review as Conventional Comments, optionally posted
 ```
 
 `distill-standards` reads PR review history via `gh` and writes distilled rules (never raw comments) to `.claude/standards.md`. Recurring feedback becomes conventions; substantive one-off feedback — edge cases, domain gotchas — lands in a `## One-offs` section and gets promoted to a convention if it recurs. Suggestions the team visibly rejected become anti-rules in `## Known False Positives`, so reviews stop re-litigating settled arguments. Bare runs do a delta over only the PRs merged since the last run, so standards stay current without re-mining history.
@@ -70,12 +71,14 @@ claude plugin marketplace update dotfiles
 
 | Command | Purpose |
 |---------|---------|
+| `/babysit-pr [PR#]` | Keep your open PR merge-ready — resolve conflicts, fix CI, address review comments (delegates to `/fix-merge-conflict` and `/test-and-fix`) |
+| `/diagnose-bug [description]` | Root-cause an unclear bug — red-capable repro loop first, then bisect, ranked hypotheses, fix, regression test |
 | `/distill-standards [N \| #PR \| full]` | Mine merged PRs into `.claude/standards.md` — full regen from N PRs, delta since last run (no args), or absorb a single PR's feedback |
 | `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch, standards-aware |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
 | `/onboard-repo [N]` | Day-one bootstrap for a new codebase — CLAUDE.md, distilled standards, and a permissions allowlist in one run |
 | `/pre-review` | Check the branch diff against distilled standards (with staleness warning), then offer to apply fixes |
-| `/review-pr <PR#>` | Review someone else's PR against distilled standards; optionally post findings to GitHub |
+| `/review-pr <PR#>` | Review someone else's PR against distilled standards and its originating ticket (GitHub/Linear/Jira/Shortcut); findings are STE-written Conventional Comments, optionally posted to GitHub |
 | `/security-audit` | Audit home-directory dotfiles for security issues (read-only report) |
 | `/ship` | The golden path as one command: pre-review → code-review → tests → commit → push → PR |
 | `/test-and-fix` | Run tests and fix failures until green (also /ship's test gate) |
@@ -87,6 +90,7 @@ claude plugin marketplace update dotfiles
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
 | `gemini-image-generator` | Generate images via Gemini API |
 | `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
+| `ste-writing` | Simplified Technical English for docs, PR descriptions, and review comments — `/review-pr` drafts findings with it |
 | `writing-style` | Personal writing voice for technical content |
 
 ### Agents
@@ -106,7 +110,7 @@ claude plugin marketplace update dotfiles
 
 ## Settings
 
-`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`; the script also maintains a managed block in `~/.claude/CLAUDE.md` with the standards lookup and git conventions):
+`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`; the script also maintains a managed block in `~/.claude/CLAUDE.md` with the standards lookup, the corrected-twice rule-capture offer, and git conventions):
 
 - Extended output tokens (64K) and thinking tokens (32K)
 - `includeCoAuthoredBy: false` — no co-author tags in commits

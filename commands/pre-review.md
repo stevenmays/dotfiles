@@ -63,3 +63,5 @@ Review the current branch's changes against the repo's distilled standards (`.cl
 - Dead code, unused imports, debug logging left behind
 - Single-use wrappers and abstractions that obscure rather than simplify
 - Naming, style, or error-handling drift from the surrounding file's patterns
+- Tautological tests: the assertion recomputes the expected value the same way the code does, so it passes by construction — expected values must come from an independent source
+- Implementation-coupled tests: tests that break on refactor rather than on behavior change (asserting on internals, mocking the unit under test)

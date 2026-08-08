@@ -13,6 +13,7 @@ Run the repo's tests and fix failures until the suite is green. This is the sing
 2. **Run**, scoped to `$ARGUMENTS` when given.
 3. **Fix and re-run** until green, within these limits:
    - Max 5 iterations total; if the same failure survives 3 attempts, stop and explain what's known.
+   - When failures span 3+ unrelated files, fan out one subagent per file or group in a single message, then re-run the full suite once they return — each subagent inherits the rules below. Below that threshold, fix sequentially; fan-out overhead beats one or two failures.
    - Make the smallest fix that resolves the failure; no unrelated refactors.
    - Never change a test's expectations unless the test is demonstrably wrong — and say so when you do.
    - A fix spanning multiple files gets one sentence of justification before it's made.

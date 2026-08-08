@@ -74,4 +74,4 @@ For a full regenerate with no N given, ask via AskUserQuestion how many merged P
 
 - Quality over quantity: 10–25 high-signal recurring rules beat 100 noisy ones. One-offs may accumulate more freely, but each must still be checkable against a diff.
 - Phrase every rule so a reviewer can check a diff against it mechanically.
-- `## Manual` is user-maintained: never add to it, edit it, or remove it.
+- `## Manual` is user-maintained: this command never adds to it, edits it, or removes it. (It grows two other ways: the user writes rules by hand, or accepts the corrected-twice-in-a-session offer from the managed CLAUDE.md block.)

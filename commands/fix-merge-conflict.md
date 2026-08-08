@@ -26,9 +26,21 @@ Collect files with:
 - U statuses (unmerged)
 - Conflict markers: `<<<<<<<` / `=======` / `>>>>>>>`
 
-### 2. Resolve Conflicts Per File
+### 2. Investigate Intent
 
-Open each conflicting file and remove conflict markers. Merge both sides logically when feasible.
+"Preserve both sides' intent" requires knowing the intent. Before resolving, look up why each side changed:
+
+```bash
+git log --oneline MERGE_HEAD..HEAD -- <file>   # our side's commits touching the file
+git log --oneline HEAD..MERGE_HEAD -- <file>   # their side's commits
+git log -1 --format=%B <sha>                   # full message for the commits behind the conflicting hunks
+```
+
+During a rebase, use `REBASE_HEAD` in place of `MERGE_HEAD`. When a commit message references a PR or issue, fetch its description (`gh pr view` / `gh issue view`) — skip silently if there is no GitHub remote. Two changes that conflict textually often serve compatible intents; knowing both lets you merge them instead of picking a side.
+
+### 3. Resolve Conflicts Per File
+
+Open each conflicting file and remove conflict markers. Merge both sides logically when feasible, guided by the intent found in step 2.
 
 **Resolution priority** (when mutually exclusive):
 1. Pick the variant that compiles and passes type checks
@@ -45,7 +57,7 @@ Open each conflicting file and remove conflict markers. Merge both sides logical
 | Text/markdown | Include both unique content; deduplicate headings |
 | Binary files | Prefer current branch (ours) |
 
-### 3. Validate
+### 4. Validate
 
 **Node/TypeScript/JS:**
 - Install deps if manifests changed (allow lockfile updates)
@@ -54,7 +66,7 @@ Open each conflicting file and remove conflict markers. Merge both sides logical
 **Other ecosystems (Python, Go, etc.):**
 - Run standard build/tests when available
 
-### 4. Finalize
+### 5. Finalize
 
 ```bash
 git add -A
