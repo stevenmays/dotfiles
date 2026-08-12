@@ -1,6 +1,6 @@
 ---
 name: ste-writing
-description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for other people — documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit bodies, release notes, incident updates, Slack messages, status reports — and whenever explaining anything technical, even if the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for other people — documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, release notes, incident updates, Slack messages, status reports — and whenever explaining anything technical, even if the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
 ---
 
 # Simplified Technical English for Software
@@ -64,6 +64,8 @@ The test: a reader one ring outside the context — QA for a PR, support for a r
 
 **Technical names are exact and literal.** Commands, flags, paths, error strings, API names, and config keys go in backticks with exact spelling and casing, never paraphrased. Readers grep for them. Write "the `ECONNRESET` error", not "a connection reset issue".
 
+**Expand an uncommon acronym at first use.** "Time to first byte (TTFB)", then TTFB alone. Acronyms every reader knows — API, CPU, URL — need no expansion.
+
 **Replace bloated words with plain ones.** The high-frequency offenders:
 
 | Avoid | Write |
@@ -101,9 +103,11 @@ The full table — plus smothered verbs, vague quantities, and software words wi
 
 **Active voice with a named actor.** Passive voice hides the actor, and in software the actor is the component you will debug. "The job will be retried" — by whom? Write "The scheduler retries the job 3 times, then moves it to the dead-letter queue." Passive is acceptable only when the actor is genuinely irrelevant, which is rare.
 
-**Simple tenses only: past, present, future.** Perfect and progressive tenses blur time. "Has been deprecated" hides the date — "was deprecated in v3.2" demands one. "Is being rolled out" → "the rollout started Monday and finishes Friday".
+**Speak to the reader as "you"; write instructions as bare commands.** "Run the migration" — not "the migration should be run", "please run", or "the user should run". "Please" pads without informing. Reserve "the user" for the people who use the reader's software.
 
-**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers. Commit subjects are exempt — the 72-character limit wins there.
+**Present tense for behavior; simple tenses for everything.** Software behavior is not a future event: "the API returns 403", not "the API will return 403". Save the future for real future events. Perfect and progressive tenses blur time: "has been deprecated" hides the date — "was deprecated in v3.2" demands one; "is being rolled out" → "the rollout started Monday and finishes Friday".
+
+**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers. Commit subjects are exempt — the 50-character target wins there.
 
 **No more than three nouns in a row.** "The webhook retry queue consumer lag alert" makes the reader reverse-engineer the grammar. Unstack with prepositions: "the alert for consumer lag on the webhook retry queue". An established proper name may stay clustered — format it as a technical name.
 
@@ -114,6 +118,13 @@ The full table — plus smothered verbs, vague quantities, and software words wi
 - At most 6 sentences per paragraph, one topic, and the first sentence states the topic.
 - More than about 3 parallel items in a sentence? Use a vertical list.
 - List items use parallel grammar and carry one idea each.
+
+## Mechanics
+
+- Headings use sentence case. A task heading starts with a verb: "Configure the worker", not "Worker configuration".
+- Link text names its destination: "see the retry policy", never "click here" or "this doc".
+- Use the serial comma — "the scheduler, the worker, and the queue" — so the last two items cannot read as one.
+- No idioms or cultural references. "Out of the box", "grandfathered in", and sports metaphors fail for translated and non-native readers. Say the literal thing.
 
 ## Warnings
 
@@ -137,6 +148,23 @@ Good:
 - Numbered steps when order matters; one instruction per step.
 - After a consequential step, state the expected result: "Run `make check`. The output ends with `plugin OK`."
 - Conditions and warnings go before the step they govern.
+
+### Commit messages
+
+Git shows the subject line alone almost everywhere — `git log --oneline`, rebase, shortlog, GitHub — truncated if long, stripped of its body. Write the subject to stand alone; write the body for the reader who runs `git show` a year from now.
+
+Subject:
+
+- Shape: `type: imperative summary`, lowercase after the prefix (feat, fix, chore, docs, refactor, test). Target 50 characters; never exceed 72. No trailing period.
+- Imperative mood. The test: the summary completes "If applied, this commit will …". "fix retry race in the queue worker" passes; "fixed" and "fixes" fail.
+- Summarize the effect or the why, not the mechanics — the diff already shows the mechanics.
+
+Body:
+
+- Separate it from the subject with one blank line. Tools misparse the message without it.
+- Explain what changed and why, never how. The body carries what the diff cannot: the problem, why this approach, side effects.
+- Wrap lines at 72 characters — `git log` indents but never wraps.
+- Bullets are fine. A change whose subject says everything needs no body.
 
 ### PR descriptions
 
@@ -201,6 +229,10 @@ Before returning any text, scan for these — each one is countable:
 - More than 3 nouns in a row? Unstack it.
 - Passive voice hiding a debuggable actor? Name the actor.
 - Perfect or progressive tense? Use simple past, present, or future — and add the date or version it was hiding.
+- "Will" describing what the software does today? Use the present.
+- "Please" in an instruction, or "the user" meaning the reader? Write the bare command to "you".
+- Link text that does not name its destination? Name it.
+- A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
 - The same thing under two names? Unify them.
 - A bare "should"? Decide: "must" or "we recommend".
 - A word from the substitution table? Substitute it.

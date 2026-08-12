@@ -48,6 +48,7 @@ How to use this file: when writing fresh text, skim "Bloat" and "Requirement wor
 | in a timely manner | on time, or within N minutes/days |
 | it should be noted that | delete |
 | please note that | delete, or "Note:" |
+| please (in an instruction) | delete — a command is not impolite |
 | functionality | feature, behavior — or say what it does |
 | methodology | method |
 | utilization | use |
