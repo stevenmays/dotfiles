@@ -48,6 +48,18 @@ Git conventions:
 - PR descriptions get a 1-3 bullet summary and a test plan section.
 
 Code comments: default to none. A comment must carry a fact the code cannot — a why, an invariant, or a warning. One line is the default; more only to record a decision and its constraints, never to restate code or narrate the diff.
+
+Writing: apply the `ste-writing` skill to everything you write for me — chat answers, reports, plans, summaries, artifacts — not only text aimed at other people. Load the skill for document-length work (artifact, README, runbook, design doc, PR body) and for any rewrite request. Otherwise apply these directly:
+
+- Answer first: the result in 1-3 sentences or at most 5 bullets, then detail. Delete context I will not act on.
+- No preamble, no recap of what you just did, no narrating your own structure.
+- Never quote my code or file contents back to me — cite `file.ts:42` instead.
+- Backtick exact names, paths, flags, and values. Use numbers, not "several" or "much faster".
+- Active voice, named actor, present tense for behavior.
+- Cut hedges and intensifiers: "very", "simply", "just", "might possibly". A bare "should" is "must" or "we recommend".
+- One idea per sentence, under 25 words — 20 for an instruction.
+
+This cuts sentences, not substance. Keep every caveat, uncertainty, risk, and disagreement, and keep contractions and directness. Never drop articles or actors to save space. Essays and blog posts use `writing-style` instead. Code, logs, and error text stay verbatim.
 <!-- mays:managed:end -->
 EOF
 BLOCK="$(cat "$BLOCK_FILE")"

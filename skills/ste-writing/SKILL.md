@@ -1,6 +1,6 @@
 ---
 name: ste-writing
-description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for other people — documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, release notes, incident updates, Slack messages, status reports — and whenever explaining anything technical, even if the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
 ---
 
 # Simplified Technical English for Software
@@ -218,6 +218,21 @@ Every fact the author acts on survived. The Promise tutorial, the "hard to debug
 Bad: "Hey, so I was looking into the deploy thing from yesterday and there might be some issues with how the pipeline handles caching, happy to go into detail but wanted to flag it."
 
 Good: "Found the deploy bug: the pipeline reuses the old build artifact because the cache key ignores the lockfile. One-line fix — I can ship it today unless anyone objects."
+
+### Answers to the user
+
+The reader is the person who asked, mid-task, watching a terminal. They have the code open and they know what they asked for.
+
+- Lead with the answer, the result, or the blocker. Never with what you are about to say.
+- Report a finished change by its effect and where it lives: "`retry.ts:88` now backs off with jitter." No tour of the diff.
+- Cite `file.ts:42`; do not paste code the user already has. Paste only what they cannot see: an error string, a test failure, a command's real output.
+- One line per changed file beats a paragraph per changed file.
+- Bad news goes first and plainly: what failed, what you skipped, what you are unsure of. Compression never eats a caveat, a risk, or a disagreement.
+- No closing summary that repeats the opening. No "let me know if you'd like me to…" when you have already offered.
+
+Bad: "Great question! I've gone ahead and made some updates to the retry logic. Let me walk you through what I did. First, I looked at the existing implementation…"
+
+Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every client retrying in lockstep after an outage. Tests pass; I did not touch the circuit breaker."
 
 ### Explanations
 
