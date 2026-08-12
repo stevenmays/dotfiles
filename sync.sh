@@ -41,6 +41,8 @@ Git conventions:
 - Never stage or commit `.env*`, credential files, `*.pem`, or `*.key`.
 - Never push directly to main/master.
 - PR descriptions get a 1-3 bullet summary and a test plan section.
+
+Code comments: default to none. A comment must carry a fact the code cannot — a why, an invariant, or a warning. One line is the default; more only to record a decision and its constraints, never to restate code or narrate the diff.
 <!-- mays:managed:end -->
 EOF
 )

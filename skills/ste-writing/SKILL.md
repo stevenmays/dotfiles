@@ -177,8 +177,14 @@ Example bullet: "Retry token refresh once on 401, so clock skew no longer logs t
 
 ### Code comments
 
-- One sentence. State the constraint or the non-obvious why — never what the code does.
-- A comment that restates the code gets deleted, not rewritten.
+The default is no comment. Code already says what it does; a comment earns its place only by carrying a fact the code cannot.
+
+- One line is the default — a soft limit, not a cap. A comment that runs long explaining *what the code does* is a signal to rename, split, or retype the code instead. A comment that runs long recording a *decision* — the constraint, the trade-off, the alternative that was rejected — is doing its job; keep it.
+- Never restate what the reader's eyes just parsed. `if flags.new_checkout:` needs zero lines of comment — the flag name is the comment.
+- What earns a line: a non-obvious why ("retry once — the vendor 401s on clock skew"), an invariant the code cannot express ("caller holds the lock"), a warning ("flush before close, or data is lost"), code that looks wrong but isn't, or the URL of the copied snippet, spec, or bug that forced this shape.
+- Write for the next reader of the file, never the reviewer of this diff: no "added X", "changed to Y", "per feedback".
+- TODO carries an owner or an issue: `TODO(#4821): remove after the flag ships.`
+- The deletion test: remove the comment. If the reader loses no fact, it stays removed.
 
 ### PR review comments
 
@@ -233,6 +239,7 @@ Before returning any text, scan for these — each one is countable:
 - "Please" in an instruction, or "the user" meaning the reader? Write the bare command to "you".
 - Link text that does not name its destination? Name it.
 - A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
+- A code comment that restates the code? Delete it, or fix the code it apologizes for. Multi-line is fine only when every line records a decision or constraint.
 - The same thing under two names? Unify them.
 - A bare "should"? Decide: "must" or "we recommend".
 - A word from the substitution table? Substitute it.
