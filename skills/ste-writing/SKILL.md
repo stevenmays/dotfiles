@@ -188,8 +188,25 @@ The default is no comment. Code already says what it does; a comment earns its p
 
 ### PR review comments
 
-- At most 2 sentences: the defect, then the fix.
+The author reads this in a queue of twenty, on someone else's schedule. Two sentences: the defect, then the fix. A third exists only when the author cannot act without it — a rule citation, the condition that reproduces the defect, or why the obvious fix is wrong.
+
 - Backtick the exact name, line, or value — the author greps for it.
+- Open with the defect. Delete "I noticed that", "It looks like", "Consider that", "Just a thought" — the comment's existence is the flag.
+- Never restate the code. The author wrote it and is looking at it.
+- State the fix as a bare command: "Await `flush()` before returning", not "you might want to consider awaiting".
+- Give the consequence, not the lecture. "so the response returns before the write lands" earns its place; a paragraph on the event loop does not.
+- One defect per comment. Two defects on one line are two comments.
+- Hedging is a decision, not a tone. If you are unsure, label it `question`; if you are sure, drop "possibly", "perhaps", and "might want to".
+
+Before:
+
+> I noticed that in the `handleUpload` function on line 42, the call to `flushBuffer()` is not being awaited. This is a common issue with async code — since `flushBuffer` returns a Promise, execution continues immediately without waiting for the flush to complete. This could potentially lead to a race condition where the response is sent before the data is fully written, which might cause intermittent data loss that would be hard to debug. It would probably be a good idea to add an `await` here.
+
+After:
+
+> **issue (blocking):** `upload.ts:42` — `flushBuffer()` is not awaited, so the response can return before the write lands and the upload is lost. Add `await`.
+
+Every fact the author acts on survived. The Promise tutorial, the "hard to debug" aside, and the hedges did not.
 
 ### Slack messages and status updates
 
@@ -240,6 +257,7 @@ Before returning any text, scan for these — each one is countable:
 - Link text that does not name its destination? Name it.
 - A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
 - A code comment that restates the code? Delete it, or fix the code it apologizes for. Multi-line is fine only when every line records a decision or constraint.
+- A review comment past 2 sentences, opening with a hedge, or quoting the author's code back? Cut to defect, then fix.
 - The same thing under two names? Unify them.
 - A bare "should"? Decide: "must" or "we recommend".
 - A word from the substitution table? Substitute it.
