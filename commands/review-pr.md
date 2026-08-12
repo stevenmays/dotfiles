@@ -9,7 +9,7 @@ Review another author's pull request against the repo's distilled standards (`.c
 
 ## Steps
 
-1. **Resolve the PR**: `$ARGUMENTS` is required — a PR number or URL. If missing, stop and say this command reviews others' PRs by number (`/pre-review` covers the current branch). Confirm it exists: `gh pr view <n> --json number,title,author,state,baseRefName`.
+1. **Resolve the PR**: `$ARGUMENTS` is required — a PR number or URL. If missing, stop and say this command reviews others' PRs by number (`/pre-review` covers the current branch). Confirm it exists: `gh pr view <n> --json number,title,author,state,baseRefName`. Load the `ste-writing` skill now, before reading any code — its PR-review-comment format governs every word this command emits, and loading it after the findings exist only edits bloat instead of preventing it.
 2. **Load standards**: Read `.claude/standards.md` — every section, including `## One-offs` and `## Manual`. `## Known False Positives` is a suppression list, not a rule set: drop findings matching an entry there instead of reporting them. If it doesn't exist, note that `/distill-standards` generates it and continue with only the baseline checks. Apply the same staleness check as `/pre-review`: if 15+ PRs merged since the header date (or it's over 90 days old), lead the report with a one-line suggestion to run `/distill-standards` (a bare run does a cheap delta). Skip silently if the check fails.
 3. **Gather the change**:
    - Diff and file list: `gh pr diff <n>` and `gh pr view <n> --json files`
@@ -22,9 +22,10 @@ Review another author's pull request against the repo's distilled standards (`.c
    - General correctness: inverted conditions, off-by-one bounds, missing await or unhandled promise, null paths the types claim are impossible, error handling that swallows failures the caller needs, broken contracts with unchanged callers, new branches with no test
    - Baseline checks: comments that restate the code, defensive checks on already-validated data, type escape hatches (`as any`, unchecked casts), dead code / debug logging, single-use wrappers, drift from the surrounding file's patterns
 5. **Report** — every finding is a Conventional Comment (conventionalcomments.org), written in Simplified Technical English:
-   - Load the `ste-writing` skill before drafting, and apply its PR-review-comment format: at most 2 sentences per finding — the defect, then the fix — with exact names, lines, and values in backticks.
+   - Apply the `ste-writing` PR-review-comment format loaded in step 1: 2 sentences per finding — the defect, then the fix — with exact names, lines, and values in backticks. A third sentence needs a reason to exist: a rule citation, the condition that reproduces the defect, or why the obvious fix is wrong.
    - Label each finding: `issue` (must fix), `suggestion` (worth considering), `nitpick` (minor), `question` (needs the author's answer), `praise` (genuinely good). Decorate where it disambiguates: `issue (blocking):`, `suggestion (non-blocking):`.
    - Include `praise` only when genuine — at most one or two, never manufactured.
+   - The examples below are the length calibration, not just the shape. Match them.
 
    ```markdown
    ## Review of PR #123 — [title]
@@ -35,16 +36,18 @@ Review another author's pull request against the repo's distilled standards (`.c
    Built what was asked? Yes / Partly / No — [one line against the ticket (cite its ID) or description; note when a ticket reference couldn't be resolved. Omit the section only when there was nothing to check against.]
 
    ### Findings
-   - **issue (blocking):** `file.ts:42` — [defect]. [Fix]. (violates: [standard rule], #130)
-   - **suggestion (non-blocking):** `file.ts:88` — [improvement]. [Why it matters].
-   - **question:** `file.ts:120` — [what needs the author's answer].
-   - **praise:** `file.ts:12` — [what is genuinely good].
+   - **issue (blocking):** `upload.ts:42` — `flushBuffer()` is not awaited, so the response can return before the write lands and the upload is lost. Add `await`. (violates: "await every promise you create", #130)
+   - **suggestion (non-blocking):** `retry.ts:88` — the backoff is fixed at 200 ms, so every client retries in lockstep after an outage. Add jitter.
+   - **question:** `auth.ts:120` — what runs when `refreshToken` is present but expired? I see no branch for it.
+   - **praise:** `queue.ts:12` — the dead-letter path handles poison messages without a special case.
 
    ### Verdict
    Approve / Approve with nits / Request changes — [one-line rationale]
    ```
 
    Order findings by severity. If the PR is clean, say so briefly — don't manufacture findings.
+
+   Before returning the report, run the `ste-writing` self-check over it. Every finding gets one pass: cut hedges, cut any sentence restating the diff, cut background the author will not act on.
 6. **Offer to post**: If there are findings, ask via AskUserQuestion how to deliver them — Post as inline review comments (`gh api repos/{owner}/{repo}/pulls/<n>/reviews` with per-line comments) / Post as a single summary comment (`gh pr comment`) / Keep local only. When posting inline, each comment body is the finding's conventional comment verbatim — label, decoration, then the two STE sentences. Never post to GitHub without asking, and never submit an approval or request-changes verdict on the user's behalf — post comments only; the user clicks the verdict themselves.
 
 ## Guidelines
