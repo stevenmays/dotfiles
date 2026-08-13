@@ -1,6 +1,6 @@
 ---
 name: ste-writing
-description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
 ---
 
 # Simplified Technical English for Software
@@ -8,6 +8,8 @@ description: Simplified Technical English (ASD-STE100) adapted for software engi
 ASD-STE100 is the controlled language aerospace has used since the 1980s so that maintenance instructions cannot be misread. It has two parts: a small set of writing rules, and a dictionary where every word has exactly one meaning. This skill keeps the rules, swaps the aerospace dictionary for software conventions, and adds economy rules for the failure STE never faced: too many sentences.
 
 The audiences match. Engineering text is read by on-call responders at 3 a.m., non-native English speakers, new hires without context, and people skimming Slack on a phone. Write for the least-rested, lowest-context reader — everyone else benefits too.
+
+The reader is a human, never an AI. An AI ingests an exhaustive dump at no cost; a human pays for every sentence and abandons text that wastes them. A draft that reads like context for a model — complete, thorough, self-contained — has failed a human reader.
 
 ## The contract
 
@@ -17,16 +19,21 @@ Every rule below serves two goals: a reader who parses a sentence once arrives a
 - One sentence carries one idea — or one instruction.
 - One paragraph covers one topic.
 - Every sentence is necessary — delete any sentence and the reader loses a fact or an action.
+- The artifact fits its budget (see Format guides). Over budget is a defect, the same as an ambiguous sentence.
 
 ## Economy rules
 
 The rules in the rest of this skill govern how to write a sentence. These rules govern which sentences exist. Compress by deleting sentences and ideas, never by deleting words inside a sentence you keep.
 
-**Answer first, within a budget.** Decide the reader's question and answer it in 1–3 sentences or at most 5 bullets. The budget is a default, not a cap — exceed it only when the extra sentences change what the reader does. Context the reader will not act on gets deleted, not summarized.
+**Answer first, within a budget.** Decide the reader's question and answer it in 1–3 sentences or at most 5 bullets. Context the reader will not act on gets deleted, not summarized.
+
+**List facts before words.** For any artifact with a budget, list the facts the reader acts on, then write each one once. Do not draft long and trim — the long draft anchors you, and the trim always spares too much.
 
 **Collapse each paragraph to its consequence.** Most explanatory paragraphs are one fact plus restatements of it. Write the fact once, fused with its effect: "The cache key ignores the lockfile, so deploys reuse stale builds." Two paragraphs in, one sentence out.
 
 **Cut detail from the bottom.** Order detail as effect, then cause, then mechanism. Mechanism survives only when the reader will act on it.
+
+**Record what the reader must know, not what you did to learn it.** The investigation is not the artifact. Your verification runs, ruled-out hypotheses, and measurements belong in a PR comment or a thread — never in the ticket the fixer reads. Ship the conclusion and the facts the reader acts on; the journey stays in your notes.
 
 **No scaffolding.** Delete preamble ("This PR introduces…"), recaps, "note that", "importantly", and narration of your own structure. The first sentence carries content.
 
@@ -142,8 +149,26 @@ Good:
 
 ## Format guides
 
+Every artifact has a word or line budget — a hard cap, not a target. A number is enforceable where "be concise" is not. Count before you deliver; over budget means cut more, not apologize. One rare exception: when facts the reader must act on truly cannot fit, keep the facts and flag the overrun to the reader with its reason. A silent overrun is never an option. Budgets cut narrative, never caveats or risks — those change what the reader does, so they always fit.
+
+| Artifact | Budget |
+|---|---|
+| Commit subject | 50 characters target; 72 hard max |
+| Commit body | ≤ 10 lines |
+| PR description | ≤ 10 lines beyond the template |
+| Ticket or bug report body | ≤ 200 words |
+| Code comment | 1 line |
+| PR review comment | a phrase; 1 sentence ceiling |
+| Slack message | ≤ 4 sentences; detail goes to the thread |
+| Status update | 3 lines: done, next, blocked |
+| Answer to the user | 1–3 sentences or ≤ 5 bullets before any detail |
+| Runbook intro | ≤ 3 sentences before the prerequisites |
+
+Each guide's section list is closed: write the listed sections and no others. A new section earns its place only if the reader acts differently without it.
+
 ### Documentation and runbooks
 
+- At most 3 sentences of intro before the prerequisites.
 - Prerequisites first, as a list.
 - Numbered steps when order matters; one instruction per step.
 - After a consequential step, state the expected result: "Run `make check`. The output ends with `plugin OK`."
@@ -168,12 +193,23 @@ Body:
 
 ### PR descriptions
 
-Keep the house shape — a 1–3 bullet summary plus a test plan — and write it in STE:
+Keep the house shape — a 1–3 bullet summary plus a test plan — and write it in STE. Budget: 10 lines beyond the template.
 
 - Each bullet states one change and its why, in at most 20 words, active voice.
 - Test plan steps are commands a reviewer can run, each with its expected result.
 
 Example bullet: "Retry token refresh once on 401, so clock skew no longer logs the user out."
+
+### Tickets and bug reports
+
+The reader is the engineer who fixes it, not the one who found it. Body budget: 200 words. The sections, closed:
+
+1. Title: the defect, not the investigation — "`GET /orders` 500s on an expired `cursor`", not "Investigate order API errors".
+2. Impact: who hits it and how often.
+3. Repro: numbered steps, one instruction each, ending with expected vs. actual.
+4. Cause, if known, in at most 2 sentences. "Unknown" is a valid entry.
+
+The diagnosis narrative — verification runs, ruled-out hypotheses, measurements — goes in a ticket comment, never the body. The fixer reads the body; the curious read the comments.
 
 ### Code comments
 
@@ -188,13 +224,13 @@ The default is no comment. Code already says what it does; a comment earns its p
 
 ### PR review comments
 
-The author reads this in a queue of twenty, on someone else's schedule. Two sentences: the defect, then the fix. A third exists only when the author cannot act without it — a rule citation, the condition that reproduces the defect, or why the obvious fix is wrong.
+The author reads this in a queue of twenty, on someone else's schedule. The default is a phrase, not a sentence: the fix as a bare command, or the defect named in a few words — "Await `flushBuffer()`", "typo: `recieve`", "dead code — delete". Add one sentence only when the author cannot act on the phrase alone: the consequence, the condition that reproduces the defect, or a rule citation. That sentence is the ceiling — a paragraph in a review comment is itself a defect.
 
 - Backtick the exact name, line, or value — the author greps for it.
-- Open with the defect. Delete "I noticed that", "It looks like", "Consider that", "Just a thought" — the comment's existence is the flag.
+- Open with the defect or the fix. Delete "I noticed that", "It looks like", "Consider that", "Just a thought" — the comment's existence is the flag.
 - Never restate the code. The author wrote it and is looking at it.
 - State the fix as a bare command: "Await `flush()` before returning", not "you might want to consider awaiting".
-- Give the consequence, not the lecture. "so the response returns before the write lands" earns its place; a paragraph on the event loop does not.
+- Consequence only when the fix is not self-evident; never a lecture. "or the response returns before the write lands" earns its place; a paragraph on the event loop does not.
 - One defect per comment. Two defects on one line are two comments.
 - Hedging is a decision, not a tone. If you are unsure, label it `question`; if you are sure, drop "possibly", "perhaps", and "might want to".
 
@@ -204,12 +240,13 @@ Before:
 
 After:
 
-> **issue (blocking):** `upload.ts:42` — `flushBuffer()` is not awaited, so the response can return before the write lands and the upload is lost. Add `await`.
+> **issue (blocking):** Await `flushBuffer()` — the response can return before the write lands.
 
-Every fact the author acts on survived. The Promise tutorial, the "hard to debug" aside, and the hedges did not.
+Every fact the author acts on survived. The Promise tutorial, the "hard to debug" aside, and the hedges did not. The consequence stayed because "add await" alone does not tell the author why it blocks the merge.
 
 ### Slack messages and status updates
 
+- Budget: 4 sentences. The thread absorbs everything else.
 - The first sentence carries the point: the answer, the ask, or the status. Details follow or go in the thread.
 - One message, one topic. Two topics are two messages.
 - If you need action, name the person and the deadline.
@@ -223,6 +260,7 @@ Good: "Found the deploy bug: the pipeline reuses the old build artifact because 
 
 The reader is the person who asked, mid-task, watching a terminal. They have the code open and they know what they asked for.
 
+- Budget: the answer in 1–3 sentences or 5 bullets. Detail after only when the reader acts on it.
 - Lead with the answer, the result, or the blocker. Never with what you are about to say.
 - Report a finished change by its effect and where it lives: "`retry.ts:88` now backs off with jitter." No tour of the diff.
 - Cite `file.ts:42`; do not paste code the user already has. Paste only what they cannot see: an error string, a test failure, a command's real output.
@@ -260,7 +298,13 @@ When asked to simplify or clarify a text:
 
 ## Self-check
 
-Before returning any text, scan for these — each one is countable:
+Document level first — these catch what sentence fixes cannot:
+
+- Count the words or lines against the budget table. Over? Cut sections, then sentences, and count again. Deliver over budget only with a flagged reason.
+- Would deleting any section change what the reader does? If not, delete the section.
+- Any sentence that records what you did to learn, not what the reader must know? Move it to a comment or thread.
+
+Then sentence level — each one is countable:
 
 - A sentence over 25 words (20 for an instruction)? Split it.
 - A paragraph over 6 sentences? Split it.
@@ -272,7 +316,7 @@ Before returning any text, scan for these — each one is countable:
 - Link text that does not name its destination? Name it.
 - A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
 - A code comment that restates the code? Delete it, or fix the code it apologizes for. Multi-line is fine only when every line records a decision or constraint.
-- A review comment past 2 sentences, opening with a hedge, or quoting the author's code back? Cut to defect, then fix.
+- A review comment past one sentence, opening with a hedge, or quoting the author's code back? Cut to a phrase: the fix, or the defect.
 - The same thing under two names? Unify them.
 - A bare "should"? Decide: "must" or "we recommend".
 - A word from the substitution table? Substitute it.

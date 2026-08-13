@@ -166,7 +166,7 @@ Prioritize findings in this order:
 Do not flood the review with low-value nits if there are larger structural issues.
 Prefer a smaller number of high-conviction comments over a long list of cosmetic notes.
 
-Write each finding in Simplified Technical English — load the `ste-writing` skill and apply its PR-review-comment format: the defect, then the fix. A structural finding earns a third sentence for the restructuring it proposes, never a paragraph. The "Good phrases" above are already this length; match them.
+Write each finding in Simplified Technical English — load the `ste-writing` skill and apply its PR-review-comment format: a phrase — the fix as a bare command, or the defect in a few words. A structural finding earns one sentence for the restructuring it proposes, never a paragraph. The "Good phrases" above are already this length; match them.
 
 ## Approval Bar
 

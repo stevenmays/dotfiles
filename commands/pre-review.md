@@ -43,7 +43,7 @@ Review the current branch's changes against the repo's distilled standards (`.cl
    Ready to open PR / Fix the above first
    ```
 
-   Write findings in Simplified Technical English — load the `ste-writing` skill and apply its PR-review-comment format: the defect, then the fix, in 2 sentences with exact names and values in backticks. No hedges, no restating the diff back, no background you won't act on.
+   Write findings in Simplified Technical English — load the `ste-writing` skill and apply its PR-review-comment format: a phrase — the fix as a bare command, or the defect in a few words — with exact names and values in backticks; one sentence only when the phrase alone is not actionable. No hedges, no restating the diff back, no background you won't act on.
 
    For each violation cite the specific standard so it's clear this isn't generic opinion. If everything passes, say so briefly — don't manufacture findings. A suspicion you can't confirm goes under Worth a Look with what would confirm or kill it — not dressed up as a confirmed finding, not silently dropped. Worth a Look items never block the verdict on their own.
 6. **Offer fixes**: If there are findings, ask via AskUserQuestion (multi-select) which categories to apply — Standards violations / Correctness issues / Baseline issues. Worth a Look items are never offered for auto-apply: they're suspicions to triage, not fixes. Apply what's approved with minimal diffs, then confirm each fix resolved its finding. Skip the question entirely when there are no findings.
