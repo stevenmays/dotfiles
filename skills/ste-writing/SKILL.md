@@ -1,11 +1,11 @@
 ---
 name: ste-writing
-description: Simplified Technical English (ASD-STE100) adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Google developer documentation style fused with Simplified Technical English (ASD-STE100) discipline, adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
 ---
 
-# Simplified Technical English for Software
+# Technical writing for software
 
-ASD-STE100 is the controlled language aerospace has used since the 1980s so that maintenance instructions cannot be misread. It has two parts: a small set of writing rules, and a dictionary where every word has exactly one meaning. This skill keeps the rules, swaps the aerospace dictionary for software conventions, and adds economy rules for the failure STE never faced: too many sentences.
+The base of this skill is the Google developer documentation style guide — the house rules Google's writers use so documentation survives skimming, translation, screen readers, and time. On top of it sit two survivals from ASD-STE100, the aerospace controlled language: one word has one meaning, and one sentence carries one idea. And on top of both sit economy rules for the failure neither guide fights hard enough: too many sentences.
 
 The audiences match. Engineering text is read by on-call responders at 3 a.m., non-native English speakers, new hires without context, and people skimming Slack on a phone. Write for the least-rested, lowest-context reader — everyone else benefits too.
 
@@ -17,7 +17,7 @@ Every rule below serves two goals: a reader who parses a sentence once arrives a
 
 - One word has one meaning.
 - One sentence carries one idea — or one instruction.
-- One paragraph covers one topic.
+- One paragraph covers one topic, and its first sentence carries the point.
 - Every sentence is necessary — delete any sentence and the reader loses a fact or an action.
 - The artifact fits its budget (see Format guides). Over budget is a defect, the same as an ambiguous sentence.
 
@@ -65,13 +65,25 @@ One level down: "The selector returns a new object on every call, so React think
 
 The test: a reader one ring outside the context — QA for a PR, support for a runbook, a new hire for a design doc — can act on the text without a follow-up question.
 
+## Voice and tone
+
+**Conversational, not frivolous.** The target register sits between "Dude, this API is awesome!" and "The API documented herein may enable acquisition of data pertaining to user preferences." Write: "This API lets you collect data about what your users like."
+
+**Speak to the reader as "you"; write instructions as bare commands.** "Run the migration" — not "the migration should be run", "please run", "let's run", or "the user should run". "Please" belongs only where you ask a real favor. Reserve "the user" for the people who use the reader's software. "We" is legitimate only with a concrete antecedent — the team or the org: "we recommend", "we deploy on Tuesdays".
+
+**Use contractions — especially negative ones.** Skimming readers miss a standalone "not"; nobody misses "don't". Write "don't", "isn't", "can't". Never invent contractions ("the config's broken" meaning is).
+
+**Software is not a person.** It doesn't want, think, know, see, or complain — it requires, processes, detects, reports. "The scheduler detects the stale lock", not "the scheduler notices the lock is stale". Anthropomorphism reads as precision to you and as ambiguity to a translator and a debugger.
+
+**No exclamation points, no humor in docs.** Humor and idiom die in translation and in the middle of an incident. Slack keeps your personality; documentation keeps only your meaning.
+
 ## Word rules
 
 **Pick one name per concept and never vary it.** Elegant variation is for fiction. If the doc calls it "the worker", that process is never later "the daemon", "the service", or "the consumer" — a new name makes the reader ask whether you mean a new thing. When two names are entrenched, pick one and state the alias once: "the ingest worker (deployed as `queue-consumer`)".
 
-**Technical names are exact and literal.** Commands, flags, paths, error strings, API names, and config keys go in backticks with exact spelling and casing, never paraphrased. Readers grep for them. Write "the `ECONNRESET` error", not "a connection reset issue".
+**Technical names are exact, literal, and never inflected.** Commands, flags, paths, error strings, API names, and config keys go in backticks with exact spelling and casing, never paraphrased — readers grep for them. Write "the `ECONNRESET` error", not "a connection reset issue". And never bend a code item into English grammar: "send a `POST` request", not "`POST` the data"; "`Intent` objects", not "`Intent`s"; "connect over SSH", not "ssh into"; "extract the zip file", not "unzip it".
 
-**Expand an uncommon acronym at first use.** "Time to first byte (TTFB)", then TTFB alone. Acronyms every reader knows — API, CPU, URL — need no expansion.
+**Expand an uncommon acronym at first use.** "Time to first byte (TTFB)", then TTFB alone. Acronyms every reader knows — API, CPU, URL — need no expansion. Never "i.e.", "e.g.", or "etc." — write "that is", "for example", and finish or bound the list.
 
 **Replace bloated words with plain ones.** The high-frequency offenders:
 
@@ -80,23 +92,27 @@ The test: a reader one ring outside the context — QA for a PR, support for a r
 | utilize, leverage | use |
 | in order to | to |
 | prior to | before |
-| ensure | make sure |
+| allows you to | lets you |
 | perform/execute an X | the verb itself: validate, query, test |
 | functionality | feature, behavior |
 | in the event that | if |
 | due to the fact that | because |
-| currently | now, or delete |
+| i.e. / e.g. | that is / for example |
 | please note that | delete, or "Note:" |
 
-The full table — plus smothered verbs, vague quantities, and software words with two meanings — is in `references/word-substitutions.md`. Read it whenever you rewrite existing text or draft anything longer than a few paragraphs.
+The full tables — plus smothered verbs, vague quantities, spelling decisions, and software words with two meanings — are in `references/word-substitutions.md`. Read it whenever you rewrite existing text or draft anything longer than a few paragraphs.
 
-**Requirement words carry contract weight.** "Must" is a requirement; "must not" is a prohibition; "can" is ability or permission; "might" is possibility. "Should" is the ambiguous one — the reader cannot tell requirement from suggestion. Replace it with "must" or "we recommend".
+**Requirement words carry contract weight.** "Must" is a requirement; "must not" is a prohibition; "can" is ability or permission; "might" is possibility. "Should" is the ambiguous one — the reader cannot tell requirement from suggestion; replace it with "must" or "we recommend". "May" belongs only in policy or legal text. Never "shall"; never a hypothetical "would" — say what the software does. "The value should be true" hides the actor: write "Set the value to `true`" or "The server sets the value to `true`".
 
-**Verb and noun spellings differ.** You log in through the login page. Back up the database to make a backup; roll back the deploy with a rollback. Full pair list in the reference file.
+**Quantify, and own your numbers.** "Several times" → "3 times". "Recently" → "since v2.31". "Much faster" → "p95 fell from 480 ms to 120 ms". "10x" → "10 times". If you lack the number, say what you know: "faster in our tests; not yet measured". A performance or security claim is a promise: "helps prevent replay attacks" survives an incident, "prevents replay attacks" does not. Superlatives — best, fastest, always, never — only when literally true.
 
-**Quantify.** "Several times" → "3 times". "Recently" → "since v2.31". "Much faster" → "p95 fell from 480 ms to 120 ms". If you lack the number, say what you know: "faster in our tests; not yet measured".
+**Don't anchor docs to today.** "Currently", "new", "soon", "latest", "does not yet" date a document the day it ships. Name the version or date instead — "since v3.2", not "currently". Time words are fine where time is the subject: release notes, incident updates, status reports.
 
 **Delete intensifiers and difficulty words.** "Very", "really", and "quite" add no information. "Simply", "just", and "easily" insult the reader the moment the step fails for them.
+
+**Use inclusive terms.** Allowlist/denylist, primary/replica, "final check" not "sanity check", "stops responding" not "hangs", singular "they", "person-hours". When the old term is a literal identifier, keep it in code font and out of prose: "the primary branch (named `master` in this repo)". Full table in the reference file.
+
+**Climb the jargon ladder.** For a term of art the reader may not share: write around it; or swap in a plain term; or gloss it once in parentheses; or define it at first use and then use it consistently. Keep jargon the audience genuinely searches for.
 
 ## Sentence rules
 
@@ -108,32 +124,56 @@ The full table — plus smothered verbs, vague quantities, and software words wi
 2. Run the migration.
 3. Restart the workers.
 
-**Active voice with a named actor.** Passive voice hides the actor, and in software the actor is the component you will debug. "The job will be retried" — by whom? Write "The scheduler retries the job 3 times, then moves it to the dead-letter queue." Passive is acceptable only when the actor is genuinely irrelevant, which is rare.
+**Active voice with a named actor.** Passive voice hides the actor, and in software the actor is the component you will debug. "The job will be retried" — by whom? Write "The scheduler retries the job 3 times, then moves it to the dead-letter queue." Passive earns its place in exactly two cases: the actor is genuinely irrelevant ("the database was purged in January"), or naming the actor would blame the reader ("50 conflicts were found in the file", not "you created 50 conflicts").
 
-**Speak to the reader as "you"; write instructions as bare commands.** "Run the migration" — not "the migration should be run", "please run", or "the user should run". "Please" pads without informing. Reserve "the user" for the people who use the reader's software.
+**Present tense for behavior; simple tenses for everything.** Software behavior is not a future event: "the API returns 403", not "the API will return 403". "Will" is for events genuinely later than the sentence — "add the file to the list; it will be archived on the next backup run" — never for current behavior and never as hypothetical "would". Perfect and progressive tenses blur time: "has been deprecated" hides the date — "was deprecated in v3.2" demands one; "is being rolled out" → "the rollout started Monday and finishes Friday". Conditionals stay present on both sides: "If you send an unsubscribe message, the server removes you."
 
-**Present tense for behavior; simple tenses for everything.** Software behavior is not a future event: "the API returns 403", not "the API will return 403". Save the future for real future events. Perfect and progressive tenses blur time: "has been deprecated" hides the date — "was deprecated in v3.2" demands one; "is being rolled out" → "the rollout started Monday and finishes Friday".
+**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers — so are the optional helpers: keep "that" ("confirm that the job finished"), keep "then" after "if", repeat "if" for a second condition. Commit subjects are exempt — the 50-character target wins there.
 
-**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers. Commit subjects are exempt — the 50-character target wins there.
+**Every pronoun has one possible noun.** If "it", "this", or "these" could point at two things, repeat the noun. "This" and "these" never stand alone: "set this value to `true`", not "set this to `true`". Use "that" for restrictive clauses, comma-plus-"which" for asides, and "who" for people.
+
+**"Only" hugs the word it limits.** "Request only one token", not "Only request one token" — the second might mean "don't do anything else".
+
+**State it in the positive.** "You can continue without a path", not "a missing path won't prevent you from continuing". Double negatives and exceptions-to-exceptions make the reader solve logic puzzles.
 
 **No more than three nouns in a row.** "The webhook retry queue consumer lag alert" makes the reader reverse-engineer the grammar. Unstack with prepositions: "the alert for consumer lag on the webhook retry queue". An established proper name may stay clustered — format it as a technical name.
 
-**Condition before instruction.** Readers execute as they read. "Restart the worker if lag exceeds 1,000" risks a restart before the condition is read. Write "If lag exceeds 1,000, restart the worker."
+**Condition, context, and goal come before the action.** Readers execute as they read. "If lag exceeds 1,000, restart the worker" — never the reverse. "In the `deploy` directory, run `make plan`" — location first. "To reset the cache, restart the worker" — goal first, so the reader who doesn't want that outcome skips the step. Same shape for references: "For more information, see the retry policy", not "See the retry policy for more information."
 
 ## Paragraph rules
 
-- At most 6 sentences per paragraph, one topic, and the first sentence states the topic.
+- At most 6 sentences per paragraph, one topic, and the first sentence carries the paragraph's most important fact — readers skim first sentences and skip the rest.
+- A single-sentence paragraph is fine. Splitting a long paragraph beats compressing its sentences.
 - More than about 3 parallel items in a sentence? Use a vertical list.
 - List items use parallel grammar and carry one idea each.
+- Never bury a load-bearing fact in parentheses — readers skip them.
+
+## Structure
+
+**Headings.** Sentence case, no trailing period. A task heading is a bare imperative: "Configure the worker" — never "Configuring the worker" or "Worker configuration". A concept heading is a noun phrase. Don't skip levels, don't leave a heading with nothing under it, and prefix optional sections with "Optional:".
+
+**Lists.** Introduce every list with a complete sentence ending in a colon. Numbered means order matters; bulleted means it doesn't; term-plus-colon pairs for definitions ("`--dry-run`: prints the plan"). Sentences in items get periods, fragments get nothing — consistently. Say whether the list is complete ("the following three flags") or samples ("flags such as").
+
+**Links.** Link text names its destination — the target's title or a descriptive phrase with the important words first. Never "click here", "this doc", or a bare URL. The standing pattern: "For more information about retries, see Configuring retry policy." Say when a link downloads a file or leaves the doc set.
+
+**No directional language.** "The preceding table", "the following command" — never "above", "below", or "the panel on the left". Layout reflows, screen readers linearize, and translations reorder.
 
 ## Mechanics
 
-- Headings use sentence case. A task heading starts with a verb: "Configure the worker", not "Worker configuration".
-- Link text names its destination: "see the retry policy", never "click here" or "this doc".
+The rules that come up in every artifact:
+
 - Use the serial comma — "the scheduler, the worker, and the queue" — so the last two items cannot read as one.
+- Em dash with no spaces for a break; never an en dash — use a hyphen or "to" for ranges.
+- Straight quotes; punctuation inside them, except after a literal string or keyword (better: backticks, no quotes).
+- No "and/or" and no slash alternatives: "A, B, or both" — slashes live in paths and code.
+- Spell out zero through nine; numerals for 10+, for anything with a unit, and for versions. Never open a sentence with a numeral. Decimals lead with a zero.
+- Numeric dates are ISO 8601: `2026-08-17`. No seasons — name the month or quarter.
+- Hyphenate compound modifiers before a noun ("a well-designed app"), never after an -ly adverb.
 - No idioms or cultural references. "Out of the box", "grandfathered in", and sports metaphors fail for translated and non-native readers. Say the literal thing.
 
-## Warnings
+The full rules — punctuation, hyphenation, numbers, dates, capitalization, abbreviations, code in prose, placeholders, example data, UI wording — are in `references/mechanics.md`. Read it before writing documentation, a README, a runbook, or anything document-length.
+
+## Warnings and notices
 
 State the consequence before the reader can act on the command — never after it, never in a trailing parenthesis.
 
@@ -146,6 +186,15 @@ Good:
 > **Warning:** The next command permanently deletes the database, including its backups. There is no undo.
 >
 > Run `terraform destroy` to tear down the stack.
+
+Three levels, by what's at stake: **Note** for useful asides the reader may skip, **Caution** for proceed-carefully, **Warning** for irreversible damage — data loss, security, money. A notice is never a prerequisite, a step, or a cross-reference; those go in the body, before the step they govern. Never stack two notices — if everything is highlighted, nothing is.
+
+## Placeholders and example data
+
+- Placeholders are descriptive `UPPER_SNAKE_CASE`: `PROJECT_ID`, `REGION` — never `foo`, `xx`, or `MY_PROJECT`. After a command with several, write "Replace the following:" and one bullet per placeholder, in order.
+- A copy-paste command must run unedited — no `[optional]` or `{a|b}` syntax inside a copyable block.
+- Example data is fictional by construction: `example.com`, RFC 5737 IPs (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`), phone numbers `800-555-01xx`. Never real people, emails, or credentials.
+- Example resource names describe the reader's world: `prod-orders-queue`, not `test1`.
 
 ## Format guides
 
@@ -169,9 +218,11 @@ Each guide's section list is closed: write the listed sections and no others. A 
 ### Documentation and runbooks
 
 - At most 3 sentences of intro before the prerequisites.
-- Prerequisites first, as a list.
-- Numbered steps when order matters; one instruction per step.
-- After a consequential step, state the expected result: "Run `make check`. The output ends with `plugin OK`."
+- Prerequisites first, as a list — never buried in a note halfway down.
+- Numbered steps when order matters; one instruction and one reader decision per step.
+- Each step: condition, then location, then action, then result — "If the queue is empty, in the `deploy` directory run `make check`. The output ends with `plugin OK`."
+- Document one way to do the task — the shortest accessible one — not every way. Alternatives get their own section or a link.
+- Prefix optional steps with "Optional:".
 - Conditions and warnings go before the step they govern.
 
 ### Commit messages
@@ -193,7 +244,7 @@ Body:
 
 ### PR descriptions
 
-Keep the house shape — a 1–3 bullet summary plus a test plan — and write it in STE. Budget: 10 lines beyond the template.
+Keep the house shape — a 1–3 bullet summary plus a test plan — and write it in this style. Budget: 10 lines beyond the template.
 
 - Each bullet states one change and its why, in at most 20 words, active voice.
 - Test plan steps are commands a reviewer can run, each with its expected result.
@@ -211,7 +262,7 @@ The reader is the engineer who fixes it, not the one who found it. Body budget: 
 
 The diagnosis narrative — verification runs, ruled-out hypotheses, measurements — goes in a ticket comment, never the body. The fixer reads the body; the curious read the comments.
 
-### Code comments
+### Code comments and docstrings
 
 The default is no comment. Code already says what it does; a comment earns its place only by carrying a fact the code cannot.
 
@@ -220,6 +271,7 @@ The default is no comment. Code already says what it does; a comment earns its p
 - What earns a line: a non-obvious why ("retry once — the vendor 401s on clock skew"), an invariant the code cannot express ("caller holds the lock"), a warning ("flush before close, or data is lost"), code that looks wrong but isn't, or the URL of the copied snippet, spec, or bug that forced this shape.
 - Write for the next reader of the file, never the reviewer of this diff: no "added X", "changed to Y", "per feedback".
 - TODO carries an owner or an issue: `TODO(#4821): remove after the flag ships.`
+- Docstrings and API descriptions use third-person present, not imperative: "Returns the parsed config", "Creates a task on the given list". The first sentence states the purpose without repeating the name; a boolean parameter reads "If true, X. If false, Y."; a deprecation names the replacement and the version in its first sentence.
 - The deletion test: remove the comment. If the reader loses no fact, it stays removed.
 
 ### PR review comments
@@ -281,7 +333,7 @@ Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every 
 
 ## What this is not
 
-- **Not a tone flattener.** Greetings, contractions, and humor stay, especially in Slack. STE removes ambiguity, not personality.
+- **Not a tone flattener.** Greetings, contractions, and humor stay in Slack and chat. In documentation, personality yields to translatability — the style removes ambiguity everywhere and jokes only where the reader chose to chat.
 - **Not telegraphy.** Brevity comes from fewer sentences, never from dropping articles or actors in a sentence you keep. A kept sentence stays fully formed.
 - **Not for voice-driven prose.** Essays and blog posts use the writing-style skill.
 - **Not for quoted material.** Code, log output, error messages, and other people's words stay verbatim.
@@ -290,7 +342,7 @@ Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every 
 
 When asked to simplify or clarify a text:
 
-1. Read `references/word-substitutions.md`.
+1. Read `references/word-substitutions.md`; for document-length text, read `references/mechanics.md` too.
 2. List every technical fact in the original: names, numbers, conditions, caveats.
 3. Strike the restatements — most drafts state each fact more than once. Only the fact list survives.
 4. Rewrite by the rules above. Expect the result to be shorter: two paragraphs usually collapse to one or two sentences, or a few bullets.
@@ -303,26 +355,36 @@ Document level first — these catch what sentence fixes cannot:
 - Count the words or lines against the budget table. Over? Cut sections, then sentences, and count again. Deliver over budget only with a flagged reason.
 - Would deleting any section change what the reader does? If not, delete the section.
 - Any sentence that records what you did to learn, not what the reader must know? Move it to a comment or thread.
+- Does every paragraph lead with its point? Does the document?
 
 Then sentence level — each one is countable:
 
 - A sentence over 25 words (20 for an instruction)? Split it.
 - A paragraph over 6 sentences? Split it.
 - More than 3 nouns in a row? Unstack it.
-- Passive voice hiding a debuggable actor? Name the actor.
+- Passive voice hiding a debuggable actor? Name the actor — unless naming it blames the reader.
+- Software wanting, seeing, or knowing? Give it a technical verb.
 - Perfect or progressive tense? Use simple past, present, or future — and add the date or version it was hiding.
-- "Will" describing what the software does today? Use the present.
-- "Please" in an instruction, or "the user" meaning the reader? Write the bare command to "you".
-- Link text that does not name its destination? Name it.
-- A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
-- A code comment that restates the code? Delete it, or fix the code it apologizes for. Multi-line is fine only when every line records a decision or constraint.
-- A review comment past one sentence, opening with a hedge, or quoting the author's code back? Cut to a phrase: the fix, or the defect.
+- "Will" or "would" describing what the software does today? Use the present.
+- A bare "this" or an "it" with two possible antecedents? Add the noun.
+- An "only" far from the word it limits? Move it next door.
+- A negative the reader must invert ("won't prevent")? State the positive.
+- "Please" in an instruction, "let's", or "the user" meaning the reader? Write the bare command to "you".
+- A condition, location, or goal after its instruction? Move it before.
+- Link text that does not name its destination, or "above"/"below" as a pointer? Name it.
+
+Then word level:
+
+- A code item pluralized, verbed, or paraphrased? Backtick the exact literal and rebuild the sentence around it.
 - The same thing under two names? Unify them.
-- A bare "should"? Decide: "must" or "we recommend".
-- A word from the substitution table? Substitute it.
-- A condition or warning after its instruction? Move it before.
+- A bare "should", a casual "may", a hypothetical "would"? Decide: "must", "we recommend", "can", or "might".
+- A word from the substitution tables — bloat, vague, time-anchored, non-inclusive? Substitute it.
+- A superlative or guarantee you cannot prove? Scope it: "helps", the number, or delete.
 - A vague quantity where a number exists? Use the number.
-- Missing articles? Restore them.
+- Missing articles or a dropped "that"? Restore them.
+- `foo`, `test1`, or a real email in an example? Use descriptive placeholders and reserved example data.
+- A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
+- A code comment that restates the code? Delete it, or fix the code it apologizes for.
+- A review comment past one sentence, opening with a hedge, or quoting the author's code back? Cut to a phrase.
 - A sentence whose deletion changes nothing the reader does? Delete it.
-- A paragraph that collapses to one sentence or 3 bullets with no fact lost? Collapse it.
 - Would a reader one level down (QA, support, a new hire) need a follow-up question? Down-level it.
