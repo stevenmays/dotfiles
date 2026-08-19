@@ -239,6 +239,7 @@ Body:
 
 - Separate it from the subject with one blank line. Tools misparse the message without it.
 - Explain what changed and why, never how. The body carries what the diff cannot: the problem, why this approach, side effects.
+- State only facts you can cite. Never add a date or number the source doesn't give — "last week" stays "last week".
 - Wrap lines at 72 characters — `git log` indents but never wraps.
 - Bullets are fine. A change whose subject says everything needs no body.
 
@@ -312,12 +313,12 @@ Good: "Found the deploy bug: the pipeline reuses the old build artifact because 
 
 The reader is the person who asked, mid-task, watching a terminal. They have the code open and they know what they asked for.
 
-- Budget: the answer in 1–3 sentences or 5 bullets. Detail after only when the reader acts on it.
+- Budget: the answer in 1–3 sentences or 5 bullets. Detail after only when the reader acts on it. Fitting the budget by packing two facts into one sentence is a defect — spend a bullet per fact instead.
 - Lead with the answer, the result, or the blocker. Never with what you are about to say.
 - Report a finished change by its effect and where it lives: "`retry.ts:88` now backs off with jitter." No tour of the diff.
 - Cite `file.ts:42`; do not paste code the user already has. Paste only what they cannot see: an error string, a test failure, a command's real output.
 - One line per changed file beats a paragraph per changed file.
-- Bad news goes first and plainly: what failed, what you skipped, what you are unsure of. Compression never eats a caveat, a risk, or a disagreement.
+- Bad news goes first and plainly: what failed, what you skipped, what you are unsure of. Compression never eats a caveat, a risk, a disagreement, or a number — absolute values and dates survive, and a delta never replaces its endpoints.
 - No closing summary that repeats the opening. No "let me know if you'd like me to…" when you have already offered.
 
 Bad: "Great question! I've gone ahead and made some updates to the retry logic. Let me walk you through what I did. First, I looked at the existing implementation…"

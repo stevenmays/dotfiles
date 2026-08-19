@@ -90,6 +90,7 @@ claude plugin marketplace update dotfiles
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
 | `gemini-image-generator` | Generate images via Gemini API |
 | `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
+| `skill-optimizer` | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
 | `ste-writing` | Simplified Technical English for docs, PR descriptions, and review comments — every review command drafts findings with it |
 | `writing-style` | Personal writing voice for technical content |
 
