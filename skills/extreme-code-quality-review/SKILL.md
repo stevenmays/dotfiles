@@ -68,6 +68,16 @@ Apply the baseline prompt above, plus these explicit review rules:
    - If related updates can leave state half-applied, push for a more atomic structure.
    - Do not over-index on micro-optimizations, but do flag avoidable orchestration complexity that makes the implementation more brittle.
 
+## Measurable Signals
+
+Put numbers behind the judgment when tools allow. Run a complexity tool on the changed files (`radon cc -s` for Python, eslint `complexity` for JS/TS, `lizard` for anything) and fold the counts into findings:
+
+- A changed function with cyclomatic complexity > 15 (or above the project's configured linter threshold) is a presumptive refactor target — cite the number.
+- A file the diff grows past 500 lines is a decomposition candidate; the 1000-line rule above stays the hard gate.
+- Count the diff's new `any` / `unknown` / casts and dead or duplicated blocks; zero is the default expectation.
+
+Numbers sharpen findings — `CC 19` beats "this looks complex" — but they never override judgment: a flat 16-branch dispatch table can be fine, and a CC-8 function can still be spaghetti.
+
 ## Primary Review Questions
 
 For every meaningful change, ask:
