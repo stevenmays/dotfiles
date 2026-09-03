@@ -1,6 +1,6 @@
 ---
 name: ste-writing
-description: Google developer documentation style fused with Simplified Technical English (ASD-STE100) discipline, adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, or "plain English" existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Google developer documentation style fused with Simplified Technical English (ASD-STE100) discipline, adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, "plain English", or strip mannered prose from existing technical text. Not for essays or blog posts — writing-style covers those.
 ---
 
 # Technical writing for software
@@ -76,6 +76,32 @@ The test: a reader one ring outside the context — QA for a PR, support for a r
 **Software is not a person.** It doesn't want, think, know, see, or complain — it requires, processes, detects, reports. "The scheduler detects the stale lock", not "the scheduler notices the lock is stale". Anthropomorphism reads as precision to you and as ambiguity to a translator and a debugger.
 
 **No exclamation points, no humor in docs.** Humor and idiom die in translation and in the middle of an incident. Slack keeps your personality; documentation keeps only your meaning.
+
+## No mannered prose
+
+Mannered prose is writing shaped for effect. The reader notices the construction before the fact inside it. It also survives a trim, because a polished line reads as finished. Write flat: subject, verb, fact.
+
+Each pattern below is countable. Find one, rewrite the sentence.
+
+- **Antithesis.** "This isn't a style preference — it's a defect detector." "Not X, but Y." State Y alone. Keep the negation only when the reader holds belief X and you must correct it.
+- **Aphoristic closer.** A short fragment parked at the end of a paragraph to land the point: "Two paragraphs in, one sentence out." "That's the whole trick." Delete it. It carries no fact.
+- **Rule of three.** "Faster, simpler, cheaper." Two of the three are rhythm. Keep the properties you can measure.
+- **Rhetorical question.** "So why does this matter?" Delete the question and write the answer.
+- **Em dash as a drumroll.** At most one em dash per paragraph, and only to mark a real break. A dramatic pause before a reveal is a period.
+- **Repeated sentence openings.** Three sentences that start with the same word or the same shape read as cadence. Merge them or vary them.
+- **Personified abstraction.** "Complexity dies here." "The journey stays in your notes." Name the actor and the action, or delete the sentence.
+- **Writing about the writing.** "Here's the thing." "The point here is subtle." "Read that again." Delete.
+- **Escalation.** "Not only X — X, and Y, and Z." One clause per fact.
+
+Before:
+
+> This isn't a caching bug — it's a correctness bug wearing a caching bug's clothes. The key ignores the lockfile. And that changes everything.
+
+After:
+
+> The cache key ignores the lockfile, so deploys reuse stale builds.
+
+The test: delete the ornament. If no fact left with it, delete the sentence.
 
 ## Word rules
 
@@ -207,7 +233,7 @@ Every artifact has a word or line budget — a hard cap, not a target. A number 
 | PR description | ≤ 10 lines beyond the template |
 | Ticket or bug report body | ≤ 200 words |
 | Code comment | 1 line |
-| PR review comment | a phrase; 1 sentence ceiling |
+| PR review comment | 1 question or phrase; a second sentence only for the consequence |
 | Slack message | ≤ 4 sentences; detail goes to the thread |
 | Status update | 3 lines: done, next, blocked |
 | Answer to the user | 1–3 sentences or ≤ 5 bullets before any detail |
@@ -277,15 +303,19 @@ The default is no comment. Code already says what it does; a comment earns its p
 
 ### PR review comments
 
-The author reads this in a queue of twenty, on someone else's schedule. The default is a phrase, not a sentence: the fix as a bare command, or the defect named in a few words — "Await `flushBuffer()`", "typo: `recieve`", "dead code — delete". Add one sentence only when the author cannot act on the phrase alone: the consequence, the condition that reproduces the defect, or a rule citation. That sentence is the ceiling — a paragraph in a review comment is itself a defect.
+The author reads this in a queue of twenty, on someone else's schedule. Two rules hold at once: keep the comment to a phrase or a sentence, and ask for the change instead of ordering it. You are proposing an edit to someone else's work, and the author knows things about the code that you don't.
 
+**Put the fix in a question the author can answer.** "Can we await `flushBuffer()` here?" beats "Await `flushBuffer()`". This is the one place in this skill where a question beats a bare command. Drop the question and state the defect flat when it is mechanical and has one answer: "typo: `recieve`", "dead code — delete".
+
+- The question is genuine. The author can answer "no, because…" and be right. A question you have already answered for yourself is ornament — see "No mannered prose".
+- A question is not a hedge. "Can we await `flushBuffer()`?" asks; "I wonder if we might maybe want to look at the await here" hedges. Name the exact change or the exact missing case, then stop.
+- The label carries the authority, not the grammar. `issue (blocking):` phrased as a question is still blocking.
 - Backtick the exact name, line, or value — the author greps for it.
-- Open with the defect or the fix. Delete "I noticed that", "It looks like", "Consider that", "Just a thought" — the comment's existence is the flag.
+- Lead with the defect or the change. The question replaces "I noticed that", "It looks like", "Just a thought" — it does not sit on top of them.
 - Never restate the code. The author wrote it and is looking at it.
-- State the fix as a bare command: "Await `flush()` before returning", not "you might want to consider awaiting".
-- Consequence only when the fix is not self-evident; never a lecture. "or the response returns before the write lands" earns its place; a paragraph on the event loop does not.
+- Consequence only when the fix is not self-evident; never a lecture. "the response can return before the write lands" earns its place; a paragraph on the event loop does not.
 - One defect per comment. Two defects on one line are two comments.
-- Hedging is a decision, not a tone. If you are unsure, label it `question`; if you are sure, drop "possibly", "perhaps", and "might want to".
+- When you don't know whether it is a defect, label it `question` and say what you saw: "What runs when `refreshToken` is expired? I see no branch for it."
 
 Before:
 
@@ -293,9 +323,9 @@ Before:
 
 After:
 
-> **issue (blocking):** Await `flushBuffer()` — the response can return before the write lands.
+> **issue (blocking):** Can we await `flushBuffer()` here? The response can return before the write lands.
 
-Every fact the author acts on survived. The Promise tutorial, the "hard to debug" aside, and the hedges did not. The consequence stayed because "add await" alone does not tell the author why it blocks the merge.
+Every fact the author acts on survived. The Promise tutorial, the "hard to debug" aside, and the hedges did not. The consequence stayed because the question alone does not tell the author why the comment blocks the merge.
 
 ### Slack messages and status updates
 
@@ -369,6 +399,7 @@ Then sentence level — each one is countable:
 - "Will" or "would" describing what the software does today? Use the present.
 - A bare "this" or an "it" with two possible antecedents? Add the noun.
 - An "only" far from the word it limits? Move it next door.
+- An antithesis, an aphoristic fragment, a rhetorical question, or a second em dash in one paragraph? Rewrite it flat.
 - A negative the reader must invert ("won't prevent")? State the positive.
 - "Please" in an instruction, "let's", or "the user" meaning the reader? Write the bare command to "you".
 - A condition, location, or goal after its instruction? Move it before.
@@ -386,6 +417,7 @@ Then word level:
 - `foo`, `test1`, or a real email in an example? Use descriptive placeholders and reserved example data.
 - A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
 - A code comment that restates the code? Delete it, or fix the code it apologizes for.
-- A review comment past one sentence, opening with a hedge, or quoting the author's code back? Cut to a phrase.
+- A review comment past two sentences, opening with a hedge, or quoting the author's code back? Cut to the question plus its consequence.
+- A review comment ordering a fix that the author could reasonably refuse? Ask it as a question.
 - A sentence whose deletion changes nothing the reader does? Delete it.
 - Would a reader one level down (QA, support, a new hire) need a follow-up question? Down-level it.

@@ -22,7 +22,7 @@ Review another author's pull request against the repo's distilled standards (`.c
    - General correctness: inverted conditions, off-by-one bounds, missing await or unhandled promise, null paths the types claim are impossible, error handling that swallows failures the caller needs, broken contracts with unchanged callers, new branches with no test
    - Baseline checks: comments that restate the code, defensive checks on already-validated data, type escape hatches (`as any`, unchecked casts), dead code / debug logging, single-use wrappers, drift from the surrounding file's patterns
 5. **Report** — every finding is a Conventional Comment (conventionalcomments.org), written in Simplified Technical English:
-   - Apply the `ste-writing` PR-review-comment format loaded in step 1: a phrase per finding — the fix as a bare command, or the defect in a few words — with exact names, lines, and values in backticks. A full sentence needs a reason to exist: the consequence, the condition that reproduces the defect, a rule citation, or why the obvious fix is wrong.
+   - Apply the `ste-writing` PR-review-comment format loaded in step 1: one question per finding — ask for the change the author can refuse ("Can we await `flushBuffer()` here?") rather than ordering it, with exact names, lines, and values in backticks. State it flat only when the defect is mechanical and has one answer (typo, dead code, a cited standards rule). A second sentence needs a reason to exist: the consequence, the condition that reproduces the defect, a rule citation, or why the obvious fix is wrong.
    - Label each finding: `issue` (must fix), `suggestion` (worth considering), `nitpick` (minor), `question` (needs the author's answer), `praise` (genuinely good). Decorate where it disambiguates: `issue (blocking):`, `suggestion (non-blocking):`.
    - Include `praise` only when genuine — at most one or two, never manufactured.
    - The examples below are the length calibration, not just the shape. Match them.
@@ -36,8 +36,8 @@ Review another author's pull request against the repo's distilled standards (`.c
    Built what was asked? Yes / Partly / No — [one line against the ticket (cite its ID) or description; note when a ticket reference couldn't be resolved. Omit the section only when there was nothing to check against.]
 
    ### Findings
-   - **issue (blocking):** `upload.ts:42` — `flushBuffer()` is not awaited, so the response can return before the write lands and the upload is lost. Add `await`. (violates: "await every promise you create", #130)
-   - **suggestion (non-blocking):** `retry.ts:88` — the backoff is fixed at 200 ms, so every client retries in lockstep after an outage. Add jitter.
+   - **issue (blocking):** `upload.ts:42` — can we `await flushBuffer()` here? The response can return before the write lands and the upload is lost. (violates: "await every promise you create", #130)
+   - **suggestion (non-blocking):** `retry.ts:88` — should the backoff jitter? It is fixed at 200 ms, so every client retries in lockstep after an outage.
    - **question:** `auth.ts:120` — what runs when `refreshToken` is present but expired? I see no branch for it.
    - **praise:** `queue.ts:12` — the dead-letter path handles poison messages without a special case.
 
@@ -47,7 +47,7 @@ Review another author's pull request against the repo's distilled standards (`.c
 
    Order findings by severity. If the PR is clean, say so briefly — don't manufacture findings.
 
-   Before returning the report, run the `ste-writing` self-check over it. Every finding gets one pass: cut hedges, cut any sentence restating the diff, cut background the author will not act on.
+   Before returning the report, run the `ste-writing` self-check over it. Every finding gets one pass: cut hedges (a question is not a hedge), cut any sentence restating the diff, cut background the author will not act on.
 6. **Offer to post**: If there are findings, ask via AskUserQuestion how to deliver them — Post as inline review comments (`gh api repos/{owner}/{repo}/pulls/<n>/reviews` with per-line comments) / Post as a single summary comment (`gh pr comment`) / Keep local only. When posting inline, each comment body is the finding's conventional comment verbatim — label, decoration, then the two STE sentences. Never post to GitHub without asking, and never submit an approval or request-changes verdict on the user's behalf — post comments only; the user clicks the verdict themselves.
 
 ## Guidelines

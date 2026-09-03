@@ -10,7 +10,7 @@ Source: the Google developer documentation style guide, trimmed to what applies 
 - Comma after an introductory phrase: "After the deploy, check the dashboard."
 - Two independent clauses joined by and/but/or/so get a comma before the conjunction — unless both are very short ("Type your ID and click OK").
 - Conjunctive adverbs (otherwise, however, therefore) take a semicolon or period before and a comma after: "The variable must have a value; otherwise, the server returns an error."
-- Em dash (—) with no spaces marks a break: "Enter a name — for example, `my-instance-99`." Never use an en dash; use a hyphen or the word "to".
+- Em dash (—) with no spaces marks a break: "Enter a name — for example, `my-instance-99`." Never use an en dash; use a hyphen or the word "to". At most one em dash per paragraph; a second one is drama, so use a period or a comma.
 - Term-definition pairs use a colon, never a dash: "`--dry-run`: prints the plan without applying it."
 - The text before a colon that introduces a list is a complete sentence: "The command takes the following flags:", not "The flags are:".
 - Lowercase after a colon mid-sentence, unless what follows is a proper noun, a heading, or a quotation.
