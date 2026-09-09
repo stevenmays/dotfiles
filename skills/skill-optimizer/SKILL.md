@@ -56,6 +56,11 @@ See the **Writing Good Evals** section below for detailed guidance.
 
 Read the full SKILL.md and any referenced files. Understand the core job, process steps, output format, and existing quality checks before changing anything.
 
+While reading, mark two kinds of instruction as removal candidates:
+
+- Any instruction that tells the model to echo, transcribe, or explain its internal reasoning in the response. On Claude Fable 5 this can trigger a refusal, so it fails the skill outright. Unless the skill is pinned to another model, remove it regardless of score.
+- Long enumerations of patterns to avoid, written for older models. Current models follow the one-line rule behind the list as well as the list itself. Try the rule alone as a loop mutation; keep the list only if the score drops without it.
+
 ## Step 2: Set Up Working Directory
 
 Create the workspace **outside the skill's repo** — in the session scratchpad or a temp directory — so experiment artifacts never end up committed:
@@ -149,6 +154,7 @@ Good mutations:
 - Add or improve a worked example showing correct behavior
 - Remove an instruction that causes over-optimization for one eval at the expense of others
 - Simplify — fewer words that say the same thing
+- Replace an enumerated list of patterns with the one-line rule behind it
 
 Bad mutations:
 - Rewriting the entire skill

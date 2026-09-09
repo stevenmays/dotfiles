@@ -42,6 +42,7 @@ Hunt these in every target file. Each is a deletion or merge, not a rewrite:
 - **`any` / `unknown` / bare casts**: replace with the real type. `unknown` survives only at a true trust boundary, immediately narrowed.
 - **Comment noise**: comments that restate the code, narrate the diff, or don't match the file's existing comment density. Delete; keep only why/invariant/warning comments.
 - **Abnormal defensiveness**: try/catch, null checks, or fallbacks on paths the codebase already trusts or validates upstream. Delete; a guard belongs at the trust boundary, once.
+- **Compatibility shims**: a feature flag, alias, re-export, or fallback branch kept only so callers that no longer exist keep working. Delete.
 - **Style drift**: naming, idiom, or structure inconsistent with the rest of the file. Match the file.
 
 ## Delete before you restructure
