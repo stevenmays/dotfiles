@@ -19,7 +19,7 @@ Every rule below serves two goals: a reader who parses a sentence once arrives a
 - One sentence carries one idea — or one instruction.
 - One paragraph covers one topic, and its first sentence carries the point.
 - Every sentence is necessary — delete any sentence and the reader loses a fact or an action.
-- The artifact fits its budget (see Format guides). Over budget is a defect, the same as an ambiguous sentence.
+- The artifact fits its budget (see Format guides). Over budget is a defect, the same as an ambiguous sentence. When you can fix only one, fix the ambiguity: clear beats short.
 
 ## Economy rules
 
@@ -154,7 +154,7 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 **Present tense for behavior; simple tenses for everything.** Software behavior is not a future event: "the API returns 403", not "the API will return 403". "Will" is for events genuinely later than the sentence — "add the file to the list; it will be archived on the next backup run" — never for current behavior and never as hypothetical "would". Perfect and progressive tenses blur time: "has been deprecated" hides the date — "was deprecated in v3.2" demands one; "is being rolled out" → "the rollout started Monday and finishes Friday". Conditionals stay present on both sides: "If you send an unsubscribe message, the server removes you."
 
-**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers — so are the optional helpers: keep "that" ("confirm that the job finished"), keep "then" after "if", repeat "if" for a second condition. Commit subjects are exempt — the 50-character target wins there.
+**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers — so are the optional helpers: keep "that" ("confirm that the job finished"), keep "then" after "if", repeat "if" for a second condition. Arrow chains ("cache miss → rebuild → timeout"), hyphen-stacked compounds ("the retry-then-refresh-on-401 path"), and ad hoc abbreviations are telegraphy with symbols: write the sentence. Commit subjects are exempt — the 50-character target wins there.
 
 **Every pronoun has one possible noun.** If "it", "this", or "these" could point at two things, repeat the noun. "This" and "these" never stand alone: "set this value to `true`", not "set this to `true`". Use "that" for restrictive clauses, comma-plus-"which" for asides, and "who" for people.
 
@@ -341,17 +341,23 @@ Good: "Found the deploy bug: the pipeline reuses the old build artifact because 
 
 ### Answers to the user
 
-The reader is the person who asked, mid-task, watching a terminal. They have the code open and they know what they asked for.
+The reader is the person who asked. They have the code open and they know what they asked for. They may have seen none of your tool calls, tool output, or working notes, so the final message stands alone.
 
 - Budget: the answer in 1–3 sentences or 5 bullets. Detail after only when the reader acts on it. Fitting the budget by packing two facts into one sentence is a defect — spend a bullet per fact instead.
 - Lead with the answer, the result, or the blocker. Never with what you are about to say.
 - Report a finished change by its effect and where it lives: "`retry.ts:88` now backs off with jitter." No tour of the diff.
+- Every progress claim points at a tool result from this session: a test run, a diff, a command's output. State a verified result plainly, without hedging. Label anything else "unverified".
+- Never refer to tool output, a thinking step, or a label you coined while working. The reader saw none of it. Reintroduce the term or drop it.
+- Give each file, commit, or flag its own plain-language clause. A bare list of identifiers is not a report.
+- When the user was away for the work, the message is their first look at any of it. Re-ground them: the outcome, then the one or two things you need from them, each explained as new.
 - Cite `file.ts:42`; do not paste code the user already has. Paste only what they cannot see: an error string, a test failure, a command's real output.
 - One line per changed file beats a paragraph per changed file.
 - Bad news goes first and plainly: what failed, what you skipped, what you are unsure of. Compression never eats a caveat, a risk, a disagreement, or a number — absolute values and dates survive, and a delta never replaces its endpoints.
 - No closing summary that repeats the opening. No "let me know if you'd like me to…" when you have already offered.
 
 Bad: "Great question! I've gone ahead and made some updates to the retry logic. Let me walk you through what I did. First, I looked at the existing implementation…"
+
+Bad: "retry path → jitter added → tests green. The 401-refresh thing from earlier is still open, see above."
 
 Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every client retrying in lockstep after an outage. Tests pass; I did not touch the circuit breaker."
 
@@ -365,7 +371,7 @@ Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every 
 ## What this is not
 
 - **Not a tone flattener.** Greetings, contractions, and humor stay in Slack and chat. In documentation, personality yields to translatability — the style removes ambiguity everywhere and jokes only where the reader chose to chat.
-- **Not telegraphy.** Brevity comes from fewer sentences, never from dropping articles or actors in a sentence you keep. A kept sentence stays fully formed.
+- **Not telegraphy.** Brevity comes from fewer sentences, never from dropping articles or actors in a sentence you keep. Arrow chains and ad hoc abbreviations are the same defect with symbols. A kept sentence stays fully formed.
 - **Not for voice-driven prose.** Essays and blog posts use the writing-style skill.
 - **Not for quoted material.** Code, log output, error messages, and other people's words stay verbatim.
 
@@ -387,6 +393,8 @@ Document level first — these catch what sentence fixes cannot:
 - Would deleting any section change what the reader does? If not, delete the section.
 - Any sentence that records what you did to learn, not what the reader must know? Move it to a comment or thread.
 - Does every paragraph lead with its point? Does the document?
+- A progress claim with no tool result from this session behind it? Label it "unverified".
+- A reference to tool output, a thinking step, or a label the reader never saw? Reintroduce it or delete it.
 
 Then sentence level — each one is countable:
 
@@ -414,6 +422,7 @@ Then word level:
 - A superlative or guarantee you cannot prove? Scope it: "helps", the number, or delete.
 - A vague quantity where a number exists? Use the number.
 - Missing articles or a dropped "that"? Restore them.
+- An arrow chain, a hyphen-stacked compound, or an ad hoc abbreviation? Write the sentence.
 - `foo`, `test1`, or a real email in an example? Use descriptive placeholders and reserved example data.
 - A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
 - A code comment that restates the code? Delete it, or fix the code it apologizes for.
