@@ -30,7 +30,7 @@ Standards apply at **write time**, not just review time: the `load-standards` Se
 
 `pre-review` checks your branch against every rule (one-offs included), an always-on correctness checklist (inverted conditions, missing awaits, swallowed errors, untested branches), and a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. The goal: by the time a human sees the PR, their past feedback has already been addressed.
 
-Every review surface consults `.claude/standards.md` when it exists: `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly, and `sync.sh` maintains a managed block in `~/.claude/CLAUDE.md` so the native `/code-review` picks it up in any repo.
+Every review surface consults `.claude/standards.md` when it exists. `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly. The `load-standards` hook injects it at session start, so the native `/code-review` sees it in any repo.
 
 New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the repo, writes a real CLAUDE.md, runs the full distill, and proposes a toolchain-matched permissions allowlist — with a choice between committing the files or keeping them local-only (`.git/info/exclude` + `settings.local.json`).
 
@@ -43,10 +43,10 @@ From within Claude Code:
 /plugin install mays@dotfiles
 ```
 
-Then sync personal settings (optional, overwrites `~/.claude/settings.json`):
+Optional: install the user template. The next command replaces all of `~/.claude/CLAUDE.md` with the template's managed block, so back up anything you keep in that file first:
 
 ```bash
-./sync.sh
+sed -n '/mays:managed:start/,/mays:managed:end/p' ~/.claude/plugins/marketplaces/dotfiles/templates/CLAUDE.user.md > ~/.claude/CLAUDE.md
 ```
 
 ## Update
@@ -109,16 +109,6 @@ claude plugin marketplace update dotfiles
 | `post-edit-format` | PostToolUse (Edit/Write) | Auto-format edited files with Prettier when the project uses it |
 | `load-standards` | SessionStart | Inject `.claude/standards.md` into context so code is written compliant on the first pass, not repaired at review |
 
-## Settings
-
-`settings.json` (synced to `~/.claude/settings.json` by `sync.sh`; the script also maintains a managed block in `~/.claude/CLAUDE.md` with the standards lookup, the corrected-twice rule-capture offer, and git conventions):
-
-- Extended output tokens (64K) and thinking tokens (32K)
-- `includeCoAuthoredBy: false` — no co-author tags in commits
-- `alwaysThinkingEnabled: true`
-- `permissions.allow` — pre-approved safe commands (git status/diff/log, npm run/test, prettier, eslint, tsc, gh)
-- `enabledPlugins` — marketplace plugins, including this one
-
 ## Structure
 
 ```
@@ -131,7 +121,7 @@ skills/                # Auto-activated skills
 hooks/
 ├── hooks.json         # Hook configuration
 └── scripts/           # Hook implementations
-templates/CLAUDE.md    # Project CLAUDE.md template (copy into repos)
-settings.json          # Personal settings (synced by sync.sh, not part of the plugin)
-sync.sh                # Sync settings + clean up old copy-based installs
+templates/
+├── CLAUDE.md          # Project CLAUDE.md template (copy into a repo)
+└── CLAUDE.user.md     # User CLAUDE.md template (copy to ~/.claude/CLAUDE.md)
 ```
