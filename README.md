@@ -1,38 +1,28 @@
 # dotfiles
 
-Personal Claude Code configuration, packaged as an installable plugin (`mays`). One system: distill each repo's review culture into rules, write code against those rules from the first keystroke, gate every PR through layered review, and feed human feedback back into the rules.
+Personal Claude Code configuration, packaged as an installable plugin (`mays`). One system: onboard a repo, gate every PR through layered review, and keep it merge-ready.
 
 ## The System
 
 ```
-/onboard-repo                  # day one in a new codebase: CLAUDE.md + standards + permissions
-── write code ──               # the load-standards hook injects .claude/standards.md at session start
+/onboard-repo                  # day one in a new codebase: CLAUDE.md + permissions
 /ship                          # pre-review → code-review high → tests → commit → push → PR
 /babysit-pr                    # keep the open PR merge-ready: conflicts, CI, review comments
-── after human review lands ──
-/distill-standards #<PR>       # absorb that PR's feedback immediately
-/distill-standards             # or: cheap delta over everything merged since the last run
 ── reviewing someone else's PR ──
-/review-pr <PR# or URL>        # standards-aware review as Conventional Comments, optionally posted
+/review-pr <PR# or URL>        # review as Conventional Comments, optionally posted
 ```
-
-`distill-standards` reads PR review history via `gh` and writes distilled rules (never raw comments) to `.claude/standards.md`. Recurring feedback becomes conventions; substantive one-off feedback — edge cases, domain gotchas — lands in a `## One-offs` section and gets promoted to a convention if it recurs. Suggestions the team visibly rejected become anti-rules in `## Known False Positives`, so reviews stop re-litigating settled arguments. Bare runs do a delta over only the PRs merged since the last run, so standards stay current without re-mining history.
-
-Standards apply at **write time**, not just review time: the `load-standards` SessionStart hook injects the file into context when a session opens in the repo, so code conforms on the first pass instead of being repaired at review.
 
 `/ship` runs the whole pre-PR path with one confirmation checkpoint before anything leaves the machine, opening the PR with the summary + test-plan format from the `~/.claude/CLAUDE.md` managed block. To run its gates individually:
 
 ```
-/pre-review                    # standards conformance — catches what reviewers flagged before
+/pre-review                    # repo conventions, correctness, and AI-slop checks
 /code-review high              # native correctness review — bugs, not style
 /extreme-code-quality-review   # structural audit — only for large or structural changes
 ```
 
-`pre-review` checks your branch against every rule (one-offs included), an always-on correctness checklist (inverted conditions, missing awaits, swallowed errors, untested branches), and a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes. The goal: by the time a human sees the PR, their past feedback has already been addressed.
+`pre-review` checks your branch against the repo's CLAUDE.md conventions, an always-on correctness checklist (inverted conditions, missing awaits, swallowed errors, untested branches), and a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes.
 
-Every review surface consults `.claude/standards.md` when it exists. `/pre-review`, `/review-pr`, and `/extreme-code-quality-review` load it directly. The `load-standards` hook injects it at session start, so the native `/code-review` sees it in any repo.
-
-New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the repo, writes a real CLAUDE.md, runs the full distill, and proposes a toolchain-matched permissions allowlist — with a choice between committing the files or keeping them local-only (`.git/info/exclude` + `settings.local.json`).
+New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the repo, writes a real CLAUDE.md, and proposes a toolchain-matched permissions allowlist — with a choice between committing the files or keeping them local-only (`.git/info/exclude` + `settings.local.json`).
 
 ## Install
 
@@ -48,6 +38,8 @@ Optional: install the user template. The next command replaces all of `~/.claude
 ```bash
 sed -n '/mays:managed:start/,/mays:managed:end/p' ~/.claude/plugins/marketplaces/dotfiles/templates/CLAUDE.user.md > ~/.claude/CLAUDE.md
 ```
+
+Strong-model spawns leave `model:` unset and resolve through `CLAUDE_CODE_SUBAGENT_MODEL`. On a machine with Fable access, set it to `fable` under `env` in `~/.claude/settings.json`. Elsewhere set it to `opus`. Unset, it falls back to the session model. Never set it to `sonnet`: that routes implementation and review to Sonnet.
 
 ## Update
 
@@ -73,12 +65,11 @@ claude plugin marketplace update dotfiles
 |---------|---------|
 | `/babysit-pr [PR#]` | Keep your open PR merge-ready — resolve conflicts, fix CI, address review comments (delegates to `/fix-merge-conflict` and `/test-and-fix`) |
 | `/diagnose-bug [description]` | Root-cause an unclear bug — red-capable repro loop first, then bisect, ranked hypotheses, fix, regression test |
-| `/distill-standards [N \| #PR \| full]` | Mine merged PRs into `.claude/standards.md` — full regen from N PRs, delta since last run (no args), or absorb a single PR's feedback |
-| `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch, standards-aware |
+| `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
-| `/onboard-repo [N]` | Day-one bootstrap for a new codebase — CLAUDE.md, distilled standards, and a permissions allowlist in one run |
-| `/pre-review` | Check the branch diff against distilled standards (with staleness warning), then offer to apply fixes |
-| `/review-pr <PR#>` | Review someone else's PR against distilled standards and its originating ticket (GitHub/Linear/Jira/Shortcut); findings are STE-written Conventional Comments, optionally posted to GitHub |
+| `/onboard-repo` | Day-one bootstrap for a new codebase — CLAUDE.md and a permissions allowlist in one run |
+| `/pre-review` | Review the branch diff for correctness, AI slop, and repo-convention drift, then offer to apply fixes |
+| `/review-pr <PR#>` | Review someone else's PR against its originating ticket (GitHub/Linear/Jira/Shortcut); findings are STE-written Conventional Comments, optionally posted to GitHub |
 | `/security-audit` | Audit home-directory dotfiles for security issues (read-only report) |
 | `/ship` | The golden path as one command: pre-review → code-review → tests → commit → push → PR |
 | `/test-and-fix` | Run tests and fix failures until green (also /ship's test gate) |
@@ -108,7 +99,6 @@ claude plugin marketplace update dotfiles
 | `block-destructive-git` | PreToolUse (Bash) | Block force pushes (including `+refspec`), hard resets, forced cleans and branch deletes |
 | `block-hardcoded-secrets` | PreToolUse (Edit/Write) | Block edits that introduce hardcoded API keys/passwords |
 | `post-edit-format` | PostToolUse (Edit/Write) | Auto-format edited files with Prettier when the project uses it |
-| `load-standards` | SessionStart | Inject `.claude/standards.md` into context so code is written compliant on the first pass, not repaired at review |
 
 ## Structure
 

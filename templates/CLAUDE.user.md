@@ -17,12 +17,14 @@ Writing: everything you write for me follows the `ste-writing` rules, chat answe
 - Readable beats short. Cut ideas to fit a budget. Never compress sentences into fragments, arrow chains, or abbreviations.
 - Use `writing-style` only when I ask for an essay, post, or article by name. Code, logs, and error text stay verbatim.
 
-Delegation: the session model orchestrates and subagents do the work. Pick the cheapest model whose output a deterministic check can verify.
+Delegation: the session model orchestrates and subagents do the work. The session holds the largest context and re-sends it every turn, so it runs on `opus` (`/model opus`). The strongest model goes where the input is small and the output is code. Pick the cheapest model whose output a deterministic check can verify.
 
-- `model: "opus"`: implementation, debugging, architecture-aware exploration, adversarial review, blast-radius checks.
-- `model: "sonnet"`: work a test, lint, compile, or known-target grep will verify. Test runs, rote refactors from an exact spec, formatting, screenshots.
-- Exploration: spawn `Explore` agents with one scoped question each. "Find the file that defines X" goes to `sonnet`.
-- Implementation: for a multi-file change, spawn `general-purpose` agents with exact file paths, the rules from this file that apply, and the tests that define done.
+- Strong model, `model:` unset: implementation, debugging, adversarial review, blast-radius checks. Always a fresh context with a small prompt. `CLAUDE_CODE_SUBAGENT_MODEL` picks the model, and the session model is the fallback. An agent definition's own `model:` beats both.
+- Pin `model: "sonnet"` on work a test, lint, compile, or known-target grep will verify: test runs, rote refactors from an exact spec, formatting, screenshots, exploration. Leave strong-model spawns unpinned so `CLAUDE_CODE_SUBAGENT_MODEL` decides.
+- Never `subagent_type: "fork"`. A fork re-sends this whole conversation. Put what the agent needs in the prompt. To continue an agent, use `SendMessage` instead of briefing a new one.
+- Exploration: spawn `Explore` agents with one scoped question each.
+- Implementation: for a multi-file change, spawn `general-purpose` agents with exact file paths, the rules from this file that apply, and the tests that define done. The implementer stops once the change and its own new tests pass. It never runs the full suite or loops on failures.
+- Validation: you run the full suite, lint, and typecheck yourself. Hand a failure to a `sonnet` agent with only the failure output and the files it names. A failure that survives 2 attempts gets one fresh strong-model agent. Then stop and report.
 - Tripwire: when the plan or an `Explore` report names 3 or more files, or the task needs a browser or a rendered image, delegate before the first `Edit` or `Write`. Work inline only for sequential diagnosis and for edits to 1 or 2 known files.
 - Every agent prompt states the reason: the larger task, who it's for, and what the output enables.
 - Keep working while agents run. Intervene when one goes off track or lacks context.
@@ -40,7 +42,7 @@ Code comments: default to none. A comment must carry a fact the code cannot: a w
 
 Tests: every bug fix gets a test that fails before the fix. Never weaken or delete a test to make a suite pass. If a test was wrong, say so explicitly.
 
-Standards: when I correct the same kind of mistake twice in one session, offer once to record the pattern in `.claude/standards.md` under `## Manual`. Create the file with only that section if it doesn't exist. Two corrections trigger the offer, at most once per session. If I decline, drop it silently.
+Standards: when I correct the same kind of mistake twice in one session, offer once to record the pattern in the repo's `CLAUDE.md` under `## Conventions`. Create the section if it doesn't exist. Two corrections trigger the offer, at most once per session. If I decline, drop it silently.
 
 Dependencies: don't add a package without asking. Prefer the standard library or something already in the manifest.
 
