@@ -15,7 +15,7 @@ Monitor your own open pull request and keep it merge-ready: resolve merge confli
    2. Failing CI checks
    3. Unresolved review comments
 3. **Resolve conflicts**: `git fetch origin <base> && git merge origin/<base>`, then run the `fix-merge-conflict` command — its resolution priorities and validation apply.
-4. **Fix CI**: `gh pr checks <n>` to list checks; if checks are pending, wait with `gh pr checks <n> --watch` before analyzing. When 3+ independent jobs fail, fan out one subagent per job in a single message — each owns its slice's logs, root cause, and fix; below that threshold, fix sequentially, since fan-out overhead beats one or two failures. For each failure, get logs via `gh run view <run-id> --log-failed`, then fix by type:
+4. **Fix CI**: `gh pr checks <n>` to list checks; if checks are pending, wait with `gh pr checks <n> --watch` before analyzing. When 3+ independent jobs fail, fan out one `sonnet` subagent per job in a single message. Each gets a fresh context with only its logs and owns its slice's root cause and fix. Below that threshold, fix sequentially, since fan-out overhead beats one or two failures. For each failure, get logs via `gh run view <run-id> --log-failed`, then fix by type:
    - Test failures → run the `test-and-fix` command scoped to the failing area (its iteration limits and never-change-expectations rule apply).
    - Lint, format, or type errors → run the same tool locally, fix, re-run until clean.
    - Build failures → reproduce locally and fix the root cause. Never fix a build by loosening config (ignore flags, skipped checks) unless that is already the repo's pattern.
@@ -30,7 +30,6 @@ Monitor your own open pull request and keep it merge-ready: resolve merge confli
    - PR state: merge-ready, or exactly what still blocks.
    - Each fix made — conflicts resolved, checks fixed, comments addressed — and the comments left for the user with why.
    - If the PR is a draft and everything is green, say it is ready for `gh pr ready` — don't run it.
-   - If review feedback was addressed, suggest `/distill-standards #<n>` to turn that feedback into a standing rule.
 
 ## Guidelines
 

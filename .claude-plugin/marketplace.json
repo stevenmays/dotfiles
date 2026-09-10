@@ -9,7 +9,7 @@
     {
       "name": "mays",
       "source": "./",
-      "description": "Git workflow commands, PR-standards distillation, strict code-quality review, safety hooks, and personal skills."
+      "description": "Git workflow commands, strict code-quality review, safety hooks, and personal skills."
     }
   ]
 }

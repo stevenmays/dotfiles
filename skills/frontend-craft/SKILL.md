@@ -11,11 +11,11 @@ Load `frontend-design` (the Anthropic plugin skill) first. It owns the design pl
 
 ## Roles
 
-Split the work across models. Judgment costs few tokens; implementation costs many.
+Both roles run in a fresh context with a small input, so the strongest model is affordable in each. The session stays out of the code.
 
-- **Critic**: the strongest model available (`model: "fable"`, else `opus`). Sees only screenshots. Never sees code, past critiques, or the implementer's rationale.
-- **Implementer**: `model: "opus"`. Owns the code. `sonnet` is fine for rote iterations once the direction is fixed and the change is spelled out.
-- **You (session)**: run the loop, hold the stopping rule, report scores.
+- **Critic**: the strong model, `model:` unset. Sees only screenshots. Never sees code, past critiques, or the implementer's rationale.
+- **Implementer**: the strong model, `model:` unset. One fresh context per round holds the brief, the critic's gap list, and the file paths. Never a fork. `sonnet` is fine for rote iterations once the direction is fixed and the change is spelled out.
+- **You (session)**: run the loop, run validation, hold the stopping rule, report scores.
 
 ## Discover: widen the search before you commit
 
@@ -45,7 +45,7 @@ Each iteration:
 
 1. Screenshot the current design at 1440 px and 390 px wide. Use the browser tooling available (Chrome MCP, Playwright, or the `run` skill). Save PNGs to the scratchpad. If no browser tooling exists, skip the critic loop, run the subtraction pass alone, and report no scores rather than invented ones.
 2. Spawn the critic in a fresh context with only the screenshots, the one-sentence aesthetic brief, and the prompt in the following section. Same prompt every round.
-3. Hand the critic's gap list to the implementer as the change spec. Fix the biggest gap first.
+3. Hand the critic's gap list to a fresh implementer each round as the change spec. Fix the biggest gap first.
 4. Record the score. Repeat.
 
 Critic prompt:
