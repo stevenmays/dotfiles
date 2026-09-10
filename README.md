@@ -88,6 +88,7 @@ claude plugin marketplace update dotfiles
 | Skill | Purpose |
 |-------|---------|
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
+| `frontend-craft` | Companion to Anthropic's `frontend-design`: seed-string variety, screenshot-only design-critic loop, generated images and video, and a subtraction pass that removes AI tells |
 | `gemini-image-generator` | Generate images via Gemini API |
 | `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
 | `skill-optimizer` | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
