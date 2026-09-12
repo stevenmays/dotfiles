@@ -74,7 +74,7 @@ Sharpen the critic when the brief allows it. Ranking beats scoring: give the cri
 
 Gradients, blobs, and geometric shapes are what a model reaches for instead of an image, and readers recognize them. When the design needs a hero visual, texture, or illustration, generate one.
 
-- **Images**: use the `mays:gemini-image-generator` skill. It reads `GEMINI_API_KEY` from the environment. Generate on a solid background when the image must sit on the page's color, or ask for a transparent-friendly composition and mask it.
+- **Images**: use the `mays:codex-image-generator` skill; it needs no API key. Use `mays:gemini-image-generator` only when the user names Gemini. Generate on a solid background when the image must sit on the page's color, or ask for a transparent-friendly composition and mask it.
 - **Video**: for motion that code can't fake (refraction, physics, material), generate a looping clip through fal.ai with `FAL_KEY` from the environment. Look up current text-to-video and video-matting model ids in the fal.ai docs at run time, and name the ids you chose in the report. Render the clip over the page background so refraction bakes in, then remove the background with a matting model. For state transitions, generate keyframe images for each state and interpolate between them; play the clip on the action, or scrub it on scroll.
 - Verify every generated asset in the browser at both widths before you move on. Check the loop seam on video.
 
