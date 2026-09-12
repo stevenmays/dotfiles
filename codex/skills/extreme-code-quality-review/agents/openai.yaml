@@ -1,0 +1,6 @@
+interface:
+  display_name: "Extreme Code Quality Review"
+  short_description: "Run a strict maintainability review"
+  default_prompt: "Use $extreme-code-quality-review to audit this branch."
+policy:
+  allow_implicit_invocation: false

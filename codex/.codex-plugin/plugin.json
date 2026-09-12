@@ -1,0 +1,31 @@
+{
+  "name": "mays",
+  "version": "1.19.0+codex.20260912124905",
+  "description": "Personal engineering and design workflows adapted for Codex.",
+  "author": {
+    "name": "Steven Mays",
+    "email": "stevenmays@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "code-review",
+    "engineering",
+    "design"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Mays",
+    "shortDescription": "Engineering and design skills for Codex",
+    "longDescription": "Focused workflows for strict review, refactoring, frontend design, serverless AWS, onboarding, conflict resolution, skill evaluation, and long-form writing.",
+    "developerName": "Steven Mays",
+    "category": "Engineering",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Use $extreme-code-quality-review to audit this branch",
+      "Use $onboard-repo to set up AGENTS.md"
+    ]
+  }
+}

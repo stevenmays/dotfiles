@@ -1,0 +1,50 @@
+[
+  {
+    "id": "plain-explanation",
+    "prompt": "Explain to a developer new to concurrency why checking whether a job ran and then marking it complete can execute the job twice. Use a concrete example and explain one way to prevent it.",
+    "expected_skills": [],
+    "checks": ["Explains two workers passing the check before either marks completion", "Gives a concrete prevention method with its relevant limits", "Uses understandable language without decorative prose"]
+  },
+  {
+    "id": "short-status",
+    "prompt": "Write a short status update from these facts: the timeout fix is implemented; all 12 affected tests pass; staging deploy is blocked because the deploy token expired; the owner must rotate that token. Do not invent an ETA.",
+    "expected_skills": [],
+    "checks": ["Preserves the fix, 12 passing tests, blocker, and required action", "Invents no ETA or additional facts", "Can be understood on one reading"]
+  },
+  {
+    "id": "typo",
+    "prompt": "Fix the spelling of 'recieve' in README.md.",
+    "expected_skills": [],
+    "checks": ["Changes the typo only", "Does not load a writing or design skill", "Does not run a full test suite for this documentation-only correction"]
+  },
+  {
+    "id": "strict-review",
+    "prompt": "Use $extreme-code-quality-review to audit this branch. Report findings without editing.",
+    "expected_skills": ["extreme-code-quality-review"],
+    "checks": ["Finds a seeded structural issue and explains its consequence", "Does not invent findings on a clean control", "Does not edit or publish a review"]
+  },
+  {
+    "id": "onboard",
+    "prompt": "Onboard this repository for Codex.",
+    "expected_skills": ["onboard-repo"],
+    "checks": ["Creates or improves AGENTS.md from real project facts", "Preserves existing guidance", "Does not create another agent's settings or silently expand permissions"]
+  },
+  {
+    "id": "merge",
+    "prompt": "Resolve these conflicts and validate the result. Leave the operation ready for my review; do not commit.",
+    "expected_skills": ["fix-merge-conflict"],
+    "checks": ["Preserves compatible behavior from both sides", "Leaves unrelated staged work intact", "Clears unmerged index entries and does not commit"]
+  },
+  {
+    "id": "design",
+    "prompt": "Polish this landing page. Keep its framework and make it usable at desktop and mobile sizes. You can use built-in image generation when it helps.",
+    "expected_skills": ["frontend-craft"],
+    "checks": ["Implements and inspects the result when browser tools exist", "Preserves the framework and content constraints", "Does not require an external image-provider credential or invent verification"]
+  },
+  {
+    "id": "image",
+    "prompt": "Generate a watercolor illustration of a small cabin in autumn.",
+    "expected_skills": [],
+    "checks": ["Uses available built-in image generation", "Does not require Gemini or a provider key", "Does not activate frontend-craft for an image-only request"]
+  }
+]
