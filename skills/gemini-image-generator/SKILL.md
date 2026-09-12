@@ -1,13 +1,15 @@
 ---
 name: gemini-image-generator
-description: Generate images using Google Gemini with customizable options
+description: Generate images with Google Gemini. Use only when the user names Gemini or asks for a Gemini image. For every other image request use codex-image-generator, the default path.
 ---
 
 # gemini-image-generator
 
 ## Instructions
 
-Use this skill to generate images using Google Gemini's image generation model. The skill supports:
+Use this skill only when the user asks for Gemini by name. `codex-image-generator` is the default for image requests that name no provider.
+
+The skill supports:
 - Text-to-image generation from prompts
 - Image-to-image generation with a reference image
 - Multiple output sizes (1K, 2K, 4K)

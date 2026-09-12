@@ -1,7 +1,7 @@
 {
   "name": "mays",
   "description": "Git workflow commands, strict code-quality review, safety hooks, and personal skills.",
-  "version": "1.19.0",
+  "version": "1.20.0",
   "author": {
     "name": "Steven Mays",
     "email": "stevenmays@gmail.com"
