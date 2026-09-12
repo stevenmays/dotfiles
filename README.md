@@ -1,8 +1,8 @@
 # dotfiles
 
-Personal Claude Code configuration, packaged as an installable plugin (`mays`). One system: onboard a repo, gate every PR through layered review, and keep it merge-ready.
+Personal Claude Code and Codex configuration, packaged as separate versions of the `mays` plugin in one repository. Claude uses the root package; Codex uses [`codex/`](codex/README.md).
 
-## The System
+## The Claude system
 
 ```
 /onboard-repo                  # day one in a new codebase: CLAUDE.md + permissions
@@ -33,6 +33,19 @@ From within Claude Code:
 /plugin install mays@dotfiles
 ```
 
+For Codex:
+
+```bash
+codex plugin marketplace add stevenmays/dotfiles
+codex plugin add mays@dotfiles
+```
+
+When developing from a local checkout, replace `stevenmays/dotfiles` with the checkout path.
+Codex installs the self-contained `codex/` package with eight adapted skills. It excludes
+`ste-writing` and Gemini image generation; frontend work uses Codex's built-in image capability
+when available. Claude commands, agents, and hooks stay outside that package. See the
+[Codex package guide](codex/README.md) for its skills, validation, and optional personal template.
+
 Optional: install the user template. The next command replaces all of `~/.claude/CLAUDE.md` with the template's managed block, so back up anything you keep in that file first:
 
 ```bash
@@ -57,7 +70,16 @@ Non-interactive equivalent:
 claude plugin marketplace update dotfiles
 ```
 
-## What's in the Plugin
+For a local Codex checkout, update the version cachebuster in `codex/.codex-plugin/plugin.json`
+with the plugin-creator helper, then reinstall:
+
+```bash
+codex plugin add mays@dotfiles
+```
+
+Start a new Codex thread after reinstalling to load the updated catalog.
+
+## What's in the Claude plugin
 
 ### Commands
 
@@ -107,6 +129,15 @@ claude plugin marketplace update dotfiles
 .claude-plugin/
 ├── plugin.json        # Plugin manifest
 └── marketplace.json   # Lets this repo act as a marketplace
+.agents/plugins/
+└── marketplace.json   # Codex marketplace; source is ./codex
+codex/
+├── .codex-plugin/     # Independent Codex manifest and version
+├── skills/            # Eight adapted skills; no STE or Gemini skill
+├── templates/         # Optional personal AGENTS.md preferences
+├── evals/             # Behavioral cases and validation results
+└── shared-resources.json # Explicit copies from canonical source files
+scripts/               # Package validation and shared-resource synchronization
 commands/              # Slash commands
 agents/                # Subagents
 skills/                # Auto-activated skills

@@ -1,0 +1,20 @@
+{
+  "name": "dotfiles",
+  "interface": {
+    "displayName": "Steven Mays' Dotfiles"
+  },
+  "plugins": [
+    {
+      "name": "mays",
+      "source": {
+        "source": "local",
+        "path": "./codex"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Engineering"
+    }
+  ]
+}
