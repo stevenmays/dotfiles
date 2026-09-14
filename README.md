@@ -52,7 +52,7 @@ Optional: install the user template. The next command replaces all of `~/.claude
 sed -n '/mays:managed:start/,/mays:managed:end/p' ~/.claude/plugins/marketplaces/dotfiles/templates/CLAUDE.user.md > ~/.claude/CLAUDE.md
 ```
 
-Strong-model spawns leave `model:` unset and resolve through `CLAUDE_CODE_SUBAGENT_MODEL`. On a machine with Fable access, set it to `fable` under `env` in `~/.claude/settings.json`. Elsewhere set it to `opus`. Unset, it falls back to the session model. Never set it to `sonnet`: that routes implementation and review to Sonnet.
+Strong-model spawns leave `model:` unset and resolve through `CLAUDE_CODE_SUBAGENT_MODEL`. Set it to `opus` under `env` in `~/.claude/settings.json` on every machine, and run the session itself on the strongest model you have (`/model`). Unset, it falls back to the session model. Never set it to `sonnet`: that routes implementation and review to Sonnet.
 
 ## Update
 

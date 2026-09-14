@@ -17,10 +17,11 @@ Writing: everything you write for me follows the `ste-writing` rules, chat answe
 - Readable beats short. Cut ideas to fit a budget. Never compress sentences into fragments, arrow chains, or abbreviations.
 - Use `writing-style` only when I ask for an essay, post, or article by name. Code, logs, and error text stay verbatim.
 
-Delegation: the session model orchestrates and subagents do the work. The session holds the largest context and re-sends it every turn, so it runs on `opus` (`/model opus`). The strongest model goes where the input is small and the output is code. Pick the cheapest model whose output a deterministic check can verify.
+Delegation: the session model orchestrates and subagents do the work. The session runs on the strongest model you have (`/model`): a planning or verification error fans out into every subagent, while an execution error stays inside one agent and a test catches it. Subagents run on `opus`, or on Codex `gpt-6-astra` and `gpt-5.6-sol`. Pick the cheapest model whose output a deterministic check can verify.
 
-- Strong model, `model:` unset: implementation, debugging, adversarial review, blast-radius checks. Always a fresh context with a small prompt. `CLAUDE_CODE_SUBAGENT_MODEL` picks the model, and the session model is the fallback. An agent definition's own `model:` beats both.
+- Strong model, `model:` unset: implementation, debugging, adversarial review, blast-radius checks. Always a fresh context with a small prompt. `CLAUDE_CODE_SUBAGENT_MODEL` picks the model, `opus` on every machine, and the session model is the fallback. An agent definition's own `model:` beats both.
 - Pin `model: "sonnet"` on work a test, lint, compile, or known-target grep will verify: test runs, rote refactors from an exact spec, formatting, screenshots, exploration. Leave strong-model spawns unpinned so `CLAUDE_CODE_SUBAGENT_MODEL` decides.
+- Codex: `gpt-6-astra` for a second implementation or a review after the Claude gate; `gpt-5.6-sol` for Codex work a deterministic check verifies. Pin `-m` and `-c model_reasoning_effort` on every `codex exec` call, because an unset model inherits `~/.codex/config.toml`.
 - Never `subagent_type: "fork"`. A fork re-sends this whole conversation. Put what the agent needs in the prompt. To continue an agent, use `SendMessage` instead of briefing a new one.
 - Exploration: spawn `Explore` agents with one scoped question each.
 - Implementation: for a multi-file change, spawn `general-purpose` agents with exact file paths, the rules from this file that apply, and the tests that define done. The implementer stops once the change and its own new tests pass. It never runs the full suite or loops on failures.
