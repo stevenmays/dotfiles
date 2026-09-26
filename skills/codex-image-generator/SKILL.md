@@ -1,6 +1,6 @@
 ---
 name: codex-image-generator
-description: Default image generation path. Generate or edit raster images (hero images, illustrations, textures, product shots, mockups, transparent cutouts) through the Codex CLI's built-in image_gen tool, run in a subagent. Use whenever the user asks for an image, picture, illustration, or visual asset and does not name a provider. Not for SVG, icons, or diagrams that belong in code. When the user names Gemini, use gemini-image-generator instead.
+description: Default image generation path. Generate or edit raster images (hero images, illustrations, textures, product shots, mockups, transparent cutouts) through the Codex CLI's built-in image_gen tool, run in a subagent. Use whenever the user asks for an image, picture, illustration, or visual asset and does not name a provider. Not for SVG, icons, or diagrams that belong in code.
 ---
 
 # Codex image generator
@@ -31,4 +31,4 @@ The script prints the absolute path, then the `file` description, byte size, ela
 - One asset per call. For variants or a set, run the script once per asset with distinct prompts.
 - Never overwrite an existing asset the user did not ask to replace. Use a sibling name such as `hero-v2.png`.
 - Report the saved path and the final prompt. Do not paste the image into chat.
-- If `codex` is missing or not logged in, say so and stop. Do not fall back to Gemini unless the user asks for it.
+- If `codex` is missing or not logged in, say so and stop.

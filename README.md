@@ -42,7 +42,7 @@ codex plugin add mays@dotfiles
 
 When developing from a local checkout, replace `stevenmays/dotfiles` with the checkout path.
 Codex installs the self-contained `codex/` package with eight adapted skills. It excludes
-`ste-writing` and Gemini image generation; frontend work uses Codex's built-in image capability
+`ste-writing`; frontend work uses Codex's built-in image capability
 when available. Claude commands, agents, and hooks stay outside that package. See the
 [Codex package guide](codex/README.md) for its skills, validation, and optional personal template.
 
@@ -100,10 +100,13 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 
 | Skill | Purpose |
 |-------|---------|
+| `claude-subagents` | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
+| `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
 | `frontend-craft` | Companion to Anthropic's `frontend-design`: seed-string variety, screenshot-only design-critic loop, generated images and video, and a subtraction pass that removes AI tells |
 | `codex-image-generator` | Default image path: Codex CLI's built-in `image_gen` tool, run in a subagent, no API key |
-| `gemini-image-generator` | Generate images via Gemini API, only when the user names Gemini |
+| `gemini-image-generator` | Nano Banana images through the Antigravity CLI's `generate_image` tool, run in a subagent, no API key; use when the user names Gemini, Nano Banana, or Antigravity |
+| `gemini-subagents` | Run any task on a Gemini model as a background subagent through the Antigravity CLI, behind a wrapper that cannot hang the session |
 | `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
 | `skill-optimizer` | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
 | `ste-writing` | Simplified Technical English for docs, PR descriptions, and review comments — every review command drafts findings with it |
@@ -133,7 +136,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 └── marketplace.json   # Codex marketplace; source is ./codex
 codex/
 ├── .codex-plugin/     # Independent Codex manifest and version
-├── skills/            # Eight adapted skills; no STE or Gemini skill
+├── skills/            # Eight adapted skills; no STE skill
 ├── templates/         # Optional personal AGENTS.md preferences
 ├── evals/             # Behavioral cases and validation results
 └── shared-resources.json # Explicit copies from canonical source files

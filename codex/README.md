@@ -4,7 +4,7 @@ This package contains independently maintained Codex instructions. The repositor
 
 The eight skills cover strict maintainability review, deslop, frontend craft, skill optimization, long-form writing, serverless AWS, onboarding, and merge conflicts. Strict review preserves its explicit-only invocation policy. Other skills use concise descriptions for normal discovery.
 
-`ste-writing` is excluded. Routine writing uses the model's default behavior; the optional [personal template](templates/AGENTS.user.md) adds only brief plain-language preferences. The `writing-style` skill applies to requested essays and articles in Steven's voice. Gemini image generation is also excluded; frontend craft uses the session's built-in image capability when available.
+`ste-writing` is excluded. Routine writing uses the model's default behavior; the optional [personal template](templates/AGENTS.user.md) adds only brief plain-language preferences. The `writing-style` skill applies to requested essays and articles in Steven's voice. Frontend craft uses the session's built-in image capability when available.
 
 ## Develop and install
 
@@ -33,6 +33,6 @@ Writing comparisons must include an arm without `ste-writing`; a smaller prompt 
 
 Claude's hooks stay in the Claude package. This port does not claim equivalent enforcement: Codex's host sandbox and approvals govern execution, and these skills grant no additional permissions. Git instructions preserve unrelated changes and distinguish merge from rebase continuation. A dedicated native hook port needs its own enforcement tests before advertising parity.
 
-The serverless skill preserves the domain constraints without copying examples that assume a single-record SQS batch or process-local deduplication. The Gemini helper is not bundled, so its old SDK and model assumptions do not affect this package.
+The serverless skill preserves the domain constraints without copying examples that assume a single-record SQS batch or process-local deduplication.
 
 The split follows OpenAI's guidance on [focused skills and selective context](https://developers.openai.com/blog/rethinking-skills-and-prompts-for-gpt-6-astra) and [skill discovery](https://learn.chatgpt.com/docs/build-skills). Astra's [writing guidance](https://developers.openai.com/api/docs/guides/latest-model) notes verbosity and recurring phrasing; the decision to omit the large writing skill is a user preference to evaluate in practice.
