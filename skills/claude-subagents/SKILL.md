@@ -1,6 +1,6 @@
 ---
 name: claude-subagents
-description: Dispatch planning, review, implementation, or a scoped question to a fresh Claude subagent with the Agent tool — which subagent type and model to pick, what the prompt must carry, and how to check what comes back. Use whenever a workflow hands work to a Claude subagent.
+description: Dispatch planning, review, implementation, or a scoped question to a fresh Claude subagent with the Agent tool — which subagent type and model to pick, what the prompt must carry, and how to check what comes back. Use whenever a workflow hands work to a Claude subagent, including the Claude half of adversarial-review.
 ---
 
 # Claude subagents

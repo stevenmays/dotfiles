@@ -100,6 +100,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 
 | Skill | Purpose |
 |-------|---------|
+| `adversarial-review` | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
 | `claude-subagents` | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
 | `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |

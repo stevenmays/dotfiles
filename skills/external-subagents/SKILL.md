@@ -1,6 +1,6 @@
 ---
 name: external-subagents
-description: Run a planning, research, review, or implementation task on a second model family as a background subagent that cannot hang the session — GPT through the Codex CLI, or the newest Grok through the Cursor CLI where Codex is missing. A wrapper kills stalled runs and salvages partial output. Use whenever a workflow sends work to Codex, Cursor, GPT, Grok, a second model, or a non-Claude subagent. Not for images.
+description: Run a planning, research, review, or implementation task on a second model family as a background subagent that cannot hang the session — GPT through the Codex CLI, or the newest Grok through the Cursor CLI where Codex is missing. A wrapper kills stalled runs and salvages partial output. Use whenever a workflow sends work to Codex, Cursor, GPT, Grok, a second model, or a non-Claude subagent, including the external half of adversarial-review. Not for images.
 ---
 
 # External subagents
