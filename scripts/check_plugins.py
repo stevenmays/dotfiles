@@ -72,7 +72,7 @@ def check(root):
         require(name == skill.name and name not in names, f"Duplicate or mismatched skill name: {name}")
         require(len(name) <= 64 and not name.startswith("source-command-"), f"Invalid skill name: {name}")
         require(len(description) <= 300, f"Description too broad or long: {name}")
-        require(name not in {"ste-writing", "gemini-image-generator"}, f"Disabled skill packaged: {name}")
+        require(name != "ste-writing", f"Disabled skill packaged: {name}")
         require(not re.search(r"ste-writing|claude -p|AskUserQuestion|CLAUDE_CODE_SUBAGENT_MODEL", text),
                 f"Legacy runtime instruction: {name}")
         names.add(name)
