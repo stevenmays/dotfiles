@@ -9,12 +9,18 @@ import unittest
 
 SCRIPT = Path(__file__).resolve().parents[2] / "skills/external-subagents/scripts/external-run.sh"
 
-# Records argv NUL-separated, because the cursor prompt is a multi-line positional argument.
+# Records argv NUL-separated so an argument with a newline survives the round trip.
 FAKE = """#!/bin/sh
+if [ "$1" = --version ]; then exit 0; fi
 if [ "$1" = models ]; then cat "$0.models"; exit 0; fi
 printf '%s\\0' "$@" > "$0.argv"
-cat > /dev/null
+cat > "$0.stdin"
 cat "$0.jsonl"
+"""
+
+# A shim that cannot run, such as a cmux shim on PATH ahead of the real binary.
+BROKEN = """#!/bin/sh
+exit 126
 """
 
 MODELS = """Available models
@@ -46,8 +52,11 @@ def cursor_events(is_error=False):
                                           "content": [{"type": "text", "text": "Reading the file."}]}},
         {"type": "tool_call", "subtype": "started", "call_id": "c1", "tool_call": call},
         {"type": "tool_call", "subtype": "completed", "call_id": "c1", "tool_call": call},
+        {"type": "assistant", "message": {"role": "assistant",
+                                          "content": [{"type": "text", "text": "cursor findings"}]}},
+        # Cursor's .result concatenates every assistant message with no separator.
         {"type": "result", "subtype": "success", "is_error": is_error,
-         "result": "cursor findings", "duration_ms": 1234},
+         "result": "Reading the file.cursor findings", "duration_ms": 1234},
     ]
 
 
@@ -65,21 +74,30 @@ class ExternalRunTests(unittest.TestCase):
         self.prompt.write_text("Review this.\nSecond line.\n")
         self.out = self.dir / "out.md"
 
-    def fake(self, name, events, models=MODELS):
+    def fake(self, name, events, models=MODELS, tail=""):
         path = self.bin / name
         path.write_text(FAKE)
         path.chmod(0o755)
-        Path(f"{path}.jsonl").write_text("".join(json.dumps(event) + "\n" for event in events))
+        Path(f"{path}.jsonl").write_text("".join(json.dumps(event) + "\n" for event in events) + tail)
         Path(f"{path}.models").write_text(models)
+
+    def broken(self, name):
+        bin_dir = self.dir / "shims"
+        bin_dir.mkdir(exist_ok=True)
+        path = bin_dir / name
+        path.write_text(BROKEN)
+        path.chmod(0o755)
+        return path
 
     def argv(self, name):
         path = self.bin / f"{name}.argv"
         return path.read_bytes().decode().split("\0")[:-1] if path.exists() else None
 
-    def run_wrapper(self, *args, env=None):
+    def run_wrapper(self, *args, env=None, path_before=()):
+        path = ":".join([*map(str, path_before), str(self.bin), "/usr/bin", "/bin"])
         return subprocess.run(
             [str(SCRIPT), "--prompt", str(self.prompt), "--out", str(self.out), "--cd", str(self.dir), *args],
-            env={"PATH": f"{self.bin}:/usr/bin:/bin", **(env or {})}, capture_output=True, text=True, timeout=10)
+            env={"PATH": path, **(env or {})}, capture_output=True, text=True, timeout=10)
 
     def resolved_model(self, models, *args):
         self.fake("cursor-agent", cursor_events(), models=models)
@@ -105,21 +123,49 @@ class ExternalRunTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIsNotNone(self.argv("cursor-agent"))
 
+    def test_auto_skips_broken_codex_ahead_of_working_one(self):
+        shim = self.broken("codex")
+        self.fake("codex", CODEX_EVENTS)
+        result = self.run_wrapper(path_before=[shim.parent])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIsNotNone(self.argv("codex"))
+        self.assertIn(f"skipping {shim}", result.stderr)
+
+    def test_auto_skips_broken_codex_for_cursor(self):
+        shim = self.broken("codex")
+        self.fake("cursor-agent", cursor_events())
+        result = self.run_wrapper(path_before=[shim.parent])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIsNotNone(self.argv("cursor-agent"))
+        self.assertIn(f"skipping {shim}", result.stderr)
+
+    def test_forced_codex_with_only_broken_codex_exits_2(self):
+        shim = self.broken("codex")
+        result = self.run_wrapper("--engine", "codex", path_before=[shim.parent])
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("no runnable codex", result.stderr)
+
     def test_no_engine_exits_2(self):
         result = self.run_wrapper()
         self.assertEqual(result.returncode, 2)
         self.assertIn("no external engine", result.stderr)
 
-    def test_cursor_resolves_medium_effort_and_salvages_result(self):
+    def test_cursor_resolves_high_effort_and_salvages_result(self):
         self.fake("cursor-agent", cursor_events())
         result = self.run_wrapper("--engine", "cursor")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertPair(self.argv("cursor-agent"), "--model", "grok-4.7-medium")
+        self.assertPair(self.argv("cursor-agent"), "--model", "grok-4.7-high")
         text = self.out.read_text()
         self.assertTrue(text.startswith("# Cursor run — complete"), text)
-        self.assertIn("Engine: cursor · Model: grok-4.7-medium · effort medium", text)
+        self.assertIn("Engine: cursor · Model: grok-4.7-high · effort high", text)
         self.assertIn("cursor findings", text)
         self.assertNotIn("Reading the file.", text)
+
+    def test_cursor_salvages_truncated_stream(self):
+        events = cursor_events()[:3]
+        self.fake("cursor-agent", events, tail='{"type": "tool_call", "subtype": "comp')
+        self.run_wrapper()
+        self.assertIn("Reading the file.", self.out.read_text())
 
     def test_cursor_read_only_argv(self):
         self.fake("cursor-agent", cursor_events())
@@ -132,7 +178,8 @@ class ExternalRunTests(unittest.TestCase):
         self.assertIn("--trust", argv)
         for flag in ("--force", "--approve-mcps", "--browser"):
             self.assertNotIn(flag, argv)
-        self.assertEqual(argv[-1], "Review this.\nSecond line.")
+        self.assertFalse([arg for arg in argv if "Review this." in arg], argv)
+        self.assertEqual((self.bin / "cursor-agent.stdin").read_text(), self.prompt.read_text())
 
     def test_cursor_workspace_write_argv(self):
         self.fake("cursor-agent", cursor_events())
@@ -148,8 +195,8 @@ class ExternalRunTests(unittest.TestCase):
         self.assertEqual(self.resolved_model("grok-4.7 - Grok 4.7\ngrok-4.5-high - Grok 4.5 High\n"), "grok-4.7")
 
     def test_cursor_prefers_grok_prefix_over_cursor_grok(self):
-        models = "cursor-grok-4.7-medium - Cursor Grok 4.7\ngrok-4.7-medium - Grok 4.7 Medium\n"
-        self.assertEqual(self.resolved_model(models), "grok-4.7-medium")
+        models = "cursor-grok-4.7-high - Cursor Grok 4.7\ngrok-4.7-high - Grok 4.7 High\n"
+        self.assertEqual(self.resolved_model(models), "grok-4.7-high")
 
     def test_cursor_pinned_model_records_effort_na(self):
         self.fake("cursor-agent", cursor_events())
@@ -186,10 +233,10 @@ class ExternalRunTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         argv = self.argv("codex")
         self.assertPair(argv, "-m", "gpt-6-astra")
-        self.assertPair(argv, "-c", 'model_reasoning_effort="medium"')
+        self.assertPair(argv, "-c", 'model_reasoning_effort="high"')
         text = self.out.read_text()
         self.assertTrue(text.startswith("# Codex run — complete"), text)
-        self.assertIn("Engine: codex · Model: gpt-6-astra · effort medium", text)
+        self.assertIn("Engine: codex · Model: gpt-6-astra · effort high", text)
 
     def test_cursor_result_error_exits_126(self):
         self.fake("cursor-agent", cursor_events(is_error=True))

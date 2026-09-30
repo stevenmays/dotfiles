@@ -14,10 +14,11 @@ Not for images: `mays:codex-image-generator` covers those.
 ## Preflight
 
 ```bash
-command -v codex cursor-agent; jq --version
+type -a codex cursor-agent; jq --version
 ```
 
-- Codex present: `codex --version` must succeed. The wrapper picks Codex first.
+- The wrapper picks Codex first. It runs `--version` on every `codex` on `PATH`, in `PATH` order, and uses the first that exits 0 within 10s. `cursor-agent` gets the same probe.
+- A binary that fails the probe is skipped with a `skipping <path>` line on stderr. This skips a shim that cannot run, such as a cmux shim ahead of `/opt/homebrew/bin/codex`.
 - Cursor only: `cursor-agent status` must say you are logged in.
 - Neither engine usable: say so and stop. The caller decides any fallback.
 - Missing `jq`: the wrapper cannot extract findings from a run's event stream. Install it or expect raw JSONL.
@@ -26,8 +27,8 @@ command -v codex cursor-agent; jq --version
 
 | Engine | Chosen when | Family | Model default | Env override | Effort | `read-only` | `workspace-write` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `codex` | `codex` is on `PATH` | GPT | `gpt-6-astra` | `CODEX_SUBAGENT_MODEL` | `--effort`, else `CODEX_SUBAGENT_EFFORT`, else `medium` | `-s read-only` | `-s workspace-write` |
-| `cursor` | `codex` is missing and `cursor-agent` is on `PATH` | Grok | Highest Grok version in `cursor-agent models`, at the requested effort; `-fast` excluded (same model, double price) | `CURSOR_SUBAGENT_MODEL` | `--effort`, else `medium`: selects the slug's effort suffix | `--mode ask --trust`, no `--force` | `--force` |
+| `codex` | A `codex` on `PATH` passes `--version`; the first one that passes runs | GPT | `gpt-6-astra` | `CODEX_SUBAGENT_MODEL` | `--effort`, else `CODEX_SUBAGENT_EFFORT`, else `high` | `-s read-only` | `-s workspace-write` |
+| `cursor` | No `codex` passes `--version`, and a `cursor-agent` on `PATH` does | Grok | Highest Grok version in `cursor-agent models`, at the requested effort; `-fast` excluded (same model, double price) | `CURSOR_SUBAGENT_MODEL` | `--effort`, else `high`: selects the slug's effort suffix | `--mode ask --trust`, no `--force` | `--force` |
 
 - `EXTERNAL_SUBAGENT_ENGINE` or `--engine codex|cursor` forces an engine. The default is `auto`.
 - Cursor resolves its model at run time. At the highest Grok version it prefers `grok-` over `cursor-grok-`, then takes the `-<effort>` slug, else the base slug, else `-high`. `-fast`, `-mini`, and unnumbered slugs such as `grok-code-fast-1` never qualify.
@@ -39,7 +40,7 @@ command -v codex cursor-agent; jq --version
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
   --prompt <scratch>/external-<role>-prompt.md --out <scratch>/external-<role>.md \
-  --effort medium --label <role> \
+  --effort high --label <role> \
   [--sandbox read-only|workspace-write] [--idle 300] [--hard 1800] [--cd <repo>]
 ```
 
@@ -48,7 +49,7 @@ command -v codex cursor-agent; jq --version
 - Give `--out` a `.md` name. The wrapper writes the raw events and stderr next to it as `.jsonl` and `.stderr`. A cursor run that resolves its model also leaves the `cursor-agent models` listing as `.models`.
 - `--label` names the run in the `--out` header. It defaults to `run`.
 - `--cd` sets the working directory. It defaults to the current one.
-- On cursor the prompt travels as a command-line argument, so the OS argument limit caps its size (`getconf ARG_MAX`). Split a diff that large.
+- Both engines read the prompt on stdin, so the model's context window bounds its size, not the OS argument limit.
 
 ## Models
 
@@ -61,7 +62,7 @@ The wrapper always pins the model. An unset Codex model inherits `~/.codex/confi
 
 - Omit `--model` for strong work, so the engine default applies.
 - Cursor has no check tier. Omit `--model` there: `gpt-5.6-sol` fails the Grok guard and exits 2.
-- `--effort` works on both engines and defaults to `medium`. On cursor it selects the Grok slug's effort suffix.
+- `--effort` works on both engines and defaults to `high`. On cursor it selects the Grok slug's effort suffix.
 
 ## Roles
 
@@ -73,7 +74,8 @@ The wrapper always pins the model. An unset Codex model inherits `~/.codex/confi
 
 - `read-only` is the default. On codex it still lets the run execute `git` and read files itself.
 - `codex exec` is non-interactive and auto-approves whatever the sandbox permits. `cursor-agent -p` is non-interactive too: without `--force` it proposes edits and applies none. Nothing blocks on a prompt.
-- Plan and research: the salvage can put the run's running commentary above the deliverable. Strip everything before the first heading.
+- Plan and research on codex: the salvage can put the run's running commentary above the deliverable. Strip everything before the first heading. Cursor output needs no strip: the wrapper keeps only the text after the last tool call.
+- Review: the prompt names its input, such as a diff range. Confirm that input exists and is non-empty before launch, because an empty range gets a clean review of nothing.
 - Implementation runs on a feature branch only, never the base branch. It gets the longest budget because it makes many more tool calls than a review.
 - The wrapper never stages, commits, or reverts. After an implementation run, `--out` is the run's own account of what it did, not evidence. Read `git diff` and `git status --porcelain --untracked-files=all` yourself.
 
@@ -82,6 +84,8 @@ The wrapper always pins the model. An unset Codex model inherits `~/.codex/confi
 - Cursor's sandbox allows reads and writes inside the workspace and blocks network by default, so `--force --sandbox enabled` is right for implementation.
 - Headless Ask mode runs read-only terminal commands such as `git diff` and refuses file writes (verified live). Without `--trust`, a new workspace stops the run at a trust prompt, so the wrapper always passes it.
 - Cursor's Free plan allows only `auto`, so every named model, Grok included, fails with exit 126 and "Named models unavailable" in `.stderr`. Grok needs a paid Cursor plan. Treat that failure as no usable engine.
+- An invalid or unavailable model slug makes `cursor-agent` exit 1 with `Cannot use this model: <slug>` in `.stderr`. The wrapper reports 126, not 2, so check the slug against `cursor-agent models`.
+- The `result` event's `.result` joins every assistant message with no separator, narration included. The wrapper reads the assistant text after the last tool call instead. A run killed mid-tool-call falls back to all assistant text.
 - Web search has no per-run switch. The idle watchdog and the prompt's no-network clause are the only guards.
 
 ## Exit codes
@@ -91,10 +95,10 @@ The wrapper always pins the model. An unset Codex model inherits `~/.codex/confi
 | 0 | Completed | Use the output normally |
 | 125 | Stalled — no events for `--idle` seconds | Retry once with a narrower scope; still stalling means use the partial output and say so |
 | 124 | Hard timeout at `--hard` seconds | Same as 125 — the input is probably too large for one pass; split it |
-| 126 | The engine failed: a nonzero exit, or a cursor `result` event with `is_error` | Read the `.stderr` file next to the output; do not retry blindly |
-| 2 | Bad usage, no external engine, or no usable Grok model on cursor | Fix the call. On cursor, run `cursor-agent login` or set `CURSOR_SUBAGENT_MODEL` to a Grok slug |
+| 126 | The engine failed: a nonzero exit, or a cursor `result` event with `is_error`. An invalid cursor model slug lands here with `Cannot use this model` in `.stderr` | Read the `.stderr` file next to the output; do not retry blindly |
+| 2 | Bad usage, no runnable engine (no `codex` or `cursor-agent` on `PATH` passes `--version`), or no usable Grok model on cursor | Fix the call. Stderr names each skipped binary. On cursor, run `cursor-agent login` or set `CURSOR_SUBAGENT_MODEL` to a Grok slug |
 
-- The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: cursor · Model: grok-4.7-medium · effort medium`. Codex's event stream carries no model, so this line is the only record of what produced a run. On cursor the line also names the model Cursor reported when that differs from the requested slug.
+- The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: cursor · Model: grok-4.7-high · effort high`. Codex's event stream carries no model, so this line is the only record of what produced a run. On cursor the line also names the model Cursor reported when that differs from the requested slug.
 - A stalled or timed-out run's output says `PARTIAL` in its first line and names the last tool call before the kill. Findings salvaged from a stalled run are still findings — use them, and mark them partial.
 - Defaults are 300s idle and 1800s hard. Raise `--hard` for a large diff; do not raise `--idle` above 600 — silence that long is a hang, not thinking.
 
@@ -108,3 +112,4 @@ Every prompt carries the same items as the prompt list in `mays:claude-subagents
 
 - The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `mays:claude-subagents`.
 - The no-network clause, verbatim: "Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools."
+- For a diff: the range, such as `main...HEAD`, which the run reads itself with `git diff`, as `mays:adversarial-review` does. Never paste the diff into the prompt.
