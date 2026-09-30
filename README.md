@@ -101,6 +101,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 | Skill | Purpose |
 |-------|---------|
 | `adversarial-review` | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
+| `claims-verification` | Check a plan's claims about existing code against the repo before adversarial review: one blind Claude subagent answers neutral questions with `file:line` evidence |
 | `claude-subagents` | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
 | `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
@@ -112,6 +113,19 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 | `skill-optimizer` | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
 | `ste-writing` | Simplified Technical English for docs, PR descriptions, and review comments — every review command drafts findings with it |
 | `writing-style` | Personal writing voice for technical content |
+
+### Using claims-verification
+
+`claims-verification` belongs in a workflow's planning stage. It runs after a plan is drafted and before any adversarial or human review. Adversarial review attacks reasoning but misses confident false facts, so the facts get checked first. To add it to an `implement-ticket` skill, install `mays` 1.23.0 or later, then paste this prompt:
+
+```text
+Wire `mays:claims-verification` into my implement-ticket skill, in the planning stage only.
+- Add a "Claims check" step after the planner returns the plan and before any review of it. It loads the skill, runs it on the saved plan file against the working tree the planner read, and saves the result next to the plan.
+- Replace any informal rule that sends back plans naming missing files or wrong signatures.
+- It always runs, at every plan size and under --fast, because it isn't adversarial.
+- Show its result line with the plan at approval, and log it wherever plan-review verdicts go.
+- Don't renumber steps or gates, and don't restate the skill's rules. Point to the skill instead.
+```
 
 ### Agents
 
