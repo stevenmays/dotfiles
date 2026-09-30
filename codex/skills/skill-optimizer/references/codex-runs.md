@@ -7,7 +7,7 @@ On a CLI with these options, a single analysis run can use:
 ```sh
 codex exec --ephemeral --ignore-user-config --skip-git-repo-check \
   --sandbox read-only --model MODEL \
-  -c 'model_reasoning_effort="medium"' \
+  -c 'model_reasoning_effort="high"' \
   --cd FIXTURE --json --output-last-message OUTPUT - < PROMPT
 ```
 

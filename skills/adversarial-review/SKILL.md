@@ -18,6 +18,8 @@ Reviewers read; the caller applies every fix, so one actor owns the diff.
 
 In code mode, `<base>` is the repo default branch (`main`, else `master`) unless the caller names another.
 
+Before launching either reviewer in code mode, `git rev-parse --verify --quiet <base>` must succeed. Then `git diff --quiet <base>...HEAD` must exit 1, or `git ls-files --others --exclude-standard` must print a file. Otherwise stop and report that there is nothing to review.
+
 Fill the brief's placeholders. Inline the ticket and plan text; never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
 
 ## Launch
@@ -25,15 +27,15 @@ Fill the brief's placeholders. Inline the ticket and plan text; never send a pat
 Launch both reviewers in one message so they run concurrently:
 
 - **Claude**: the reviewer role in `mays:claude-subagents`, `model:` unset.
-- **External**: the review role in `mays:external-subagents`, `--effort medium`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
+- **External**: the review role in `mays:external-subagents`, `--effort high`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
   --prompt <scratch>/external-<mode>-review-prompt.md --out <scratch>/external-<mode>-review.md \
-  --effort medium --label review --idle 300 --hard 1800
+  --effort high --label review --idle 300 --hard 1800
 ```
 
-Plan mode may drop the external run to `--effort low` when the plan touches 3 files or fewer. Code mode never goes below `medium`. On cursor, effort selects the Grok slug's effort suffix.
+Plan mode may drop the external run to `--effort low` when the plan touches 3 files or fewer. Code mode always runs at `high`. On cursor, effort selects the Grok slug's effort suffix.
 
 ## Family rules
 
