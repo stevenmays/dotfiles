@@ -17,7 +17,7 @@ Review another author's pull request for repo-convention drift plus baseline cor
    - For non-trivial changes, dispatch an `Explore` subagent with `model: "sonnet"` to read the full contents of changed files on the PR's branch for context, so findings aren't hunk-blind.
 3. **Review** every changed file against:
    - The repo's CLAUDE.md conventions — cite the convention in the finding
-   - Intent — was the right thing built? Check the diff against the ticket and PR description: requirements missing or partial, behavior nobody asked for (scope creep), and requirements implemented wrong. Skip silently only when there is neither ticket nor description to check against.
+   - Intent — was the right thing built? Check the diff against the ticket and PR description: requirements missing or partial, behavior nobody asked for (scope creep), and requirements implemented wrong. Skip silently only when there is neither ticket nor description to check against. The Intent section is for the user only, so raise each gap the author must fix as its own `issue` finding too.
    - General correctness: inverted conditions, off-by-one bounds, missing await or unhandled promise, null paths the types claim are impossible, error handling that swallows failures the caller needs, broken contracts with unchanged callers, new branches with no test
    - Baseline checks: comments that restate the code, defensive checks on already-validated data, type escape hatches (`as any`, unchecked casts), dead code / debug logging, single-use wrappers, drift from the surrounding file's patterns
 4. **Report** — every finding is a Conventional Comment (conventionalcomments.org), written in Simplified Technical English:
@@ -44,8 +44,15 @@ Review another author's pull request for repo-convention drift plus baseline cor
 
    Order findings by severity. If the PR is clean, say so briefly — don't manufacture findings.
 
+   `Intent` and `Verdict` are for the user only. Only the `Findings` go to GitHub.
+
    Before returning the report, run the `ste-writing` self-check over it. Every finding gets one pass: cut hedges (a question is not a hedge), cut any sentence restating the diff, cut background the author will not act on.
-5. **Offer to post**: If there are findings, ask via AskUserQuestion how to deliver them — Post as inline review comments (`gh api repos/{owner}/{repo}/pulls/<n>/reviews` with per-line comments) / Post as a single summary comment (`gh pr comment`) / Keep local only. When posting inline, each comment body is the finding's conventional comment verbatim — label, decoration, then the two STE sentences. Never post to GitHub without asking, and never submit an approval or request-changes verdict on the user's behalf — post comments only; the user clicks the verdict themselves.
+5. **Offer to post**: Print the full report as your message first — the user must read the findings before choosing what to post. If there are findings, end that message with one plain-text question and end the turn. Don't use AskUserQuestion, because the report must stay on screen while the user decides. The options:
+   - Post as inline review comments (`gh api repos/{owner}/{repo}/pulls/<n>/reviews` with per-line comments). Each comment body is the finding's conventional comment verbatim: label, decoration, then the STE sentences.
+   - Post as a single summary comment (`gh pr comment`). The body is the `Findings` list only.
+   - Keep local only. This is the default: with no reply, nothing is posted.
+
+   Never post the `Intent` or `Verdict` sections. Never post to GitHub without asking, and never submit an approval or request-changes verdict on the user's behalf — post comments only; the user clicks the verdict themselves.
 
 ## Guidelines
 
