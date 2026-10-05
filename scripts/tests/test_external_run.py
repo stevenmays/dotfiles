@@ -99,9 +99,9 @@ class ExternalRunTests(unittest.TestCase):
             [str(SCRIPT), "--prompt", str(self.prompt), "--out", str(self.out), "--cd", str(self.dir), *args],
             env={"PATH": path, **(env or {})}, capture_output=True, text=True, timeout=10)
 
-    def resolved_model(self, models, *args):
+    def resolved_model(self, models, *args, env=None):
         self.fake("cursor-agent", cursor_events(), models=models)
-        result = self.run_wrapper(*args)
+        result = self.run_wrapper(*args, env=env)
         self.assertEqual(result.returncode, 0, result.stderr)
         argv = self.argv("cursor-agent")
         return argv[argv.index("--model") + 1]
@@ -191,6 +191,11 @@ class ExternalRunTests(unittest.TestCase):
     def test_cursor_effort_selects_slug_suffix(self):
         self.assertEqual(self.resolved_model(MODELS, "--effort", "xhigh"), "grok-4.7-xhigh")
 
+    def test_cursor_effort_env_selects_slug_suffix_and_flag_wins(self):
+        env = {"CURSOR_SUBAGENT_EFFORT": "xhigh"}
+        self.assertEqual(self.resolved_model(MODELS, env=env), "grok-4.7-xhigh")
+        self.assertEqual(self.resolved_model(MODELS, "--effort", "low", env=env), "grok-4.7-low")
+
     def test_cursor_falls_back_to_base_slug(self):
         self.assertEqual(self.resolved_model("grok-4.7 - Grok 4.7\ngrok-4.5-high - Grok 4.5 High\n"), "grok-4.7")
 
@@ -200,7 +205,7 @@ class ExternalRunTests(unittest.TestCase):
 
     def test_cursor_pinned_model_records_effort_na(self):
         self.fake("cursor-agent", cursor_events())
-        result = self.run_wrapper("--effort", "xhigh", env={"CURSOR_SUBAGENT_MODEL": "grok-4.5-high"})
+        result = self.run_wrapper("--effort", "xhigh", env={"CURSOR_SUBAGENT_MODEL": "grok-4.5-high", "CURSOR_SUBAGENT_EFFORT": "xhigh"})
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertPair(self.argv("cursor-agent"), "--model", "grok-4.5-high")
         self.assertIn("Engine: cursor · Model: grok-4.5-high · effort n/a", self.out.read_text())
@@ -232,11 +237,27 @@ class ExternalRunTests(unittest.TestCase):
         result = self.run_wrapper()
         self.assertEqual(result.returncode, 0, result.stderr)
         argv = self.argv("codex")
-        self.assertPair(argv, "-m", "gpt-6-astra")
+        self.assertPair(argv, "-m", "gpt-6.1-sol")
         self.assertPair(argv, "-c", 'model_reasoning_effort="high"')
         text = self.out.read_text()
         self.assertTrue(text.startswith("# Codex run — complete"), text)
-        self.assertIn("Engine: codex · Model: gpt-6-astra · effort high", text)
+        self.assertIn("Engine: codex · Model: gpt-6.1-sol · effort high", text)
+
+    def test_codex_env_sets_defaults_and_flags_win(self):
+        self.fake("codex", CODEX_EVENTS)
+        env = {"CODEX_SUBAGENT_MODEL": "gpt-env-model", "CODEX_SUBAGENT_EFFORT": "medium"}
+        cases = [
+            ((), "gpt-env-model", "medium"),
+            (("--model", "gpt-flag-model", "--effort", "low"), "gpt-flag-model", "low"),
+        ]
+        for args, model, effort in cases:
+            with self.subTest(args=args):
+                result = self.run_wrapper(*args, env=env)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                argv = self.argv("codex")
+                self.assertPair(argv, "-m", model)
+                self.assertPair(argv, "-c", f'model_reasoning_effort="{effort}"')
+                self.assertIn(f"Engine: codex · Model: {model} · effort {effort}", self.out.read_text())
 
     def test_cursor_result_error_exits_126(self):
         self.fake("cursor-agent", cursor_events(is_error=True))

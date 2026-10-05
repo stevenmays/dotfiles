@@ -45,9 +45,10 @@ The wrapper always pins the model. An unpinned run would take `agy`'s own defaul
 
 | `--model` | Use for |
 | --- | --- |
-| Omitted: `gemini-3.1-pro-high` | Strong work: planning, review, a second implementation |
-| `gemini-3.8-flash-high` or `gemini-3.8-flash-medium` | Work a deterministic check verifies: a test, lint, compile, or known-target grep |
+| Omitted: `gemini-3.8-flash-high` | Strong work: planning, review, a second implementation |
+| `gemini-3.8-flash-medium` | Work a deterministic check verifies: a test, lint, compile, or known-target grep |
 | `gemini-3.8-flash-low` | Trivial work |
+| `gemini-3.1-pro-high` | Opt-in only, when the user asks for it |
 
 - `--model` beats `GEMINI_SUBAGENT_MODEL`, which beats the default.
 - The slug carries the effort. The wrapper reads the `-low`, `-medium`, or `-high` suffix for the provenance line, else records `model default`.
@@ -96,7 +97,7 @@ Headless `agy` cannot ask for permission, so it auto-denies any tool that needs 
 | 126 | `agy` failed: a nonzero exit, or a `result` event whose `status` is not `SUCCESS` | Read the `.stderr` file next to the output. Do not retry blindly |
 | 2 | Bad usage, `agy` not on `PATH`, or a non-Gemini model | Fix the call |
 
-- The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: gemini · Model: gemini-3.1-pro-high · effort high`.
+- The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: gemini · Model: gemini-3.8-flash-high · effort high`.
 - When the `init` event reports a different model, the second line names that model too.
 - A stalled or timed-out run says `PARTIAL` in its first line and names the last tool call before the kill. Findings salvaged from a stalled run are still findings: use them, and mark them partial.
 - `--print-timeout` makes `agy` stop itself at `--hard` too. The wrapper reports that stop as exit 124.

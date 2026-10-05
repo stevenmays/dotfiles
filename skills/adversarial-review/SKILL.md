@@ -27,15 +27,15 @@ Fill the brief's placeholders. Inline the ticket and plan text; never send a pat
 Launch both reviewers in one message so they run concurrently:
 
 - **Claude**: the reviewer role in `mays:claude-subagents`, `model:` unset.
-- **External**: the review role in `mays:external-subagents`, `--effort high`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
+- **External**: the review role in `mays:external-subagents`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
   --prompt <scratch>/external-<mode>-review-prompt.md --out <scratch>/external-<mode>-review.md \
-  --effort high --label review --idle 300 --hard 1800
+  --label review --idle 300 --hard 1800
 ```
 
-Plan mode may drop the external run to `--effort low` when the plan touches 3 files or fewer. Code mode always runs at `high`. On cursor, effort selects the Grok slug's effort suffix.
+Plan mode may pass `--effort low` to the external run when the plan touches 3 files or fewer. Code mode passes no `--effort`, so it runs at the machine's default effort. That default is `high` unless `CODEX_SUBAGENT_EFFORT` or `CURSOR_SUBAGENT_EFFORT` changes it. On cursor, effort selects the Grok slug's effort suffix.
 
 ## Family rules
 
