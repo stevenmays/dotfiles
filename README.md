@@ -54,6 +54,26 @@ sed -n '/mays:managed:start/,/mays:managed:end/p' ~/.claude/plugins/marketplaces
 
 Strong-model spawns leave `model:` unset and resolve through `CLAUDE_CODE_SUBAGENT_MODEL`. Set it to `opus` under `env` in `~/.claude/settings.json` on every machine, and run the session itself on the strongest model you have (`/model`). Unset, it falls back to the session model. Never set it to `sonnet`: that routes implementation and review to Sonnet.
 
+Every subagent family has a default model and effort. An env var under `env` in `~/.claude/settings.json` changes a default for the whole machine:
+
+| Family | Default model | Model env var | Default effort | Effort env var |
+| --- | --- | --- | --- | --- |
+| Claude | The session model | `CLAUDE_CODE_SUBAGENT_MODEL`, set to `opus` | Not set by the plugin | None |
+| Codex (GPT) | `gpt-6.1-sol` | `CODEX_SUBAGENT_MODEL` | `high` | `CODEX_SUBAGENT_EFFORT` |
+| Cursor (Grok) | The highest Grok version at the effort | `CURSOR_SUBAGENT_MODEL`; a pinned slug carries its own effort | `high` | `CURSOR_SUBAGENT_EFFORT` |
+| Gemini | `gemini-3.8-flash-high` | `GEMINI_SUBAGENT_MODEL` | The slug's `-low`, `-medium`, or `-high` suffix | None |
+
+For one call, `--model` and `--effort` on the wrapper scripts beat the env vars. A pinned Cursor slug carries its own effort and ignores both. The Gemini wrapper takes only `--model`. A Claude spawn overrides its model with `model:` on the Agent tool.
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_SUBAGENT_MODEL": "opus",
+    "CODEX_SUBAGENT_EFFORT": "xhigh"
+  }
+}
+```
+
 ## Update
 
 After new commits land in this repo, refresh the marketplace catalog — Claude Code re-pulls the source and upgrades the installed `mays` plugin in the same step:

@@ -19,11 +19,11 @@
 #
 # The model is always pinned. An unpinned codex run inherits ~/.codex/config.toml, which
 # follows whatever model the user last picked in the TUI.
-#   codex:  --model, else $CODEX_SUBAGENT_MODEL, else gpt-6-astra.
+#   codex:  --model, else $CODEX_SUBAGENT_MODEL, else gpt-6.1-sol.
 #           --effort, else $CODEX_SUBAGENT_EFFORT, else high.
 #   cursor: --model, else $CURSOR_SUBAGENT_MODEL, else the highest Grok version that
-#           `cursor-agent models` lists, at --effort (default high). A pinned slug already
-#           carries its effort, so --effort applies only to the resolved one.
+#           `cursor-agent models` lists, at --effort, else $CURSOR_SUBAGENT_EFFORT, else high.
+#           A pinned slug already carries its effort, so effort applies only to the resolved one.
 #
 # --sandbox defaults to read-only, which is what a plan or review wants. workspace-write lets
 # the run edit the repo. Both engines run non-interactively, so nothing blocks on a prompt.
@@ -135,7 +135,7 @@ ERRLOG="${OUT%.md}.stderr"
 
 if [ "$ENGINE" = codex ]; then
   ENGINE_NAME="Codex"
-  MODEL="${MODEL:-${CODEX_SUBAGENT_MODEL:-gpt-6-astra}}"
+  MODEL="${MODEL:-${CODEX_SUBAGENT_MODEL:-gpt-6.1-sol}}"
   EFFORT="${EFFORT:-${CODEX_SUBAGENT_EFFORT:-high}}"
 else
   ENGINE_NAME="Cursor"
@@ -143,7 +143,7 @@ else
   if [ -n "$MODEL" ]; then
     EFFORT="n/a"
   else
-    EFFORT="${EFFORT:-high}"
+    EFFORT="${EFFORT:-${CURSOR_SUBAGENT_EFFORT:-high}}"
     MODELS="${OUT%.md}.models"
     # `cursor-agent models` reaches the network, so it gets a 30s bound like every other call.
     run_bounded 30 "$MODELS" "$BIN" models

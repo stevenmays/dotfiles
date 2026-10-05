@@ -27,7 +27,7 @@ def step(**fields):
     return {"event": "step_update", "step_update": {"conversation_id": CONVERSATION, **fields}}
 
 
-def agy_events(model="gemini-3.1-pro-high", response="final answer", status="SUCCESS", denied=()):
+def agy_events(model="gemini-3.8-flash-high", response="final answer", status="SUCCESS", denied=()):
     result = {"conversation_id": CONVERSATION, "status": status, "response": response,
               "duration_seconds": 2.56, "num_turns": 1, "usage": {"total_tokens": 42}}
     if denied:
@@ -88,7 +88,7 @@ class GeminiRunTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         lines = self.out.read_text().splitlines()
         self.assertRegex(lines[0], r"^# Gemini review — complete \(\d+s\)$")
-        self.assertEqual(lines[1], "Engine: gemini · Model: gemini-3.1-pro-high · effort high")
+        self.assertEqual(lines[1], "Engine: gemini · Model: gemini-3.8-flash-high · effort high")
         self.assertIn("final answer", lines)
         self.assertNotIn("streamed", self.out.read_text())
         self.assertNotIn("Denied", self.out.read_text())
@@ -98,7 +98,7 @@ class GeminiRunTests(unittest.TestCase):
         self.assertEqual(self.run_wrapper().returncode, 0)
         argv = self.argv()
         self.assertPair(argv, "-p", "Review this.\nSecond line.")
-        self.assertPair(argv, "--model", "gemini-3.1-pro-high")
+        self.assertPair(argv, "--model", "gemini-3.8-flash-high")
         self.assertPair(argv, "--output-format", "stream-json")
         self.assertPair(argv, "--print-timeout", "1800s")
         for flag in ("--mode", "--dangerously-skip-permissions", "--effort"):
@@ -123,7 +123,7 @@ class GeminiRunTests(unittest.TestCase):
 
     def test_model_precedence(self):
         cases = [
-            ({}, (), "gemini-3.1-pro-high", "high"),
+            ({}, (), "gemini-3.8-flash-high", "high"),
             ({"GEMINI_SUBAGENT_MODEL": "gemini-3.8-flash-medium"}, (), "gemini-3.8-flash-medium", "medium"),
             ({"GEMINI_SUBAGENT_MODEL": "gemini-3.8-flash-medium"}, ("--model", "gemini-3.8-flash-low"),
              "gemini-3.8-flash-low", "low"),
@@ -196,12 +196,12 @@ class GeminiRunTests(unittest.TestCase):
         self.assertEqual(lines[2], "Denied in headless mode: command, write_file")
 
     def test_reported_model_appended_when_it_differs(self):
-        self.fake(agy_events(model="gemini-3.1-pro"))
+        self.fake(agy_events(model="gemini-3.8-flash"))
         result = self.run_wrapper()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.out.read_text().splitlines()[1],
-                         "Engine: gemini · Model: gemini-3.1-pro-high · effort high"
-                         " · agy reported model: gemini-3.1-pro")
+                         "Engine: gemini · Model: gemini-3.8-flash-high · effort high"
+                         " · agy reported model: gemini-3.8-flash")
 
     def test_idle_stall_gives_125_and_names_last_tool_call(self):
         self.fake(agy_events()[:4], sleep=8)

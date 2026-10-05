@@ -11,7 +11,7 @@
 #   gemini-run.sh --prompt <file> --out <file> [--model SLUG] [--idle 300] [--hard 1800]
 #                 [--cd DIR] [--sandbox read-only|workspace-write] [--label run]
 #
-# The model is always pinned: --model, else $GEMINI_SUBAGENT_MODEL, else gemini-3.1-pro-high.
+# The model is always pinned: --model, else $GEMINI_SUBAGENT_MODEL, else gemini-3.8-flash-high.
 # The slug carries the effort in its -low|-medium|-high suffix, so there is no --effort.
 #
 # --sandbox defaults to read-only: headless agy then auto-denies every file write and shell
@@ -73,7 +73,7 @@ esac
 [ -d "$WORKDIR" ] || { echo "gemini-run: --cd directory not found: $WORKDIR" >&2; exit 2; }
 command -v agy >/dev/null || { echo "gemini-run: agy not on PATH: install the Antigravity CLI" >&2; exit 2; }
 
-MODEL="${MODEL:-${GEMINI_SUBAGENT_MODEL:-gemini-3.1-pro-high}}"
+MODEL="${MODEL:-${GEMINI_SUBAGENT_MODEL:-gemini-3.8-flash-high}}"
 # agy also serves Claude and GPT-OSS models, and either would defeat the point of a second
 # model family.
 case "$MODEL" in

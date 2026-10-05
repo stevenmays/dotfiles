@@ -27,12 +27,12 @@ type -a codex cursor-agent; jq --version
 
 | Engine | Chosen when | Family | Model default | Env override | Effort | `read-only` | `workspace-write` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `codex` | A `codex` on `PATH` passes `--version`; the first one that passes runs | GPT | `gpt-6-astra` | `CODEX_SUBAGENT_MODEL` | `--effort`, else `CODEX_SUBAGENT_EFFORT`, else `high` | `-s read-only` | `-s workspace-write` |
-| `cursor` | No `codex` passes `--version`, and a `cursor-agent` on `PATH` does | Grok | Highest Grok version in `cursor-agent models`, at the requested effort; `-fast` excluded (same model, double price) | `CURSOR_SUBAGENT_MODEL` | `--effort`, else `high`: selects the slug's effort suffix | `--mode ask --trust`, no `--force` | `--force` |
+| `codex` | A `codex` on `PATH` passes `--version`; the first one that passes runs | GPT | `gpt-6.1-sol` | `CODEX_SUBAGENT_MODEL` | `--effort`, else `CODEX_SUBAGENT_EFFORT`, else `high` | `-s read-only` | `-s workspace-write` |
+| `cursor` | No `codex` passes `--version`, and a `cursor-agent` on `PATH` does | Grok | Highest Grok version in `cursor-agent models`, at the requested effort; `-fast` excluded (same model, double price) | `CURSOR_SUBAGENT_MODEL` | `--effort`, else `CURSOR_SUBAGENT_EFFORT`, else `high`: selects the slug's effort suffix | `--mode ask --trust`, no `--force` | `--force` |
 
 - `EXTERNAL_SUBAGENT_ENGINE` or `--engine codex|cursor` forces an engine. The default is `auto`.
 - Cursor resolves its model at run time. At the highest Grok version it prefers `grok-` over `cursor-grok-`, then takes the `-<effort>` slug, else the base slug, else `-high`. `-fast`, `-mini`, and unnumbered slugs such as `grok-code-fast-1` never qualify.
-- A slug pinned through `--model` or `CURSOR_SUBAGENT_MODEL` already carries its effort, so the wrapper records `effort n/a`.
+- A slug pinned through `--model` or `CURSOR_SUBAGENT_MODEL` already carries its effort. The wrapper ignores `--effort` and `CURSOR_SUBAGENT_EFFORT` and records `effort n/a`.
 - The cursor engine exits 2 on a model without `grok` in its slug. Cursor also serves Claude and `auto`, and either would make the second opinion same-family.
 
 ## Run it
@@ -40,7 +40,7 @@ type -a codex cursor-agent; jq --version
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
   --prompt <scratch>/external-<role>-prompt.md --out <scratch>/external-<role>.md \
-  --effort high --label <role> \
+  --label <role> \
   [--sandbox read-only|workspace-write] [--idle 300] [--hard 1800] [--cd <repo>]
 ```
 
@@ -53,16 +53,15 @@ type -a codex cursor-agent; jq --version
 
 ## Models
 
+The normal call omits `--model` and `--effort`, for every role, so the machine's defaults apply. Pass either flag only to deviate from those defaults.
+
 The wrapper always pins the model. An unset Codex model inherits `~/.codex/config.toml`, which tracks whatever the user last picked in the TUI, so an unpinned run would change strength between runs without saying so.
 
-| `--model` | Engine | Use for |
-| --- | --- | --- |
-| Omitted | Both | Strong work: planning, review, a second implementation |
-| `gpt-5.6-sol` | `codex` only | Work a deterministic check verifies: a test, lint, compile, or known-target grep |
-
-- Omit `--model` for strong work, so the engine default applies.
-- Cursor has no check tier. Omit `--model` there: `gpt-5.6-sol` fails the Grok guard and exits 2.
-- `--effort` works on both engines and defaults to `high`. On cursor it selects the Grok slug's effort suffix.
+- `--model` beats the engine's model env var, and `--effort` beats its effort env var. A pinned cursor slug ignores both effort settings.
+- The user sets these env vars under `env` in `~/.claude/settings.json`, next to `CLAUDE_CODE_SUBAGENT_MODEL`.
+- `gpt-6-astra` is codex-only and opt-in. It runs only when `--model` or `CODEX_SUBAGENT_MODEL` names it.
+- On cursor, effort selects the Grok slug's effort suffix.
+- The caller never knows which engine runs. A GPT slug in `--model` on a cursor machine fails the Grok guard and exits 2.
 
 ## Roles
 
