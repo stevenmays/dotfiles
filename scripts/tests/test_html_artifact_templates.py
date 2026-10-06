@@ -38,6 +38,12 @@ LOAD_RESETS = {
     "ticket-triage": ("liveStatus.dataset.hint = liveStatus.dataset.hint || liveStatus.innerHTML;",
                       "liveStatus.innerHTML = liveStatus.dataset.hint;"),
 }
+# Save serializes a clone, and these statements clean the clone before serialization.
+CLONE_CLEANUPS = {
+    "animation-sandbox": ('doc.querySelector("#" + STYLE_ID).textContent = "";',
+                          'doc.querySelector("#target").removeAttribute("style");'),
+    "ticket-triage": ('doc.querySelector("#aria-live-status").innerHTML = liveStatus.dataset.hint;',),
+}
 
 
 def pages():
@@ -52,6 +58,12 @@ def listing(directory):
 
 def script(text):
     return "\n".join(INLINE_SCRIPT.findall(text[DATA.search(text).end():]))
+
+
+def strip_comments(code):
+    # A "//" counts as a comment only after whitespace, so "http://" inside a string survives.
+    code = re.sub(r"/\*.*?\*/", "", code, flags=re.S)
+    return re.sub(r"(^|\s)//.*", r"\1", code, flags=re.M)
 
 
 class TemplateChecks(unittest.TestCase):
@@ -109,7 +121,7 @@ class TemplateChecks(unittest.TestCase):
                 self.assertIsInstance(data, dict)
                 # A raw "<" can open a comment or script tag that keeps the block from closing.
                 self.assertNotIn("<", blocks[0], "write < as \\u003c inside the data block")
-                code = script(text)
+                code = strip_comments(script(text))
                 # The key detector only sees dotted reads, so forbid every other access form.
                 self.assertNotRegex(code, r"\bplan\[")
                 self.assertNotRegex(code, r"Object\.(keys|values|entries)\(plan\b")
@@ -147,7 +159,11 @@ class TemplateChecks(unittest.TestCase):
                 self.assertLess(text.index("showSaveFilePicker"), text.index("createObjectURL"))
                 self.assertIn("dataEl.textContent = JSON.stringify(plan", text)
                 self.assertIn('.replace(/</g, "\\\\u003c")', text)
-                self.assertRegex(text, r"const fileName = [^;\n]*location\.pathname")
+                self.assertRegex(text, r"(?:const|let) fileName = [^;\n]*location\.pathname")
+                # A malformed "%" in the path makes decodeURIComponent throw, which cancels Save.
+                for line in text.splitlines():
+                    if "decodeURIComponent(" in line:
+                        self.assertIn("try {", line.split("decodeURIComponent(")[0])
                 self.assertIn("suggestedName: fileName", text)
                 self.assertIn("a.download = fileName", text)
 
@@ -204,18 +220,19 @@ class TemplateChecks(unittest.TestCase):
                     capture, restore = LOAD_RESETS[name]
                     self.assertLess(found[capture], found[restore])
 
-    def test_animation_save_strips_runtime_state(self):
-        # The runtime style holds raw property values, so Save must serialize a clone without it.
+    def test_save_serializes_clean_clone(self):
+        # animation-sandbox: the runtime style holds raw property values that could carry markup.
+        # ticket-triage: the live region holds the last move announcement instead of the hint.
         for tree, name, text in pages():
-            if name != "animation-sandbox":
+            if name not in CLONE_CLEANUPS:
                 continue
-            with self.subTest(tree=tree):
+            with self.subTest(tree=tree, page=name):
                 save = re.search(r"async function savePlanHtml\(\) \{(.*?)\n  \}\n", script(text), re.S).group(1)
                 self.assertIn("const doc = document.documentElement.cloneNode(true);", save)
                 self.assertLess(save.index("dataEl.textContent ="), save.index("cloneNode(true)"))
+                self.assertIn('"<!doctype html>\\n" + doc.outerHTML', save)
                 serialize = save.index('"<!doctype html>\\n" + doc.outerHTML')
-                for sanitizer in ('doc.querySelector("#" + STYLE_ID).textContent = "";',
-                                  'doc.querySelector("#target").removeAttribute("style");'):
+                for sanitizer in CLONE_CLEANUPS[name]:
                     self.assertIn(sanitizer, save)
                     self.assertLess(save.index("cloneNode(true)"), save.index(sanitizer))
                     self.assertLess(save.index(sanitizer), serialize)

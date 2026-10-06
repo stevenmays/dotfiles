@@ -751,7 +751,9 @@ SOFTWARE.
   }
 
   async function savePlanHtml() {
-    const fileName = decodeURIComponent(location.pathname.split("/").pop()) || "artifact.html";
+    let fileName = location.pathname.split("/").pop();
+    try { fileName = decodeURIComponent(fileName); } catch (e) { /* a malformed "%" keeps the raw name */ }
+    fileName = fileName || "artifact.html";
     const btn = document.getElementById("btn-save");
     // Replace '<' with its \u escape on write-back to neutralize close-script
     // sequences a user typed into a plan string. JSON.parse round-trips the

@@ -711,13 +711,18 @@ SOFTWARE.
   }
 
   async function savePlanHtml() {
-    const fileName = decodeURIComponent(location.pathname.split("/").pop()) || "artifact.html";
+    let fileName = location.pathname.split("/").pop();
+    try { fileName = decodeURIComponent(fileName); } catch (e) { /* a malformed "%" keeps the raw name */ }
+    fileName = fileName || "artifact.html";
     const btn = document.getElementById("btn-save");
     // Replace '<' with its \u escape on write-back to neutralize close-script
     // sequences a user typed into a plan string. JSON.parse round-trips the
     // escape back to '<' on reload, preserving semantics.
     dataEl.textContent = JSON.stringify(plan, null, 2).replace(/</g, "\\u003c");
-    const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+    // Save the keyboard hint, not the last move announcement, without touching the live region.
+    const doc = document.documentElement.cloneNode(true);
+    doc.querySelector("#aria-live-status").innerHTML = liveStatus.dataset.hint;
+    const html = "<!doctype html>\n" + doc.outerHTML;
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     if (window.showSaveFilePicker) {
       try {
