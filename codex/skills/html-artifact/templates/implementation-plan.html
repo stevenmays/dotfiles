@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<!--
+MIT License
+
+Copyright (c) 2026 Ahmad Othman Ammar Adi (OthmanAdi)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Implementation Plan</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fafaf7;
+    --fg: #1b1b18;
+    --muted: #5b5b56;
+    --accent: #c8553d;
+    --border: #1b1b18;
+    --border-soft: #c8c8c2;
+    --code: #f1f1ec;
+    --ok: #2a6f4e;
+    --warn: #b9802b;
+    --err: #a73326;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161613;
+      --fg: #ecece6;
+      --muted: #9c9c95;
+      --accent: #e07a5f;
+      --border: #ecece6;
+      --border-soft: #3a3a36;
+      --code: #232320;
+      --ok: #6ab089;
+      --warn: #d9a25a;
+      --err: #d96959;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--fg);
+    line-height: 1.5;
+  }
+  header.bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header.bar h1 {
+    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  header.bar .meta {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 12px; color: var(--muted);
+  }
+  header.bar .actions { display: flex; gap: 8px; }
+  button {
+    font: inherit; font-size: 12px; padding: 6px 10px;
+    background: transparent; color: var(--fg);
+    border: 1px solid var(--border); border-radius: 2px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  nav.tabs {
+    display: flex; gap: 0; padding: 0 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  nav.tabs button {
+    border: none; border-bottom: 2px solid transparent;
+    border-radius: 0; padding: 12px 16px;
+    color: var(--muted); background: transparent;
+  }
+  nav.tabs button[aria-selected="true"] {
+    color: var(--fg); border-bottom-color: var(--accent);
+  }
+  nav.tabs button:hover { color: var(--fg); background: transparent; }
+  main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+  section[role="tabpanel"][hidden] { display: none; }
+  h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 18px; font-weight: 700; margin: 0 0 12px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+  .phase {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    padding: 14px 16px; margin-bottom: 12px;
+    background: var(--bg);
+  }
+  .phase[data-status="in_progress"] { border-color: var(--accent); }
+  .phase[data-status="complete"] { opacity: 0.7; }
+  .phase[data-status="blocked"] { border-color: var(--err); }
+  .phase .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .phase h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .phase .badge {
+    font-family: ui-monospace, monospace;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 2px 6px; border: 1px solid currentColor; border-radius: 2px;
+  }
+  .badge.pending { color: var(--muted); }
+  .badge.in_progress { color: var(--accent); }
+  .badge.complete { color: var(--ok); }
+  .badge.blocked { color: var(--err); }
+  .phase ul { list-style: none; padding: 0; margin: 8px 0 0; }
+  .phase li { display: flex; align-items: flex-start; gap: 8px; padding: 4px 0; font-size: 14px; }
+  .phase li input[type="checkbox"] { margin: 4px 0 0; accent-color: var(--accent); }
+  .phase li.done { color: var(--muted); text-decoration: line-through; }
+  .phase .milestones { margin-top: 8px; font-size: 12px; color: var(--muted); }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    border: 1px solid var(--border-soft);
+  }
+  th, td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: ui-monospace, monospace;
+  }
+  th { background: var(--code); font-weight: 600; }
+  pre.snippet {
+    background: var(--code); padding: 12px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    overflow-x: auto;
+    font-family: ui-monospace, monospace; font-size: 12px;
+  }
+  .mock {
+    border: 1px solid var(--border-soft);
+    padding: 16px;
+    background: var(--code);
+    border-radius: 2px;
+  }
+  .mock-title { font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .data-flow { width: 100%; height: 200px; }
+  .risk-high { color: var(--err); font-weight: 600; }
+  .risk-mid { color: var(--warn); font-weight: 600; }
+  .risk-low { color: var(--ok); font-weight: 600; }
+  .skip-link {
+    position: absolute; left: -9999px; top: 8px;
+    padding: 8px 12px; background: var(--accent); color: var(--bg);
+  }
+  .skip-link:focus { left: 16px; }
+  .empty { font-style: italic; color: var(--muted); padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="bar" role="banner">
+  <div>
+    <h1 id="plan-title">Implementation Plan</h1>
+    <div class="meta" id="plan-meta">template: implementation-plan</div>
+  </div>
+  <div class="actions" role="group" aria-label="Plan actions">
+    <button type="button" id="btn-save" aria-label="Save this file to disk">Save</button>
+    <button type="button" id="btn-copy-md" aria-label="Copy plan as Markdown">Copy as Markdown</button>
+    <button type="button" id="btn-copy-json" aria-label="Copy plan-data as JSON">Copy as JSON</button>
+    <button type="button" id="btn-print" aria-label="Print plan">Print</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Plan sections">
+  <button role="tab" type="button" aria-controls="tab-phases" aria-selected="true" id="tab-phases-btn">Phases</button>
+  <button role="tab" type="button" aria-controls="tab-mockups" aria-selected="false" id="tab-mockups-btn">Mockups</button>
+  <button role="tab" type="button" aria-controls="tab-dataflow" aria-selected="false" id="tab-dataflow-btn">Data flow</button>
+  <button role="tab" type="button" aria-controls="tab-risks" aria-selected="false" id="tab-risks-btn">Risks</button>
+  <button role="tab" type="button" aria-controls="tab-decisions" aria-selected="false" id="tab-decisions-btn">Decisions</button>
+  <button role="tab" type="button" aria-controls="tab-progress" aria-selected="false" id="tab-progress-btn">Progress</button>
+</nav>
+
+<main id="main">
+  <section role="tabpanel" id="tab-phases" aria-labelledby="tab-phases-btn">
+    <h2>Phases</h2>
+    <div id="phases-root"></div>
+  </section>
+
+  <section role="tabpanel" id="tab-mockups" aria-labelledby="tab-mockups-btn" hidden>
+    <h2>Mockups</h2>
+    <div class="grid-2" id="mockups-root"></div>
+  </section>
+
+  <section role="tabpanel" id="tab-dataflow" aria-labelledby="tab-dataflow-btn" hidden>
+    <h2>Data flow</h2>
+    <div class="mock">
+      <div class="mock-title">data-flow diagram (inline SVG)</div>
+      <svg class="data-flow" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Data flow diagram">
+        <rect x="20" y="60" width="120" height="80" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="80" y="105" font-family="ui-monospace, monospace" font-size="12" fill="currentColor" text-anchor="middle">User</text>
+        <line x1="140" y1="100" x2="240" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="240" y="60" width="160" height="80" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="320" y="105" font-family="ui-monospace, monospace" font-size="12" fill="currentColor" text-anchor="middle">Agent</text>
+        <line x1="400" y1="100" x2="500" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="500" y="60" width="120" height="80" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="560" y="100" font-family="ui-monospace, monospace" font-size="12" fill="currentColor" text-anchor="middle">HTML file</text>
+        <text x="560" y="120" font-family="ui-monospace, monospace" font-size="10" fill="currentColor" text-anchor="middle">(disk)</text>
+        <line x1="620" y1="100" x2="720" y2="100" stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow)"/>
+        <rect x="720" y="60" width="60" height="80" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        <text x="750" y="105" font-family="ui-monospace, monospace" font-size="11" fill="currentColor" text-anchor="middle">Browser</text>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="tab-risks" aria-labelledby="tab-risks-btn" hidden>
+    <h2>Risks</h2>
+    <table>
+      <thead><tr><th>Risk</th><th>Severity</th><th>Mitigation</th></tr></thead>
+      <tbody id="risks-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-decisions" aria-labelledby="tab-decisions-btn" hidden>
+    <h2>Decisions</h2>
+    <table>
+      <thead><tr><th>Decision</th><th>Rationale</th></tr></thead>
+      <tbody id="decisions-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-progress" aria-labelledby="tab-progress-btn" hidden>
+    <h2>Progress log</h2>
+    <table>
+      <thead><tr><th>Timestamp</th><th>Phase</th><th>Action</th><th>Files</th></tr></thead>
+      <tbody id="progress-root"></tbody>
+    </table>
+  </section>
+</main>
+
+<script type="application/json" id="plan-data">
+{
+  "plan_title": "Implementation Plan",
+  "goal": "Replace this with what you are building.",
+  "current_phase": 1,
+  "template": "implementation-plan",
+  "updated_at": "2026-05-20T00:00:00Z",
+  "phases": [
+    {
+      "id": 1,
+      "title": "Phase 1: Foundation",
+      "status": "in_progress",
+      "items": [
+        {"text": "Replace this item with your first task", "done": false, "owner": null},
+        {"text": "Add more items here", "done": false, "owner": null}
+      ],
+      "milestones": ["A clear, testable milestone for end of Phase 1"]
+    },
+    {
+      "id": 2,
+      "title": "Phase 2: Build",
+      "status": "pending",
+      "items": [
+        {"text": "Implementation tasks go here", "done": false, "owner": null}
+      ],
+      "milestones": []
+    },
+    {
+      "id": 3,
+      "title": "Phase 3: Verify",
+      "status": "pending",
+      "items": [
+        {"text": "Tests, review, sign-off", "done": false, "owner": null}
+      ],
+      "milestones": []
+    }
+  ],
+  "progress_log": [],
+  "decisions": [
+    {"id": "d1", "decision": "Use HTML for the plan, not Markdown", "rationale": "Engagement, interactivity, persistence."}
+  ],
+  "risks": [
+    {"risk": "Stakeholders skip long markdown plans", "severity": "high", "mitigation": "Render as a single navigable HTML with tabs and copy-buttons."},
+    {"risk": "Token budget inflates in chained-agent calls", "severity": "mid", "mitigation": "Use Copy as Markdown when sending the plan into an agent loop."},
+    {"risk": "Accessibility lapses in AI-generated HTML", "severity": "mid", "mitigation": "WCAG AA contrast, ARIA roles, keyboard nav baked into every template."}
+  ],
+  "mockups": [
+    {"title": "Hero", "html": "\u003cdiv style='padding:24px;border:1px dashed currentColor'>Hero mockup\u003cbr>\u003csmall>Replace with sketch / screenshot.\u003c/small>\u003c/div>"},
+    {"title": "Detail view", "html": "\u003cdiv style='padding:24px;border:1px dashed currentColor'>Detail mockup\u003cbr>\u003csmall>Replace with sketch / screenshot.\u003c/small>\u003c/div>"}
+  ]
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const dataEl = document.getElementById("plan-data");
+  let plan = {};
+  try { plan = JSON.parse(dataEl.textContent); }
+  catch (e) {
+    document.getElementById("phases-root").innerHTML =
+      '<p class="empty">plan-data JSON could not be parsed.</p>';
+    return;
+  }
+
+  // Header
+  document.getElementById("plan-title").textContent = plan.plan_title || "Plan";
+  document.getElementById("plan-meta").textContent =
+    `template: ${plan.template || "(custom)"} · phase ${plan.current_phase ?? "?"} of ${(plan.phases || []).length}`;
+
+  // Render containers. Clear before populate so re-opens of a Saved file do
+  // not double-render the cards baked into the serialized DOM.
+  const phasesRoot = document.getElementById("phases-root");
+
+  function renderPhases() {
+    phasesRoot.replaceChildren();
+    const phases = plan.phases || [];
+    phases.forEach((ph) => {
+      const div = document.createElement("article");
+      div.className = "phase";
+      div.setAttribute("data-status", ph.status || "pending");
+      div.setAttribute("aria-labelledby", `phase-${ph.id}-title`);
+
+      const row = document.createElement("div");
+      row.className = "row";
+      const h3 = document.createElement("h3");
+      h3.id = `phase-${ph.id}-title`;
+      h3.textContent = ph.title || `Phase ${ph.id}`;
+      const badge = document.createElement("span");
+      badge.className = "badge " + (ph.status || "pending");
+      badge.textContent = ph.status || "pending";
+      row.appendChild(h3);
+      row.appendChild(badge);
+      div.appendChild(row);
+
+      if ((ph.items || []).length) {
+        const ul = document.createElement("ul");
+        ph.items.forEach((it, i2) => {
+          const li = document.createElement("li");
+          if (it.done) li.classList.add("done");
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.checked = !!it.done;
+          cb.setAttribute("aria-label", "Mark item " + (i2 + 1) + " complete");
+          cb.addEventListener("change", () => {
+            it.done = cb.checked;
+            li.classList.toggle("done", cb.checked);
+            touch();
+          });
+          const span = document.createElement("span");
+          span.textContent = it.text || "";
+          li.appendChild(cb);
+          li.appendChild(span);
+          if (it.owner) {
+            const owner = document.createElement("em");
+            owner.style.color = "var(--muted)";
+            owner.style.marginLeft = "6px";
+            owner.textContent = "@" + it.owner;
+            li.appendChild(owner);
+          }
+          ul.appendChild(li);
+        });
+        div.appendChild(ul);
+      }
+
+      if ((ph.milestones || []).length) {
+        const m = document.createElement("div");
+        m.className = "milestones";
+        m.textContent = "Milestones: " + ph.milestones.join(" · ");
+        div.appendChild(m);
+      }
+
+      phasesRoot.appendChild(div);
+    });
+  }
+
+  renderPhases();
+
+  // Mockups
+  const mocksRoot = document.getElementById("mockups-root");
+  mocksRoot.replaceChildren();
+  (plan.mockups || []).forEach((m) => {
+    const wrap = document.createElement("div");
+    wrap.className = "mock";
+    const title = document.createElement("div");
+    title.className = "mock-title";
+    title.textContent = m.title || "Mockup";
+    wrap.appendChild(title);
+    const body = document.createElement("div");
+    // Mockup HTML is plan-author-provided. Treat as trusted: it ships inline in this file.
+    body.innerHTML = m.html || "";
+    wrap.appendChild(body);
+    mocksRoot.appendChild(wrap);
+  });
+
+  // Risks
+  const risksRoot = document.getElementById("risks-root");
+  risksRoot.replaceChildren();
+  (plan.risks || []).forEach((r) => {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td"); td1.textContent = r.risk || "";
+    const td2 = document.createElement("td");
+    td2.textContent = r.severity || "";
+    td2.className = r.severity === "high" ? "risk-high" : r.severity === "mid" ? "risk-mid" : "risk-low";
+    const td3 = document.createElement("td"); td3.textContent = r.mitigation || "";
+    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3);
+    risksRoot.appendChild(tr);
+  });
+
+  // Decisions
+  const decisionsRoot = document.getElementById("decisions-root");
+  decisionsRoot.replaceChildren();
+  (plan.decisions || []).forEach((d) => {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td"); td1.textContent = d.decision || "";
+    const td2 = document.createElement("td"); td2.textContent = d.rationale || "";
+    tr.appendChild(td1); tr.appendChild(td2);
+    decisionsRoot.appendChild(tr);
+  });
+
+  // Progress
+  const progressRoot = document.getElementById("progress-root");
+  progressRoot.replaceChildren();
+  (plan.progress_log || []).forEach((p) => {
+    const tr = document.createElement("tr");
+    ["ts", "phase", "action"].forEach((k) => {
+      const td = document.createElement("td");
+      td.textContent = p[k] ?? "";
+      tr.appendChild(td);
+    });
+    const filesTd = document.createElement("td");
+    filesTd.textContent = (p.files || []).join(", ");
+    tr.appendChild(filesTd);
+    progressRoot.appendChild(tr);
+  });
+
+  // Tabs
+  const tabBtns = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const selectTab = (idx) => {
+    tabBtns.forEach((b, i) => {
+      const sel = i === idx;
+      b.setAttribute("aria-selected", String(sel));
+      b.tabIndex = sel ? 0 : -1;
+    });
+    panels.forEach((p, i) => p.hidden = i !== idx);
+  };
+  tabBtns.forEach((b, i) => {
+    b.addEventListener("click", () => selectTab(i));
+    b.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const n = (i + 1) % tabBtns.length;
+        tabBtns[n].focus(); selectTab(n);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const n = (i - 1 + tabBtns.length) % tabBtns.length;
+        tabBtns[n].focus(); selectTab(n);
+      }
+    });
+  });
+
+  // Copy buttons
+  const toMarkdown = () => {
+    const lines = [];
+    lines.push("# " + (plan.plan_title || "Plan"));
+    if (plan.goal) lines.push("\n## Goal\n" + plan.goal);
+    lines.push("\n## Phases");
+    (plan.phases || []).forEach((ph) => {
+      lines.push(`\n### Phase ${ph.id}: ${ph.title} (${ph.status})`);
+      (ph.items || []).forEach((it) => {
+        lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
+      });
+      if ((ph.milestones || []).length) {
+        lines.push("- **Milestones:** " + ph.milestones.join("; "));
+      }
+    });
+    if ((plan.risks || []).length) {
+      lines.push("\n## Risks");
+      lines.push("| Risk | Severity | Mitigation |");
+      lines.push("|---|---|---|");
+      plan.risks.forEach((r) => {
+        lines.push(`| ${r.risk} | ${r.severity} | ${r.mitigation} |`);
+      });
+    }
+    if ((plan.decisions || []).length) {
+      lines.push("\n## Decisions");
+      plan.decisions.forEach((d) => lines.push(`- **${d.decision}** — ${d.rationale}`));
+    }
+    return lines.join("\n");
+  };
+
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard) await navigator.clipboard.writeText(text);
+      else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed"; ta.style.left = "-9999px";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+      }
+    } catch (e) { /* no-op */ }
+  };
+
+  document.getElementById("btn-copy-md").addEventListener("click", () => copyText(toMarkdown()));
+  document.getElementById("btn-copy-json").addEventListener("click", () => copyText(JSON.stringify(plan, null, 2)));
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-save").addEventListener("click", savePlanHtml);
+
+  function touch() {
+    plan.updated_at = new Date().toISOString();
+  }
+
+  function flashSaved(btn, msg) {
+    const orig = btn.dataset.origLabel || btn.textContent;
+    btn.dataset.origLabel = orig;
+    btn.textContent = msg;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+
+  async function savePlanHtml() {
+    let fileName = location.pathname.split("/").pop();
+    try { fileName = decodeURIComponent(fileName); } catch (e) { /* a malformed "%" keeps the raw name */ }
+    fileName = fileName || "artifact.html";
+    const btn = document.getElementById("btn-save");
+    // Push current state into the embedded data block so serialized HTML carries it.
+    // Replace '<' with its \u escape on write-back to neutralize close-script
+    // sequences a user typed into a plan string. JSON.parse round-trips the
+    // escape back to '<' on reload, preserving semantics.
+    dataEl.textContent = JSON.stringify(plan, null, 2).replace(/</g, "\\u003c");
+    const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+
+    // File System Access API (Chromium): overwrite in place after first picker.
+    if (window.showSaveFilePicker) {
+      try {
+        if (!window.__planFileHandle) {
+          window.__planFileHandle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "HTML file", accept: { "text/html": [".html"] } }],
+          });
+        }
+        const writable = await window.__planFileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        flashSaved(btn, "Saved");
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+        // fall through to download fallback
+      }
+    }
+
+    // Download fallback (Firefox, Safari): user moves the file into the project.
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    flashSaved(btn, "Downloaded");
+  }
+})();
+</script>
+</body>
+</html>

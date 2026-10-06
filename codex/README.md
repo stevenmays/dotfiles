@@ -2,9 +2,11 @@
 
 This package contains independently maintained Codex instructions. The repository root remains the Claude package. The Codex marketplace targets this directory so Claude commands, agents, and hooks cannot enter the package through default discovery.
 
-The eight skills cover strict maintainability review, deslop, frontend craft, skill optimization, long-form writing, serverless AWS, onboarding, and merge conflicts. Strict review preserves its explicit-only invocation policy. Other skills use concise descriptions for normal discovery.
+The nine skills cover strict maintainability review, deslop, frontend craft, HTML artifacts, skill optimization, long-form writing, serverless AWS, onboarding, and merge conflicts. Strict review preserves its explicit-only invocation policy. Other skills use concise descriptions for normal discovery.
 
 `ste-writing` is excluded. Routine writing uses the model's default behavior; the optional [personal template](templates/AGENTS.user.md) adds only brief plain-language preferences. The `writing-style` skill applies to requested essays and articles in Steven's voice. Frontend craft uses the session's built-in image capability when available.
+
+The `html-artifact` templates are adapted from [plan-it](https://github.com/OthmanAdi/plan-it) at commit `93f6606` under the MIT license, and the notice ships at [skills/html-artifact/templates/LICENSE](skills/html-artifact/templates/LICENSE).
 
 ## Develop and install
 

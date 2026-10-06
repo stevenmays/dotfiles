@@ -1,3 +1,14 @@
 {
+  "skills/html-artifact/templates/LICENSE": "skills/html-artifact/templates/LICENSE",
+  "skills/html-artifact/templates/animation-sandbox.html": "skills/html-artifact/templates/animation-sandbox.html",
+  "skills/html-artifact/templates/annotated-pr.html": "skills/html-artifact/templates/annotated-pr.html",
+  "skills/html-artifact/templates/feature-flag-editor.html": "skills/html-artifact/templates/feature-flag-editor.html",
+  "skills/html-artifact/templates/implementation-plan.html": "skills/html-artifact/templates/implementation-plan.html",
+  "skills/html-artifact/templates/incident-timeline.html": "skills/html-artifact/templates/incident-timeline.html",
+  "skills/html-artifact/templates/living-design-system.html": "skills/html-artifact/templates/living-design-system.html",
+  "skills/html-artifact/templates/module-map.html": "skills/html-artifact/templates/module-map.html",
+  "skills/html-artifact/templates/three-approaches.html": "skills/html-artifact/templates/three-approaches.html",
+  "skills/html-artifact/templates/ticket-triage.html": "skills/html-artifact/templates/ticket-triage.html",
+  "skills/html-artifact/templates/weekly-status.html": "skills/html-artifact/templates/weekly-status.html",
   "skills/writing-style/references/examples.md": "skills/writing-style/writing-style-examples.md"
 }

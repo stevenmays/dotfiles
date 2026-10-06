@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<!--
+MIT License
+
+Copyright (c) 2026 Ahmad Othman Ammar Adi (OthmanAdi)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Animation Sandbox</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fafaf7;
+    --fg: #1b1b18;
+    --muted: #5b5b56;
+    --accent: #c8553d;
+    --border: #1b1b18;
+    --border-soft: #c8c8c2;
+    --code: #f1f1ec;
+    --ok: #2a6f4e;
+    --warn: #b9802b;
+    --err: #a73326;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161613;
+      --fg: #ecece6;
+      --muted: #9c9c95;
+      --accent: #e07a5f;
+      --border: #ecece6;
+      --border-soft: #3a3a36;
+      --code: #232320;
+      --ok: #6ab089;
+      --warn: #d9a25a;
+      --err: #d96959;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--fg);
+    line-height: 1.5;
+  }
+  header.bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header.bar h1 {
+    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  header.bar .meta {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 12px; color: var(--muted);
+  }
+  header.bar .actions { display: flex; gap: 8px; }
+  button {
+    font: inherit; font-size: 12px; padding: 6px 10px;
+    background: transparent; color: var(--fg);
+    border: 1px solid var(--border); border-radius: 2px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button[aria-pressed="true"] {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+  }
+  button.primary {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+    font-size: 13px; padding: 8px 16px;
+  }
+  button.primary:hover { background: var(--fg); border-color: var(--fg); }
+  main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+  h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 18px; font-weight: 700; margin: 0 0 12px;
+  }
+  h3 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 14px; font-weight: 700; margin: 0 0 8px;
+  }
+  .stage {
+    border: 1px solid var(--border-soft);
+    border-radius: 2px;
+    background: var(--code);
+    min-height: 240px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+  .stage-label {
+    position: absolute; top: 8px; left: 12px;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--muted);
+  }
+  .target {
+    width: 96px; height: 96px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--bg);
+    font-family: ui-monospace, monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    border-radius: 2px;
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  @media (max-width: 800px) { .controls { grid-template-columns: 1fr; } }
+  .panel {
+    border: 1px solid var(--border-soft);
+    border-radius: 2px;
+    padding: 16px;
+    background: var(--bg);
+  }
+  .field {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .field label {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .field .value {
+    font-family: ui-monospace, monospace;
+    font-size: 12px;
+    color: var(--fg);
+  }
+  .field input[type="range"] {
+    grid-column: 1 / -1;
+    width: 100%;
+    accent-color: var(--accent);
+    margin: 4px 0;
+  }
+  .field input[type="range"]:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 4px;
+  }
+  .field input[type="text"], .field select {
+    grid-column: 1 / -1;
+    font: inherit; font-size: 12px;
+    padding: 6px 8px;
+    background: var(--code); color: var(--fg);
+    border: 1px solid var(--border-soft); border-radius: 2px;
+  }
+  .field input[type="text"]:focus-visible, .field select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+    border-color: var(--accent);
+  }
+  .prop-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr auto;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .prop-row:last-child { border-bottom: none; }
+  .prop-row label {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--fg);
+  }
+  .prop-row input {
+    font: inherit; font-size: 11px;
+    padding: 4px 6px;
+    background: var(--code); color: var(--fg);
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    font-family: ui-monospace, monospace;
+    min-width: 0;
+  }
+  .prop-row input:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px;
+    border-color: var(--accent);
+  }
+  .prop-row .remove {
+    font-size: 11px; padding: 4px 6px;
+  }
+  .play-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .keymap {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--muted);
+  }
+  .keymap kbd {
+    font-family: inherit; font-size: 10px;
+    border: 1px solid var(--border-soft);
+    padding: 1px 4px; border-radius: 2px;
+    background: var(--code);
+  }
+  .export-row {
+    display: flex; gap: 8px; margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  pre.snippet {
+    background: var(--code); padding: 12px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    overflow-x: auto;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    margin: 12px 0 0;
+    max-height: 200px;
+  }
+  .reduced-motion-note {
+    border: 1px solid var(--warn);
+    background: transparent;
+    color: var(--warn);
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    border-radius: 2px;
+    display: none;
+  }
+  .reduced-motion-note.show { display: block; }
+  .toast {
+    position: fixed; bottom: 16px; right: 16px;
+    background: var(--fg); color: var(--bg);
+    padding: 8px 14px;
+    font-family: ui-monospace, monospace; font-size: 12px;
+    border-radius: 2px;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.15s linear;
+    z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+  .skip-link {
+    position: absolute; left: -9999px; top: 8px;
+    padding: 8px 12px; background: var(--accent); color: var(--bg);
+  }
+  .skip-link:focus { left: 16px; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="bar" role="banner">
+  <div>
+    <h1 id="plan-title">Animation Sandbox</h1>
+    <div class="meta" id="plan-meta">template: animation-sandbox</div>
+  </div>
+  <div class="actions" role="group" aria-label="Animation actions">
+    <button type="button" id="btn-save" aria-label="Save this file to disk">Save</button>
+    <button type="button" id="btn-copy-css" aria-label="Copy as CSS @keyframes block">Copy as CSS</button>
+    <button type="button" id="btn-copy-json" aria-label="Copy animation data as JSON">Copy as JSON</button>
+    <button type="button" id="btn-print" aria-label="Print sandbox">Print</button>
+  </div>
+</header>
+
+<main id="main">
+  <div id="reduced-motion-note" class="reduced-motion-note" role="status">
+    Reduced motion is on. Animation preview is disabled. Toggle play to force-preview.
+  </div>
+
+  <section aria-label="Preview">
+    <h2>Preview</h2>
+    <div class="stage" id="stage">
+      <span class="stage-label" id="stage-label">target</span>
+      <div id="target" class="target" aria-label="Animation target">PLAY</div>
+    </div>
+  </section>
+
+  <div class="play-row">
+    <button type="button" id="btn-play" class="primary" aria-label="Play animation">Play</button>
+    <button type="button" id="btn-loop" aria-label="Toggle loop" aria-pressed="false">Loop</button>
+    <span class="keymap"><kbd>Space</kbd> play  ·  <kbd>L</kbd> loop</span>
+  </div>
+
+  <div class="controls">
+    <section class="panel" aria-label="Timing controls">
+      <h3>Timing</h3>
+
+      <div class="field">
+        <label for="ctrl-duration">Duration</label>
+        <span class="value" id="ctrl-duration-val">600ms</span>
+        <input
+          type="range" id="ctrl-duration"
+          min="50" max="2000" step="10" value="600"
+          aria-label="Animation duration in milliseconds"
+        >
+      </div>
+
+      <div class="field">
+        <label for="ctrl-easing">Easing</label>
+        <span class="value" id="ctrl-easing-val">ease-out</span>
+        <select id="ctrl-easing" aria-label="Animation easing function">
+          <option value="ease">ease</option>
+          <option value="ease-in">ease-in</option>
+          <option value="ease-out" selected>ease-out</option>
+          <option value="ease-in-out">ease-in-out</option>
+          <option value="linear">linear</option>
+          <option value="cubic-bezier(0.34, 1.56, 0.64, 1)">overshoot (cubic-bezier)</option>
+          <option value="cubic-bezier(0.68, -0.55, 0.27, 1.55)">elastic (cubic-bezier)</option>
+          <option value="cubic-bezier(0.4, 0, 0.2, 1)">material (cubic-bezier)</option>
+          <option value="__custom__">custom...</option>
+        </select>
+      </div>
+
+      <div class="field" id="ctrl-easing-custom-wrap" hidden>
+        <label for="ctrl-easing-custom">Custom cubic-bezier</label>
+        <span class="value">cubic-bezier(...)</span>
+        <input
+          type="text" id="ctrl-easing-custom"
+          value="cubic-bezier(0.25, 0.1, 0.25, 1)"
+          aria-label="Custom cubic-bezier expression"
+          placeholder="cubic-bezier(0.25, 0.1, 0.25, 1)"
+        >
+      </div>
+
+      <div class="field">
+        <label for="ctrl-delay">Delay</label>
+        <span class="value" id="ctrl-delay-val">0ms</span>
+        <input
+          type="range" id="ctrl-delay"
+          min="0" max="1000" step="10" value="0"
+          aria-label="Animation delay in milliseconds"
+        >
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Property controls">
+      <h3>Properties</h3>
+      <div id="props-root"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="Export" style="margin-top: 24px;">
+    <h3>Export</h3>
+    <div class="export-row">
+      <button type="button" id="btn-export-css" aria-label="Generate and copy CSS keyframes">Copy CSS</button>
+      <button type="button" id="btn-export-json" aria-label="Generate and copy JSON parameters">Copy JSON</button>
+      <button type="button" id="btn-show-css" aria-label="Toggle CSS preview" aria-pressed="false">Show preview</button>
+    </div>
+    <pre class="snippet" id="css-snippet" hidden></pre>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script type="application/json" id="plan-data">
+{
+  "plan_title": "Animation Sandbox",
+  "template": "animation-sandbox",
+  "animation": {
+    "name": "bounce-in",
+    "target_selector": "#target",
+    "duration_ms": 600,
+    "easing": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    "delay_ms": 0,
+    "properties": [
+      {"name": "opacity", "from": "0", "to": "1"},
+      {"name": "transform", "from": "translateY(24px) scale(0.92)", "to": "translateY(0) scale(1)"}
+    ]
+  }
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const dataEl = document.getElementById("plan-data");
+  let plan = {};
+  try { plan = JSON.parse(dataEl.textContent); }
+  catch (e) { return; }
+
+  const anim = plan.animation || {};
+  if (!Array.isArray(anim.properties)) anim.properties = [];
+  if (typeof anim.duration_ms !== "number") anim.duration_ms = 600;
+  if (typeof anim.delay_ms !== "number") anim.delay_ms = 0;
+  if (!anim.easing) anim.easing = "ease-out";
+  if (!anim.name) anim.name = "anim";
+
+  document.getElementById("plan-title").textContent = plan.plan_title || "Animation Sandbox";
+  document.getElementById("plan-meta").textContent =
+    `template: ${plan.template || "(custom)"} · ${anim.name} · ${anim.properties.length} properties`;
+  document.getElementById("stage-label").textContent = anim.target_selector || "#target";
+
+  // Toast
+  const toastEl = document.getElementById("toast");
+  let toastTimer = null;
+  const toast = (msg) => {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1400);
+  };
+
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard) await navigator.clipboard.writeText(text);
+      else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed"; ta.style.left = "-9999px";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+      }
+      toast("Copied to clipboard");
+    } catch (e) { toast("Copy failed"); }
+  };
+
+  // Reduced motion
+  const rm = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  const rmNote = document.getElementById("reduced-motion-note");
+  let forcePreview = false;
+  const updateRMNote = () => {
+    if (rm && rm.matches && !forcePreview) rmNote.classList.add("show");
+    else rmNote.classList.remove("show");
+  };
+  if (rm && rm.addEventListener) rm.addEventListener("change", updateRMNote);
+  updateRMNote();
+
+  // Property editor
+  const propsRoot = document.getElementById("props-root");
+  const renderProps = () => {
+    propsRoot.textContent = "";
+    anim.properties.forEach((p, idx) => {
+      const row = document.createElement("div");
+      row.className = "prop-row";
+      const lab = document.createElement("label");
+      lab.textContent = p.name;
+      lab.setAttribute("for", `prop-from-${idx}`);
+      const fromInp = document.createElement("input");
+      fromInp.id = `prop-from-${idx}`;
+      fromInp.type = "text"; fromInp.value = p.from || "";
+      fromInp.setAttribute("aria-label", `${p.name} from value`);
+      fromInp.placeholder = "from";
+      fromInp.addEventListener("input", () => { p.from = fromInp.value; });
+      const toInp = document.createElement("input");
+      toInp.type = "text"; toInp.value = p.to || "";
+      toInp.setAttribute("aria-label", `${p.name} to value`);
+      toInp.placeholder = "to";
+      toInp.addEventListener("input", () => { p.to = toInp.value; });
+      const rm2 = document.createElement("button");
+      rm2.type = "button"; rm2.className = "remove";
+      rm2.textContent = "x";
+      rm2.setAttribute("aria-label", `Remove ${p.name} property`);
+      rm2.addEventListener("click", () => {
+        anim.properties.splice(idx, 1);
+        renderProps();
+      });
+      row.appendChild(lab); row.appendChild(fromInp); row.appendChild(toInp); row.appendChild(rm2);
+      propsRoot.appendChild(row);
+    });
+    // Add property
+    const addRow = document.createElement("div");
+    addRow.style.cssText = "padding-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
+    const addInp = document.createElement("input");
+    addInp.type = "text"; addInp.placeholder = "property name (e.g. transform)";
+    addInp.setAttribute("aria-label", "New property name");
+    addInp.style.cssText = "font:inherit;font-size:11px;padding:4px 6px;background:var(--code);color:var(--fg);border:1px solid var(--border-soft);border-radius:2px;font-family:ui-monospace,monospace;flex:1;min-width:140px;";
+    const addBtn = document.createElement("button");
+    addBtn.type = "button"; addBtn.textContent = "Add property";
+    addBtn.setAttribute("aria-label", "Add new animation property");
+    addBtn.addEventListener("click", () => {
+      const v = addInp.value.trim();
+      if (!v) return;
+      anim.properties.push({name: v, from: "", to: ""});
+      renderProps();
+    });
+    addRow.appendChild(addInp); addRow.appendChild(addBtn);
+    propsRoot.appendChild(addRow);
+  };
+  renderProps();
+
+  // Timing controls
+  const durInp = document.getElementById("ctrl-duration");
+  const durVal = document.getElementById("ctrl-duration-val");
+  durInp.value = String(anim.duration_ms);
+  durVal.textContent = anim.duration_ms + "ms";
+  durInp.addEventListener("input", () => {
+    anim.duration_ms = parseInt(durInp.value, 10);
+    durVal.textContent = anim.duration_ms + "ms";
+  });
+
+  const delInp = document.getElementById("ctrl-delay");
+  const delVal = document.getElementById("ctrl-delay-val");
+  delInp.value = String(anim.delay_ms);
+  delVal.textContent = anim.delay_ms + "ms";
+  delInp.addEventListener("input", () => {
+    anim.delay_ms = parseInt(delInp.value, 10);
+    delVal.textContent = anim.delay_ms + "ms";
+  });
+
+  const easingSel = document.getElementById("ctrl-easing");
+  const easingVal = document.getElementById("ctrl-easing-val");
+  const easingCustomWrap = document.getElementById("ctrl-easing-custom-wrap");
+  const easingCustom = document.getElementById("ctrl-easing-custom");
+  // pick preset that matches current easing
+  let preset = "__custom__";
+  for (const opt of easingSel.options) {
+    if (opt.value === anim.easing) { preset = opt.value; break; }
+  }
+  if (preset === "__custom__") {
+    easingSel.value = "__custom__";
+    easingCustomWrap.hidden = false;
+    easingCustom.value = anim.easing;
+  } else {
+    easingSel.value = preset;
+  }
+  easingVal.textContent = anim.easing;
+  easingSel.addEventListener("change", () => {
+    if (easingSel.value === "__custom__") {
+      easingCustomWrap.hidden = false;
+      anim.easing = easingCustom.value || "cubic-bezier(0.25, 0.1, 0.25, 1)";
+    } else {
+      easingCustomWrap.hidden = true;
+      anim.easing = easingSel.value;
+    }
+    easingVal.textContent = anim.easing;
+  });
+  easingCustom.addEventListener("input", () => {
+    if (easingSel.value === "__custom__") {
+      anim.easing = easingCustom.value;
+      easingVal.textContent = anim.easing;
+    }
+  });
+
+  // Play / loop
+  let loop = false;
+  const target = document.getElementById("target");
+  // Stable id keeps re-opens of a Saved file from stacking duplicate style blocks.
+  const STYLE_ID = "anim-runtime-style";
+  let styleEl = document.getElementById(STYLE_ID);
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = STYLE_ID;
+    document.head.appendChild(styleEl);
+  }
+
+  const keyframesCSS = () => {
+    const name = "kf-" + (anim.name || "anim").replace(/[^a-zA-Z0-9_-]/g, "");
+    const fromDecls = anim.properties.map((p) => `    ${p.name}: ${p.from};`).join("\n");
+    const toDecls = anim.properties.map((p) => `    ${p.name}: ${p.to};`).join("\n");
+    return {
+      name,
+      css: `@keyframes ${name} {\n  from {\n${fromDecls}\n  }\n  to {\n${toDecls}\n  }\n}`
+    };
+  };
+
+  const fullCSS = () => {
+    const k = keyframesCSS();
+    const sel = anim.target_selector || "#target";
+    const iter = loop ? "infinite" : "1";
+    const decl = `${sel} {\n  animation: ${k.name} ${anim.duration_ms}ms ${anim.easing} ${anim.delay_ms}ms ${iter} both;\n}`;
+    return k.css + "\n\n" + decl;
+  };
+
+  const play = () => {
+    if (rm && rm.matches && !forcePreview) {
+      // honor reduced motion: jump straight to "to" state, no animation
+      const k = keyframesCSS();
+      styleEl.textContent = "";
+      anim.properties.forEach((p) => { try { target.style.setProperty(p.name, p.to); } catch (e) { /* no-op */ } });
+      toast("Reduced motion: skipped to end state");
+      return;
+    }
+    forcePreview = false;
+    const k = keyframesCSS();
+    const iter = loop ? "infinite" : "1";
+    // Reset
+    styleEl.textContent = "";
+    target.style.animation = "none";
+    // Force reflow
+    void target.offsetWidth;
+    styleEl.textContent = k.css;
+    target.style.animation = `${k.name} ${anim.duration_ms}ms ${anim.easing} ${anim.delay_ms}ms ${iter} both`;
+  };
+
+  document.getElementById("btn-play").addEventListener("click", () => {
+    // If user clicks play under reduced motion, treat as explicit override
+    if (rm && rm.matches) { forcePreview = true; updateRMNote(); }
+    play();
+  });
+
+  const loopBtn = document.getElementById("btn-loop");
+  loopBtn.addEventListener("click", () => {
+    loop = !loop;
+    loopBtn.setAttribute("aria-pressed", String(loop));
+    if (loop) play();
+    else { target.style.animation = "none"; styleEl.textContent = ""; }
+  });
+
+  // Keyboard: space=play, l=loop
+  document.addEventListener("keydown", (e) => {
+    const tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+    if (e.code === "Space") {
+      e.preventDefault();
+      if (rm && rm.matches) { forcePreview = true; updateRMNote(); }
+      play();
+    } else if (e.key === "l" || e.key === "L") {
+      loopBtn.click();
+    }
+  });
+
+  // Export
+  const cssSnippet = document.getElementById("css-snippet");
+  const showCssBtn = document.getElementById("btn-show-css");
+  // Save serializes the live DOM, so clear the playback and preview state a saved file carries.
+  styleEl.textContent = "";
+  target.removeAttribute("style");
+  loopBtn.setAttribute("aria-pressed", "false");
+  cssSnippet.hidden = true;
+  showCssBtn.setAttribute("aria-pressed", "false");
+  showCssBtn.textContent = "Show preview";
+  toastEl.classList.remove("show");
+  showCssBtn.addEventListener("click", () => {
+    const showing = !cssSnippet.hidden;
+    if (showing) {
+      cssSnippet.hidden = true;
+      showCssBtn.setAttribute("aria-pressed", "false");
+      showCssBtn.textContent = "Show preview";
+    } else {
+      cssSnippet.textContent = fullCSS();
+      cssSnippet.hidden = false;
+      showCssBtn.setAttribute("aria-pressed", "true");
+      showCssBtn.textContent = "Hide preview";
+    }
+  });
+
+  document.getElementById("btn-export-css").addEventListener("click", () => copyText(fullCSS()));
+  document.getElementById("btn-copy-css").addEventListener("click", () => copyText(fullCSS()));
+  document.getElementById("btn-export-json").addEventListener("click", () => copyText(JSON.stringify(anim, null, 2)));
+  document.getElementById("btn-copy-json").addEventListener("click", () => copyText(JSON.stringify(plan, null, 2)));
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-save").addEventListener("click", savePlanHtml);
+
+  function flashSaved(btn, msg) {
+    const orig = btn.dataset.origLabel || btn.textContent;
+    btn.dataset.origLabel = orig;
+    btn.textContent = msg;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+
+  async function savePlanHtml() {
+    let fileName = location.pathname.split("/").pop();
+    try { fileName = decodeURIComponent(fileName); } catch (e) { /* a malformed "%" keeps the raw name */ }
+    fileName = fileName || "artifact.html";
+    const btn = document.getElementById("btn-save");
+    // Replace '<' with its \u escape on write-back to neutralize close-script
+    // sequences a user typed into a plan string. JSON.parse round-trips the
+    // escape back to '<' on reload, preserving semantics.
+    dataEl.textContent = JSON.stringify(plan, null, 2).replace(/</g, "\\u003c");
+    // The runtime style holds raw property values, so serialize a clone without it or the inline animation.
+    const doc = document.documentElement.cloneNode(true);
+    doc.querySelector("#" + STYLE_ID).textContent = "";
+    doc.querySelector("#target").removeAttribute("style");
+    const html = "<!doctype html>\n" + doc.outerHTML;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    if (window.showSaveFilePicker) {
+      try {
+        if (!window.__planFileHandle) {
+          window.__planFileHandle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "HTML file", accept: { "text/html": [".html"] } }],
+          });
+        }
+        const writable = await window.__planFileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        flashSaved(btn, "Saved");
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    flashSaved(btn, "Downloaded");
+  }
+})();
+</script>
+</body>
+</html>

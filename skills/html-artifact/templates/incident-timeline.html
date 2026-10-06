@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="en">
+<!--
+MIT License
+
+Copyright (c) 2026 Ahmad Othman Ammar Adi (OthmanAdi)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Incident Timeline</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fafaf7;
+    --fg: #1b1b18;
+    --muted: #5b5b56;
+    --accent: #c8553d;
+    --border: #1b1b18;
+    --border-soft: #c8c8c2;
+    --code: #f1f1ec;
+    --ok: #2a6f4e;
+    --warn: #b9802b;
+    --err: #a73326;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161613;
+      --fg: #ecece6;
+      --muted: #9c9c95;
+      --accent: #e07a5f;
+      --border: #ecece6;
+      --border-soft: #3a3a36;
+      --code: #232320;
+      --ok: #6ab089;
+      --warn: #d9a25a;
+      --err: #d96959;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--fg);
+    line-height: 1.5;
+  }
+  header.bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px; flex-wrap: wrap;
+  }
+  header.bar h1 {
+    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  header.bar .meta {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 12px; color: var(--muted);
+  }
+  header.bar .actions { display: flex; gap: 8px; }
+  button {
+    font: inherit; font-size: 12px; padding: 6px 10px;
+    background: transparent; color: var(--fg);
+    border: 1px solid var(--border); border-radius: 2px; cursor: pointer;
+  }
+  button:hover { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  nav.tabs {
+    display: flex; gap: 0; padding: 0 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  nav.tabs button {
+    border: none; border-bottom: 2px solid transparent;
+    border-radius: 0; padding: 12px 16px;
+    color: var(--muted); background: transparent;
+  }
+  nav.tabs button[aria-selected="true"] {
+    color: var(--fg); border-bottom-color: var(--accent);
+  }
+  nav.tabs button:hover { color: var(--fg); background: transparent; }
+  main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+  section[role="tabpanel"][hidden] { display: none; }
+  h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 18px; font-weight: 700; margin: 0 0 12px;
+  }
+  /* Incident header summary */
+  .incident-summary {
+    border: 1px solid var(--border-soft);
+    margin-bottom: 24px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  @media (max-width: 800px) { .incident-summary { grid-template-columns: repeat(2, 1fr); } }
+  .summary-cell {
+    padding: 12px 16px; border-right: 1px solid var(--border-soft);
+  }
+  .summary-cell:last-child { border-right: none; }
+  .summary-cell .lbl {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  }
+  .summary-cell .val {
+    font-family: ui-monospace, monospace; font-size: 14px; margin-top: 4px;
+  }
+  .summary-cell .val.big {
+    font-family: ui-serif, Georgia, serif; font-size: 22px; font-weight: 700; line-height: 1.1;
+  }
+  .sev {
+    display: inline-block; font-family: ui-monospace, monospace;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 2px 8px; border: 1px solid currentColor; border-radius: 2px;
+  }
+  .sev.sev1 { color: var(--err); }
+  .sev.sev2 { color: var(--warn); }
+  .sev.sev3 { color: var(--accent); }
+  .sev.sev4 { color: var(--muted); }
+  .root-cause {
+    border: 1px solid var(--border-soft); padding: 14px 16px; margin-bottom: 24px;
+    background: var(--code);
+  }
+  .root-cause .lbl {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 6px;
+  }
+  .root-cause .val { font-family: system-ui, sans-serif; }
+
+  /* Timeline */
+  .timeline {
+    display: grid; grid-template-columns: 180px 12px 1fr; gap: 0;
+    border-top: 1px solid var(--border-soft);
+  }
+  .tl-row {
+    display: contents;
+  }
+  .tl-ts {
+    grid-column: 1; padding: 10px 12px;
+    font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted);
+    border-bottom: 1px solid var(--border-soft);
+    text-align: right;
+  }
+  .tl-rail {
+    grid-column: 2; position: relative; border-bottom: 1px solid var(--border-soft);
+  }
+  .tl-rail::before {
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0;
+    width: 1px; background: var(--border-soft); transform: translateX(-0.5px);
+  }
+  .tl-dot {
+    position: absolute; left: 50%; top: 14px;
+    width: 8px; height: 8px; border-radius: 50%;
+    transform: translateX(-4px);
+    background: var(--muted);
+  }
+  .tl-dot.alert { background: var(--err); }
+  .tl-dot.action { background: var(--accent); }
+  .tl-dot.finding { background: var(--warn); }
+  .tl-dot.comm { background: var(--muted); }
+  .tl-dot.fix { background: var(--ok); }
+  .tl-dot.verify { background: var(--ok); }
+  .tl-body {
+    grid-column: 3; padding: 10px 14px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .tl-kind {
+    font-family: ui-monospace, monospace;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 1px 6px; border: 1px solid currentColor; border-radius: 2px; margin-right: 8px;
+    display: inline-block; vertical-align: middle;
+  }
+  .tl-kind.alert { color: var(--err); }
+  .tl-kind.action { color: var(--accent); }
+  .tl-kind.finding { color: var(--warn); }
+  .tl-kind.comm { color: var(--muted); }
+  .tl-kind.fix { color: var(--ok); }
+  .tl-kind.verify { color: var(--ok); }
+  .tl-who {
+    font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); margin-left: 6px;
+  }
+  .tl-text { margin-top: 4px; font-size: 14px; }
+
+  /* Logs */
+  pre.log {
+    background: var(--code); padding: 12px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    overflow-x: auto;
+    font-family: ui-monospace, monospace; font-size: 12px;
+    white-space: pre; margin: 0 0 12px;
+  }
+  .log-meta {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--muted); margin: 16px 0 4px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  /* Action items */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    border: 1px solid var(--border-soft);
+  }
+  th, td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: ui-monospace, monospace; vertical-align: top;
+  }
+  th { background: var(--code); font-weight: 600; font-size: 11px;
+       text-transform: uppercase; letter-spacing: 0.06em; }
+  td.text { font-family: system-ui, sans-serif; }
+  td input[type="checkbox"] { accent-color: var(--accent); }
+  tr.done td.text { color: var(--muted); text-decoration: line-through; }
+
+  .skip-link {
+    position: absolute; left: -9999px; top: 8px;
+    padding: 8px 12px; background: var(--accent); color: var(--bg);
+  }
+  .skip-link:focus { left: 16px; }
+  .empty { font-style: italic; color: var(--muted); padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="bar" role="banner">
+  <div>
+    <h1 id="plan-title">Incident Timeline</h1>
+    <div class="meta" id="plan-meta">template: incident-timeline</div>
+  </div>
+  <div class="actions" role="group" aria-label="Incident actions">
+    <button type="button" id="btn-save" aria-label="Save this file to disk">Save</button>
+    <button type="button" id="btn-copy-md" aria-label="Copy post-mortem as Markdown">Copy as Markdown</button>
+    <button type="button" id="btn-copy-json" aria-label="Copy plan-data as JSON">Copy as JSON</button>
+    <button type="button" id="btn-print" aria-label="Print post-mortem">Print</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Incident sections">
+  <button role="tab" type="button" aria-controls="tab-summary" aria-selected="true" id="tab-summary-btn">Summary</button>
+  <button role="tab" type="button" aria-controls="tab-timeline" aria-selected="false" id="tab-timeline-btn">Timeline</button>
+  <button role="tab" type="button" aria-controls="tab-logs" aria-selected="false" id="tab-logs-btn">Logs</button>
+  <button role="tab" type="button" aria-controls="tab-actions" aria-selected="false" id="tab-actions-btn">Action items</button>
+  <button role="tab" type="button" aria-controls="tab-progress" aria-selected="false" id="tab-progress-btn">Progress</button>
+</nav>
+
+<main id="main">
+  <section role="tabpanel" id="tab-summary" aria-labelledby="tab-summary-btn">
+    <h2>Summary</h2>
+    <div class="incident-summary" id="summary-root" aria-label="Incident header"></div>
+    <div class="root-cause">
+      <div class="lbl">Root cause</div>
+      <div class="val" id="root-cause-text">(not yet determined)</div>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="tab-timeline" aria-labelledby="tab-timeline-btn" hidden>
+    <h2>Timeline</h2>
+    <div class="timeline" id="timeline-root" role="list" aria-label="Incident event timeline"></div>
+  </section>
+
+  <section role="tabpanel" id="tab-logs" aria-labelledby="tab-logs-btn" hidden>
+    <h2>Log excerpts</h2>
+    <div id="logs-root"></div>
+  </section>
+
+  <section role="tabpanel" id="tab-actions" aria-labelledby="tab-actions-btn" hidden>
+    <h2>Action items</h2>
+    <table>
+      <thead><tr><th style="width:32px;">Done</th><th>Action</th><th>Owner</th><th>Due</th></tr></thead>
+      <tbody id="actions-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-progress" aria-labelledby="tab-progress-btn" hidden>
+    <h2>Progress log</h2>
+    <table>
+      <thead><tr><th>Timestamp</th><th>Phase</th><th>Action</th><th>Files</th></tr></thead>
+      <tbody id="progress-root"></tbody>
+    </table>
+  </section>
+</main>
+
+<script type="application/json" id="plan-data">
+{
+  "plan_title": "Incident — Checkout 502s on prod-eu",
+  "template": "incident-timeline",
+  "updated_at": "2026-05-20T11:05:00Z",
+  "incident": {
+    "id": "INC-2418",
+    "title": "Checkout 502s on prod-eu after database failover",
+    "severity": "sev1",
+    "started_at": "2026-05-19T14:42:00Z",
+    "resolved_at": "2026-05-19T16:08:00Z",
+    "duration_minutes": 86,
+    "region": "prod-eu",
+    "customer_impact": "approx. 41% of EU checkout attempts returned 502 between 14:42 and 16:08 UTC",
+    "root_cause": "Read-replica connection pool in payments-api did not rebind after RDS failover. Pool kept routing to the demoted host until manual restart. The graceful-failover hook regressed in the 2026-05-12 release; alert thresholds masked it during synthetic tests."
+  },
+  "events": [
+    {"ts": "2026-05-19T14:42:00Z", "kind": "alert", "who": "pagerduty", "body": "P1 page: prod-eu checkout error rate above 5% for 3 minutes"},
+    {"ts": "2026-05-19T14:43:00Z", "kind": "comm", "who": "noor", "body": "Acknowledged page. Opening #inc-2418 in Slack. Status page set to investigating."},
+    {"ts": "2026-05-19T14:48:00Z", "kind": "finding", "who": "jules", "body": "RDS event log shows automatic failover at 14:39 UTC. payments-api logs are full of read-from-replica timeouts."},
+    {"ts": "2026-05-19T14:51:00Z", "kind": "action", "who": "jules", "body": "Forced pool drain on payments-api-1, watching error rate."},
+    {"ts": "2026-05-19T14:55:00Z", "kind": "finding", "who": "jules", "body": "Drain did not help. New connections still resolving to old primary. Suspected DNS or cached endpoint."},
+    {"ts": "2026-05-19T15:02:00Z", "kind": "comm", "who": "noor", "body": "Status page bumped to identified. Customer-facing message sent."},
+    {"ts": "2026-05-19T15:18:00Z", "kind": "finding", "who": "kate", "body": "Confirmed: HikariCP pool ignoring TTL on JDBC URL aliasing. Bug present since 2026-05-12 release."},
+    {"ts": "2026-05-19T15:24:00Z", "kind": "fix", "who": "kate", "body": "Rolling restart of payments-api fleet in prod-eu. Error rate dropping immediately."},
+    {"ts": "2026-05-19T15:48:00Z", "kind": "verify", "who": "kate", "body": "Error rate back to baseline (\u003c0.1%) across all prod-eu regions for 20 minutes."},
+    {"ts": "2026-05-19T16:08:00Z", "kind": "comm", "who": "noor", "body": "Status page resolved. Postmortem scheduled for 2026-05-20 10:00 UTC."}
+  ],
+  "log_excerpts": [
+    {"ts": "2026-05-19T14:43:11Z", "source": "payments-api-1 stderr",
+     "line": "14:43:11.012 [http-nio-8080-exec-12] ERROR c.x.p.PaymentService - org.postgresql.util.PSQLException: An I/O error occurred while sending to the backend.\n14:43:11.014   at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:565)\n14:43:11.014   at com.zaxxer.hikari.pool.ProxyStatement.executeQuery(ProxyStatement.java:111)\n14:43:11.014   at com.xenon.payments.PaymentService.charge(PaymentService.java:148)"},
+    {"ts": "2026-05-19T14:48:30Z", "source": "rds-event-log",
+     "line": "RDS-EVENT-0049: DB instance prod-eu-payments-1 failover initiated at 14:39:51 UTC, completed at 14:40:07 UTC. New primary: prod-eu-payments-2."},
+    {"ts": "2026-05-19T15:18:42Z", "source": "payments-api-1 hikari-debug",
+     "line": "DEBUG c.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Pool stats (total=20, active=20, idle=0, waiting=14). Connection probe SELECT 1 failing on host 10.41.0.7 (was primary, now replica)."}
+  ],
+  "action_items": [
+    {"text": "Pin HikariCP to known-good version; pre-release smoke must include failover drill", "owner": "kate", "due": "2026-05-27", "done": false},
+    {"text": "Add synthetic check that performs hot failover monthly and asserts pool recovery within 30s", "owner": "jules", "due": "2026-06-10", "done": false},
+    {"text": "Tighten checkout 502 alert from 3min/5% to 1min/2%", "owner": "noor", "due": "2026-05-22", "done": true},
+    {"text": "Write customer-impact note for support ticket queue (41% of EU checkouts, 86min)", "owner": "elena", "due": "2026-05-21", "done": true}
+  ],
+  "findings": [
+    "Failover hook regressed silently because synthetic test runs against a replica that already mirrors the primary; the failure mode only appears when the *real* primary is gone",
+    "Alert threshold gave us 3 minutes of error-rate headroom before paging — review for sev1-eligible services"
+  ],
+  "progress_log": [
+    {"ts": "2026-05-19T16:30:00Z", "phase": 2, "action": "Drafted post-mortem skeleton from Slack timeline", "files": ["postmortems/INC-2418.md"]},
+    {"ts": "2026-05-20T09:40:00Z", "phase": 2, "action": "Root cause confirmed by HikariCP maintainer comment", "files": ["postmortems/INC-2418.md"]},
+    {"ts": "2026-05-20T11:05:00Z", "phase": 2, "action": "Action items reviewed; two already complete", "files": ["postmortems/INC-2418.md"]}
+  ]
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const dataEl = document.getElementById("plan-data");
+  let plan = {};
+  try { plan = JSON.parse(dataEl.textContent); }
+  catch (e) {
+    document.getElementById("timeline-root").innerHTML =
+      '<p class="empty">plan-data JSON could not be parsed.</p>';
+    return;
+  }
+
+  const inc = plan.incident || {};
+  const events = plan.events || [];
+  const logs = plan.log_excerpts || [];
+  const actions = plan.action_items || [];
+
+  // Header
+  document.getElementById("plan-title").textContent = plan.plan_title || (inc.title || "Incident");
+  document.getElementById("plan-meta").textContent =
+    `template: ${plan.template || "incident-timeline"} · ${inc.id || "INC-?"} · severity ${inc.severity || "?"}`;
+
+  // Summary tiles — clear render roots before populate so re-opens of a Saved file
+  // do not double-render content already baked into the serialized DOM.
+  const summaryRoot = document.getElementById("summary-root");
+  summaryRoot.replaceChildren();
+  const fmtMin = (n) => {
+    if (n == null) return "—";
+    if (n < 60) return n + "m";
+    const h = Math.floor(n / 60); const m = n % 60;
+    return h + "h " + m + "m";
+  };
+  const sevBadge = (s) => {
+    const span = document.createElement("span");
+    span.className = "sev " + (s || "sev4");
+    span.textContent = (s || "—").toUpperCase();
+    return span;
+  };
+  const addCell = (lbl, valNode, big) => {
+    const c = document.createElement("div"); c.className = "summary-cell";
+    const l = document.createElement("div"); l.className = "lbl"; l.textContent = lbl;
+    const v = document.createElement("div"); v.className = "val" + (big ? " big" : "");
+    if (typeof valNode === "string") v.textContent = valNode; else v.appendChild(valNode);
+    c.appendChild(l); c.appendChild(v); summaryRoot.appendChild(c);
+  };
+  addCell("Severity", sevBadge(inc.severity), false);
+  addCell("Started", inc.started_at || "—", false);
+  addCell("Resolved", inc.resolved_at || "—", false);
+  addCell("Duration", fmtMin(inc.duration_minutes), true);
+
+  document.getElementById("root-cause-text").textContent = inc.root_cause || "(not yet determined)";
+
+  // Timeline
+  const tlRoot = document.getElementById("timeline-root");
+  tlRoot.replaceChildren();
+  if (!events.length) {
+    const e = document.createElement("p"); e.className = "empty";
+    e.textContent = "No events recorded yet."; tlRoot.appendChild(e);
+  }
+  events.forEach((ev) => {
+    const row = document.createElement("div");
+    row.className = "tl-row"; row.setAttribute("role", "listitem");
+
+    const ts = document.createElement("div"); ts.className = "tl-ts"; ts.textContent = ev.ts || "";
+    const rail = document.createElement("div"); rail.className = "tl-rail";
+    const dot = document.createElement("span"); dot.className = "tl-dot " + (ev.kind || "");
+    dot.setAttribute("aria-hidden", "true");
+    rail.appendChild(dot);
+
+    const body = document.createElement("div"); body.className = "tl-body";
+    const head = document.createElement("div");
+    const kind = document.createElement("span"); kind.className = "tl-kind " + (ev.kind || "");
+    kind.textContent = ev.kind || "event";
+    head.appendChild(kind);
+    if (ev.who) {
+      const who = document.createElement("span"); who.className = "tl-who"; who.textContent = "@" + ev.who;
+      head.appendChild(who);
+    }
+    body.appendChild(head);
+    const txt = document.createElement("div"); txt.className = "tl-text"; txt.textContent = ev.body || "";
+    body.appendChild(txt);
+
+    tlRoot.appendChild(ts); tlRoot.appendChild(rail); tlRoot.appendChild(body);
+  });
+
+  // Logs
+  const logsRoot = document.getElementById("logs-root");
+  logsRoot.replaceChildren();
+  if (!logs.length) {
+    const e = document.createElement("p"); e.className = "empty";
+    e.textContent = "No log excerpts attached."; logsRoot.appendChild(e);
+  }
+  logs.forEach((lg) => {
+    const meta = document.createElement("div"); meta.className = "log-meta";
+    meta.textContent = (lg.ts || "") + " · " + (lg.source || "log");
+    const pre = document.createElement("pre"); pre.className = "log";
+    pre.textContent = lg.line || "";
+    logsRoot.appendChild(meta); logsRoot.appendChild(pre);
+  });
+
+  // Action items
+  const actionsRoot = document.getElementById("actions-root");
+  actionsRoot.replaceChildren();
+  if (!actions.length) {
+    const tr = document.createElement("tr"); const td = document.createElement("td");
+    td.colSpan = 4; td.className = "empty"; td.textContent = "No action items.";
+    tr.appendChild(td); actionsRoot.appendChild(tr);
+  }
+  actions.forEach((a, i) => {
+    const tr = document.createElement("tr");
+    if (a.done) tr.classList.add("done");
+    const td1 = document.createElement("td");
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = !!a.done;
+    cb.setAttribute("aria-label", "Mark action item " + (i + 1) + " complete");
+    cb.addEventListener("change", () => {
+      a.done = cb.checked;
+      tr.classList.toggle("done", cb.checked);
+      plan.updated_at = new Date().toISOString();
+    });
+    td1.appendChild(cb);
+    const td2 = document.createElement("td"); td2.className = "text"; td2.textContent = a.text || "";
+    const td3 = document.createElement("td"); td3.textContent = a.owner ? "@" + a.owner : "";
+    const td4 = document.createElement("td"); td4.textContent = a.due || "";
+    tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(td3); tr.appendChild(td4);
+    actionsRoot.appendChild(tr);
+  });
+
+  // Progress
+  const progressRoot = document.getElementById("progress-root");
+  progressRoot.replaceChildren();
+  (plan.progress_log || []).forEach((p) => {
+    const tr = document.createElement("tr");
+    ["ts", "phase", "action"].forEach((k) => {
+      const td = document.createElement("td"); td.textContent = p[k] ?? ""; tr.appendChild(td);
+    });
+    const filesTd = document.createElement("td");
+    filesTd.textContent = (p.files || []).join(", ");
+    tr.appendChild(filesTd); progressRoot.appendChild(tr);
+  });
+
+  // Tabs
+  const tabBtns = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const selectTab = (idx) => {
+    tabBtns.forEach((b, i) => {
+      const sel = i === idx;
+      b.setAttribute("aria-selected", String(sel));
+      b.tabIndex = sel ? 0 : -1;
+    });
+    panels.forEach((p, i) => p.hidden = i !== idx);
+  };
+  tabBtns.forEach((b, i) => {
+    b.addEventListener("click", () => selectTab(i));
+    b.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const n = (i + 1) % tabBtns.length; tabBtns[n].focus(); selectTab(n);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const n = (i - 1 + tabBtns.length) % tabBtns.length; tabBtns[n].focus(); selectTab(n);
+      }
+    });
+  });
+
+  // Markdown export
+  const toMarkdown = () => {
+    const lines = [];
+    lines.push("# " + (plan.plan_title || inc.title || "Incident"));
+    lines.push("");
+    lines.push("- **Incident:** " + (inc.id || "—"));
+    lines.push("- **Severity:** " + (inc.severity || "—"));
+    lines.push("- **Started:** " + (inc.started_at || "—"));
+    lines.push("- **Resolved:** " + (inc.resolved_at || "—"));
+    lines.push("- **Duration:** " + (inc.duration_minutes != null ? inc.duration_minutes + " min" : "—"));
+    if (inc.customer_impact) lines.push("- **Customer impact:** " + inc.customer_impact);
+    lines.push("");
+    lines.push("## Root cause");
+    lines.push(inc.root_cause || "(not yet determined)");
+    lines.push("");
+    if (events.length) {
+      lines.push("## Timeline");
+      events.forEach((ev) => {
+        lines.push("- `" + (ev.ts || "") + "` **" + (ev.kind || "event").toUpperCase() + "** " +
+          (ev.who ? "(@" + ev.who + ") " : "") + (ev.body || ""));
+      });
+      lines.push("");
+    }
+    if (logs.length) {
+      lines.push("## Log excerpts");
+      logs.forEach((lg) => {
+        lines.push("**" + (lg.ts || "") + " · " + (lg.source || "log") + "**");
+        lines.push("```");
+        lines.push(lg.line || "");
+        lines.push("```");
+      });
+      lines.push("");
+    }
+    if (actions.length) {
+      lines.push("## Action items");
+      actions.forEach((a) => {
+        lines.push("- [" + (a.done ? "x" : " ") + "] " + (a.text || "") +
+          (a.owner ? " (@" + a.owner + ")" : "") + (a.due ? " — due " + a.due : ""));
+      });
+      lines.push("");
+    }
+    if ((plan.findings || []).length) {
+      lines.push("## Findings");
+      plan.findings.forEach((f) => lines.push("- " + f));
+    }
+    return lines.join("\n");
+  };
+
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard) await navigator.clipboard.writeText(text);
+      else {
+        const ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+      }
+    } catch (e) { /* no-op */ }
+  };
+
+  document.getElementById("btn-copy-md").addEventListener("click", () => copyText(toMarkdown()));
+  document.getElementById("btn-copy-json").addEventListener("click", () => copyText(JSON.stringify(plan, null, 2)));
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-save").addEventListener("click", savePlanHtml);
+
+  function flashSaved(btn, msg) {
+    const orig = btn.dataset.origLabel || btn.textContent;
+    btn.dataset.origLabel = orig;
+    btn.textContent = msg;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+
+  async function savePlanHtml() {
+    let fileName = location.pathname.split("/").pop();
+    try { fileName = decodeURIComponent(fileName); } catch (e) { /* a malformed "%" keeps the raw name */ }
+    fileName = fileName || "artifact.html";
+    const btn = document.getElementById("btn-save");
+    // Replace '<' with its \u escape on write-back to neutralize close-script
+    // sequences a user typed into a plan string. JSON.parse round-trips the
+    // escape back to '<' on reload, preserving semantics.
+    dataEl.textContent = JSON.stringify(plan, null, 2).replace(/</g, "\\u003c");
+    const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    if (window.showSaveFilePicker) {
+      try {
+        if (!window.__planFileHandle) {
+          window.__planFileHandle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "HTML file", accept: { "text/html": [".html"] } }],
+          });
+        }
+        const writable = await window.__planFileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        flashSaved(btn, "Saved");
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    flashSaved(btn, "Downloaded");
+  }
+})();
+</script>
+</body>
+</html>

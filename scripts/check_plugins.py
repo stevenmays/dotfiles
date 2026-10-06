@@ -84,7 +84,7 @@ def check(root):
             target = (path.parent / link.split("#")[0]).resolve()
             require(target.is_relative_to(package.resolve()) and target.is_file(),
                     f"Missing or escaping resource in {path}: {link}")
-    require(len(names) == 8, f"Expected eight Codex skills, found {len(names)}")
+    require(len(names) == 9, f"Expected nine Codex skills, found {len(names)}")
     sync(root, check=True)
     return names
 

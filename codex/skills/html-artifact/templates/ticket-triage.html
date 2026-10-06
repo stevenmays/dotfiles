@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+<!--
+MIT License
+
+Copyright (c) 2026 Ahmad Othman Ammar Adi (OthmanAdi)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ticket Triage</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fafaf7;
+    --fg: #1b1b18;
+    --muted: #5b5b56;
+    --accent: #c8553d;
+    --border: #1b1b18;
+    --border-soft: #c8c8c2;
+    --code: #f1f1ec;
+    --ok: #2a6f4e;
+    --warn: #b9802b;
+    --err: #a73326;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161613;
+      --fg: #ecece6;
+      --muted: #9c9c95;
+      --accent: #e07a5f;
+      --border: #ecece6;
+      --border-soft: #3a3a36;
+      --code: #232320;
+      --ok: #6ab089;
+      --warn: #d9a25a;
+      --err: #d96959;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--fg);
+    line-height: 1.5;
+  }
+  header.bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header.bar h1 {
+    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  header.bar .meta {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 12px; color: var(--muted);
+  }
+  header.bar .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button {
+    font: inherit; font-size: 12px; padding: 6px 10px;
+    background: transparent; color: var(--fg);
+    border: 1px solid var(--border); border-radius: 2px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  nav.tabs {
+    display: flex; gap: 0; padding: 0 24px;
+    border-bottom: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  nav.tabs button {
+    border: none; border-bottom: 2px solid transparent;
+    border-radius: 0; padding: 12px 16px;
+    color: var(--muted); background: transparent;
+  }
+  nav.tabs button[aria-selected="true"] {
+    color: var(--fg); border-bottom-color: var(--accent);
+  }
+  nav.tabs button:hover { color: var(--fg); background: transparent; }
+  main { padding: 24px; max-width: 1480px; margin: 0 auto; }
+  section[role="tabpanel"][hidden] { display: none; }
+  h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 18px; font-weight: 700; margin: 0 0 12px;
+  }
+
+  .filters {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    flex-wrap: wrap;
+  }
+  .filters label {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted);
+  }
+  .filters select {
+    font: inherit; font-size: 13px; padding: 4px 8px;
+    background: var(--bg); color: var(--fg);
+    border: 1px solid var(--border-soft); border-radius: 2px;
+  }
+  .filters select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .label-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .label-chip {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    padding: 3px 8px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    background: transparent; color: var(--muted);
+    cursor: pointer;
+  }
+  .label-chip[aria-pressed="true"] {
+    color: var(--bg); background: var(--fg); border-color: var(--fg);
+  }
+  .label-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .filter-clear {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    margin-left: auto;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  @media (max-width: 1100px) { .board { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px)  { .board { grid-template-columns: 1fr; } }
+
+  .col {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    min-height: 200px;
+  }
+  .col[data-dropping="true"] {
+    border-color: var(--accent);
+    border-style: dashed;
+  }
+  .col-head {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .col-head h3 {
+    margin: 0; font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-family: ui-monospace, monospace;
+  }
+  .col[data-col="now"]   .col-head h3 { color: var(--err); }
+  .col[data-col="next"]  .col-head h3 { color: var(--accent); }
+  .col[data-col="later"] .col-head h3 { color: var(--warn); }
+  .col[data-col="cut"]   .col-head h3 { color: var(--muted); }
+  .col-count {
+    font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted);
+  }
+  .col-body {
+    padding: 10px;
+    display: flex; flex-direction: column; gap: 8px;
+    flex: 1;
+  }
+  .card {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    padding: 10px 12px;
+    background: var(--code);
+    cursor: grab;
+    user-select: none;
+  }
+  .card:active { cursor: grabbing; }
+  .card[data-dragging="true"] { opacity: 0.45; }
+  .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .card-top {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .card-id {
+    font-family: ui-monospace, monospace; font-size: 11px; color: var(--muted);
+  }
+  .card-points {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    padding: 1px 6px; border: 1px solid var(--border-soft); border-radius: 2px;
+    color: var(--muted);
+  }
+  .card-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+  .card-body { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+  .card-meta {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-family: ui-monospace, monospace; font-size: 11px;
+  }
+  .card-owner { color: var(--muted); }
+  .card-labels { display: flex; gap: 4px; flex-wrap: wrap; }
+  .card-label {
+    font-size: 10px;
+    padding: 1px 5px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    color: var(--muted);
+  }
+  .col-empty {
+    font-style: italic; color: var(--muted); font-size: 12px;
+    padding: 12px;
+    text-align: center;
+    border: 1px dashed var(--border-soft); border-radius: 2px;
+  }
+
+  .keyboard-hint {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--muted);
+    margin-top: 16px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    background: var(--code);
+  }
+  .keyboard-hint kbd {
+    display: inline-block;
+    padding: 1px 5px;
+    border: 1px solid var(--border-soft);
+    border-bottom-width: 2px;
+    border-radius: 2px;
+    background: var(--bg);
+    font-family: inherit;
+    color: var(--fg);
+  }
+
+  table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    border: 1px solid var(--border-soft);
+  }
+  th, td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: ui-monospace, monospace;
+  }
+  th { background: var(--code); font-weight: 600; }
+
+  .skip-link {
+    position: absolute; left: -9999px; top: 8px;
+    padding: 8px 12px; background: var(--accent); color: var(--bg);
+  }
+  .skip-link:focus { left: 16px; }
+  .empty { font-style: italic; color: var(--muted); padding: 24px; text-align: center; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="bar" role="banner">
+  <div>
+    <h1 id="plan-title">Ticket Triage</h1>
+    <div class="meta" id="plan-meta">template: ticket-triage</div>
+  </div>
+  <div class="actions" role="group" aria-label="Triage actions">
+    <button type="button" id="btn-save" aria-label="Save this file to disk">Save</button>
+    <button type="button" id="btn-copy-md" aria-label="Copy triage as Markdown">Copy as Markdown</button>
+    <button type="button" id="btn-copy-json" aria-label="Copy plan-data as JSON">Copy as JSON</button>
+    <button type="button" id="btn-print" aria-label="Print board">Print</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Triage sections">
+  <button role="tab" type="button" aria-controls="tab-board"     aria-selected="true"  id="tab-board-btn">Board</button>
+  <button role="tab" type="button" aria-controls="tab-findings"  aria-selected="false" id="tab-findings-btn">Findings</button>
+  <button role="tab" type="button" aria-controls="tab-decisions" aria-selected="false" id="tab-decisions-btn">Decisions</button>
+  <button role="tab" type="button" aria-controls="tab-progress"  aria-selected="false" id="tab-progress-btn">Progress</button>
+</nav>
+
+<main id="main">
+  <section role="tabpanel" id="tab-board" aria-labelledby="tab-board-btn">
+    <h2>Board</h2>
+
+    <div class="filters" role="region" aria-label="Filter tickets">
+      <label for="filter-owner">Owner</label>
+      <select id="filter-owner" aria-label="Filter by owner">
+        <option value="">All</option>
+      </select>
+      <label id="label-filter-label">Labels</label>
+      <div class="label-chips" id="label-chips" role="group" aria-labelledby="label-filter-label"></div>
+      <button type="button" class="filter-clear" id="btn-filter-clear" aria-label="Clear filters">Clear</button>
+    </div>
+
+    <div class="board" id="board-root" role="region" aria-label="Triage columns"></div>
+
+    <p class="keyboard-hint" aria-live="polite" id="aria-live-status">
+      Focus a card and press <kbd>1</kbd> Now, <kbd>2</kbd> Next, <kbd>3</kbd> Later, <kbd>4</kbd> Cut.
+      Drag with the mouse or use <kbd>Tab</kbd> to move between cards.
+    </p>
+  </section>
+
+  <section role="tabpanel" id="tab-findings" aria-labelledby="tab-findings-btn" hidden>
+    <h2>Findings</h2>
+    <table>
+      <thead><tr><th>Source</th><th>Note</th></tr></thead>
+      <tbody id="findings-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-decisions" aria-labelledby="tab-decisions-btn" hidden>
+    <h2>Decisions</h2>
+    <table>
+      <thead><tr><th>Decision</th><th>Rationale</th></tr></thead>
+      <tbody id="decisions-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-progress" aria-labelledby="tab-progress-btn" hidden>
+    <h2>Progress log</h2>
+    <table>
+      <thead><tr><th>Timestamp</th><th>Phase</th><th>Action</th><th>Files</th></tr></thead>
+      <tbody id="progress-root"></tbody>
+    </table>
+  </section>
+</main>
+
+<script type="application/json" id="plan-data">
+{
+  "plan_title": "Q2 Backlog Triage",
+  "goal": "Sort the 11 open backlog tickets into Now / Next / Later / Cut before Tuesday's planning meeting.",
+  "template": "ticket-triage",
+  "updated_at": "2026-05-20T09:14:00Z",
+  "tickets": [
+    {"id": "TKT-104", "title": "Checkout 502 on Safari iOS", "body": "Recurring 502 in 0.4% of mobile-Safari checkouts since the May 12 deploy. Reproducible only on iOS 17.4.", "points": 5, "owner": "priya",  "column": "now",   "labels": ["bug", "checkout", "regression"]},
+    {"id": "TKT-091", "title": "Reduce login p95 latency", "body": "p95 hovers at 940 ms in EU region after the Aurora upgrade. Target is 600 ms.", "points": 8, "owner": "marcus", "column": "now",   "labels": ["infra", "performance"]},
+    {"id": "TKT-118", "title": "Wire SSO error to support inbox", "body": "When Okta returns AUTH_FAIL, send a ticket to support@ with the user id and timestamp.", "points": 3, "owner": "dana",   "column": "now",   "labels": ["auth", "ops"]},
+    {"id": "TKT-112", "title": "Empty-state copy for /reports", "body": "Designers signed off the copy on May 14. Need to ship before the demo.", "points": 2, "owner": "rin",    "column": "next",  "labels": ["ux", "copy"]},
+    {"id": "TKT-095", "title": "Audit log export to S3", "body": "Compliance wants the last 90 days available as gzipped JSON in a versioned bucket.", "points": 8, "owner": "marcus", "column": "next",  "labels": ["infra", "compliance"]},
+    {"id": "TKT-121", "title": "Mobile nav drawer keyboard trap", "body": "Tab inside the open drawer loops back through the page. Focus needs to stay inside until closed.", "points": 3, "owner": "rin",    "column": "next",  "labels": ["a11y", "ux", "bug"]},
+    {"id": "TKT-077", "title": "Replace stuck deploy badge", "body": "GitHub Actions badge has been red since the runner migration. Replace or remove from the README.", "points": 1, "owner": "dana",   "column": "next",  "labels": ["docs", "paid-down"]},
+    {"id": "TKT-088", "title": "Org-level audit dashboard v1", "body": "First-pass dashboard listing logins, role changes, and export events for an org.", "points": 13, "owner": "priya",  "column": "later", "labels": ["feature", "compliance"]},
+    {"id": "TKT-103", "title": "Light-mode brand refresh", "body": "Update the palette to match the new brand book — only after the v3 design review lands.", "points": 5, "owner": "rin",    "column": "later", "labels": ["ux", "brand"]},
+    {"id": "TKT-066", "title": "RSS feed for changelog", "body": "Considered. Two users asked over six months. Not blocking anything.", "points": 2, "owner": "dana",   "column": "later", "labels": ["docs", "nice-to-have"]},
+    {"id": "TKT-049", "title": "Rebuild settings page in React", "body": "Settings page is the only Backbone view left. Functional and unowned; do not touch this quarter.", "points": 13, "owner": "marcus", "column": "cut",   "labels": ["infra", "paid-down", "scope"]}
+  ],
+  "findings": [
+    {"source": "TKT-104 logs", "note": "502s correlate with iOS 17.4 only — desktop Safari unaffected. Pin work to that platform."},
+    {"source": "Aurora dashboards", "note": "TKT-091 latency regression started May 8, three days before the announced upgrade. Investigate read replica swap."}
+  ],
+  "decisions": [
+    {"id": "d1", "decision": "Defer brand refresh to Q3", "rationale": "Visual changes block on the v3 design review still in progress."},
+    {"id": "d2", "decision": "Cut TKT-049 from this quarter", "rationale": "Last Backbone view, unowned, not blocking any roadmap item."}
+  ],
+  "progress_log": [
+    {"ts": "2026-05-19T17:02:00Z", "phase": "triage", "action": "Initial draft sorted by p95 impact", "files": ["triage/2026-05.md"]},
+    {"ts": "2026-05-20T09:14:00Z", "phase": "triage", "action": "Moved TKT-077 from Later to Next; @dana to own", "files": ["triage/2026-05.md"]}
+  ]
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const COLUMN_ORDER = ["now", "next", "later", "cut"];
+  const COLUMN_TITLES = { now: "Now", next: "Next", later: "Later", cut: "Cut" };
+  const KEY_TO_COLUMN = { "1": "now", "2": "next", "3": "later", "4": "cut" };
+
+  const dataEl = document.getElementById("plan-data");
+  let plan = {};
+  try { plan = JSON.parse(dataEl.textContent); }
+  catch (e) {
+    document.getElementById("board-root").innerHTML =
+      '<p class="empty">plan-data JSON could not be parsed.</p>';
+    return;
+  }
+
+  // Header
+  document.getElementById("plan-title").textContent = plan.plan_title || "Triage";
+  const tickets = Array.isArray(plan.tickets) ? plan.tickets : [];
+  document.getElementById("plan-meta").textContent =
+    `template: ${plan.template || "(custom)"} · ${tickets.length} tickets across ${COLUMN_ORDER.length} columns`;
+
+  // Filter state
+  const activeLabels = new Set();
+  let activeOwner = "";
+
+  // Owner select
+  const owners = Array.from(new Set(tickets.map(t => t.owner).filter(Boolean))).sort();
+  const ownerSel = document.getElementById("filter-owner");
+  ownerSel.length = 1;
+  owners.forEach(o => {
+    const opt = document.createElement("option");
+    opt.value = o; opt.textContent = "@" + o;
+    ownerSel.appendChild(opt);
+  });
+  ownerSel.addEventListener("change", () => { activeOwner = ownerSel.value; renderBoard(); });
+
+  // Label chips
+  const allLabels = Array.from(new Set(tickets.flatMap(t => t.labels || []))).sort();
+  const chipsRoot = document.getElementById("label-chips");
+  chipsRoot.replaceChildren();
+  allLabels.forEach(lab => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "label-chip";
+    btn.textContent = lab;
+    btn.setAttribute("aria-pressed", "false");
+    btn.setAttribute("aria-label", `Toggle filter for label ${lab}`);
+    btn.addEventListener("click", () => {
+      if (activeLabels.has(lab)) activeLabels.delete(lab);
+      else activeLabels.add(lab);
+      btn.setAttribute("aria-pressed", String(activeLabels.has(lab)));
+      renderBoard();
+    });
+    chipsRoot.appendChild(btn);
+  });
+
+  document.getElementById("btn-filter-clear").addEventListener("click", () => {
+    activeLabels.clear();
+    activeOwner = "";
+    ownerSel.value = "";
+    chipsRoot.querySelectorAll(".label-chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+    renderBoard();
+  });
+
+  function ticketPasses(t) {
+    if (activeOwner && t.owner !== activeOwner) return false;
+    if (activeLabels.size) {
+      const labs = new Set(t.labels || []);
+      for (const l of activeLabels) if (!labs.has(l)) return false;
+    }
+    return true;
+  }
+
+  const boardRoot = document.getElementById("board-root");
+  const liveStatus = document.getElementById("aria-live-status");
+  // A saved file keeps the last move announcement, so restore the hint captured on first load.
+  liveStatus.dataset.hint = liveStatus.dataset.hint || liveStatus.innerHTML;
+  liveStatus.innerHTML = liveStatus.dataset.hint;
+  let pendingFocusId = null;
+
+  function renderBoard() {
+    boardRoot.innerHTML = "";
+    COLUMN_ORDER.forEach(colId => {
+      const col = document.createElement("div");
+      col.className = "col";
+      col.setAttribute("data-col", colId);
+      col.setAttribute("role", "list");
+      col.setAttribute("aria-label", `Column ${COLUMN_TITLES[colId]}`);
+
+      const head = document.createElement("div");
+      head.className = "col-head";
+      const h3 = document.createElement("h3");
+      h3.textContent = COLUMN_TITLES[colId];
+      const count = document.createElement("span");
+      count.className = "col-count";
+      const inCol = tickets.filter(t => t.column === colId);
+      const visible = inCol.filter(ticketPasses);
+      count.textContent = `${visible.length}/${inCol.length}`;
+      head.appendChild(h3); head.appendChild(count);
+      col.appendChild(head);
+
+      const body = document.createElement("div");
+      body.className = "col-body";
+
+      // Drop target
+      col.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        col.setAttribute("data-dropping", "true");
+      });
+      col.addEventListener("dragleave", () => col.removeAttribute("data-dropping"));
+      col.addEventListener("drop", (e) => {
+        e.preventDefault();
+        col.removeAttribute("data-dropping");
+        const id = e.dataTransfer.getData("text/plain");
+        moveTicket(id, colId);
+      });
+
+      if (visible.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "col-empty";
+        empty.textContent = inCol.length === 0 ? "No tickets" : "No matches";
+        body.appendChild(empty);
+      } else {
+        visible.forEach(t => body.appendChild(renderCard(t)));
+      }
+
+      col.appendChild(body);
+      boardRoot.appendChild(col);
+    });
+
+    if (pendingFocusId) {
+      const card = boardRoot.querySelector(`[data-card-id="${cssEscape(pendingFocusId)}"]`);
+      if (card) card.focus();
+      pendingFocusId = null;
+    }
+  }
+
+  function cssEscape(s) {
+    return String(s).replace(/["\\]/g, "\\$&");
+  }
+
+  function renderCard(t) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.setAttribute("role", "listitem");
+    card.setAttribute("draggable", "true");
+    card.tabIndex = 0;
+    card.setAttribute("data-card-id", t.id);
+    card.setAttribute(
+      "aria-label",
+      `Ticket ${t.id}: ${t.title}. Column ${COLUMN_TITLES[t.column] || t.column}. Press 1 for Now, 2 for Next, 3 for Later, 4 for Cut.`
+    );
+
+    const top = document.createElement("div");
+    top.className = "card-top";
+    const idEl = document.createElement("span");
+    idEl.className = "card-id"; idEl.textContent = t.id;
+    const pts = document.createElement("span");
+    pts.className = "card-points"; pts.textContent = (t.points ?? 0) + " pts";
+    top.appendChild(idEl); top.appendChild(pts);
+    card.appendChild(top);
+
+    const title = document.createElement("h4");
+    title.className = "card-title"; title.textContent = t.title || "(untitled)";
+    card.appendChild(title);
+
+    if (t.body) {
+      const body = document.createElement("p");
+      body.className = "card-body"; body.textContent = t.body;
+      card.appendChild(body);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    if (t.owner) {
+      const owner = document.createElement("span");
+      owner.className = "card-owner"; owner.textContent = "@" + t.owner;
+      meta.appendChild(owner);
+    }
+    if ((t.labels || []).length) {
+      const labs = document.createElement("span");
+      labs.className = "card-labels";
+      t.labels.forEach(l => {
+        const c = document.createElement("span");
+        c.className = "card-label"; c.textContent = l;
+        labs.appendChild(c);
+      });
+      meta.appendChild(labs);
+    }
+    card.appendChild(meta);
+
+    // Drag
+    card.addEventListener("dragstart", (e) => {
+      e.dataTransfer.setData("text/plain", t.id);
+      e.dataTransfer.effectAllowed = "move";
+      card.setAttribute("data-dragging", "true");
+    });
+    card.addEventListener("dragend", () => card.removeAttribute("data-dragging"));
+
+    // Keyboard
+    card.addEventListener("keydown", (e) => {
+      if (KEY_TO_COLUMN[e.key]) {
+        e.preventDefault();
+        moveTicket(t.id, KEY_TO_COLUMN[e.key]);
+      }
+    });
+
+    return card;
+  }
+
+  function moveTicket(id, targetCol) {
+    const t = tickets.find(x => x.id === id);
+    if (!t) return;
+    if (!COLUMN_ORDER.includes(targetCol)) return;
+    if (t.column === targetCol) return;
+    const from = t.column;
+    t.column = targetCol;
+    plan.updated_at = new Date().toISOString();
+    pendingFocusId = id;
+    liveStatus.textContent = `Moved ${id} from ${COLUMN_TITLES[from] || from} to ${COLUMN_TITLES[targetCol]}.`;
+    renderBoard();
+  }
+
+  renderBoard();
+
+  // Findings
+  const findingsRoot = document.getElementById("findings-root");
+  findingsRoot.replaceChildren();
+  (plan.findings || []).forEach(f => {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td"); td1.textContent = f.source || "";
+    const td2 = document.createElement("td"); td2.textContent = f.note || "";
+    tr.appendChild(td1); tr.appendChild(td2);
+    findingsRoot.appendChild(tr);
+  });
+
+  // Decisions
+  const decisionsRoot = document.getElementById("decisions-root");
+  decisionsRoot.replaceChildren();
+  (plan.decisions || []).forEach(d => {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td"); td1.textContent = d.decision || "";
+    const td2 = document.createElement("td"); td2.textContent = d.rationale || "";
+    tr.appendChild(td1); tr.appendChild(td2);
+    decisionsRoot.appendChild(tr);
+  });
+
+  // Progress
+  const progressRoot = document.getElementById("progress-root");
+  progressRoot.replaceChildren();
+  (plan.progress_log || []).forEach(p => {
+    const tr = document.createElement("tr");
+    ["ts", "phase", "action"].forEach(k => {
+      const td = document.createElement("td");
+      td.textContent = p[k] ?? "";
+      tr.appendChild(td);
+    });
+    const filesTd = document.createElement("td");
+    filesTd.textContent = (p.files || []).join(", ");
+    tr.appendChild(filesTd);
+    progressRoot.appendChild(tr);
+  });
+
+  // Tabs
+  const tabBtns = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const selectTab = (idx) => {
+    tabBtns.forEach((b, i) => {
+      const sel = i === idx;
+      b.setAttribute("aria-selected", String(sel));
+      b.tabIndex = sel ? 0 : -1;
+    });
+    panels.forEach((p, i) => p.hidden = i !== idx);
+  };
+  tabBtns.forEach((b, i) => {
+    b.addEventListener("click", () => selectTab(i));
+    b.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const n = (i + 1) % tabBtns.length;
+        tabBtns[n].focus(); selectTab(n);
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const n = (i - 1 + tabBtns.length) % tabBtns.length;
+        tabBtns[n].focus(); selectTab(n);
+      }
+    });
+  });
+
+  // Copy outputs
+  const toMarkdown = () => {
+    const lines = [];
+    lines.push("# " + (plan.plan_title || "Triage"));
+    if (plan.goal) lines.push("\n" + plan.goal + "\n");
+    COLUMN_ORDER.forEach(colId => {
+      lines.push("## " + COLUMN_TITLES[colId]);
+      const inCol = tickets.filter(t => t.column === colId);
+      if (inCol.length === 0) {
+        lines.push("- (empty)");
+      } else {
+        inCol.forEach(t => {
+          const owner = t.owner ? ` (@${t.owner})` : "";
+          const pts = (t.points != null) ? ` — ${t.points} pts` : "";
+          lines.push(`- ${t.id}: ${t.title}${owner}${pts}`);
+        });
+      }
+      lines.push("");
+    });
+    return lines.join("\n").trimEnd() + "\n";
+  };
+
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard) await navigator.clipboard.writeText(text);
+      else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed"; ta.style.left = "-9999px";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+      }
+    } catch (e) { /* no-op */ }
+  };
+
+  document.getElementById("btn-copy-md").addEventListener("click", () => copyText(toMarkdown()));
+  document.getElementById("btn-copy-json").addEventListener("click", () => copyText(JSON.stringify(plan, null, 2)));
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-save").addEventListener("click", savePlanHtml);
+
+  function flashSaved(btn, msg) {
+    const orig = btn.dataset.origLabel || btn.textContent;
+    btn.dataset.origLabel = orig;
+    btn.textContent = msg;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+
+  async function savePlanHtml() {
+    let fileName = location.pathname.split("/").pop();
+    try { fileName = decodeURIComponent(fileName); } catch (e) { /* a malformed "%" keeps the raw name */ }
+    fileName = fileName || "artifact.html";
+    const btn = document.getElementById("btn-save");
+    // Replace '<' with its \u escape on write-back to neutralize close-script
+    // sequences a user typed into a plan string. JSON.parse round-trips the
+    // escape back to '<' on reload, preserving semantics.
+    dataEl.textContent = JSON.stringify(plan, null, 2).replace(/</g, "\\u003c");
+    // Save the keyboard hint, not the last move announcement, without touching the live region.
+    const doc = document.documentElement.cloneNode(true);
+    doc.querySelector("#aria-live-status").innerHTML = liveStatus.dataset.hint;
+    const html = "<!doctype html>\n" + doc.outerHTML;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    if (window.showSaveFilePicker) {
+      try {
+        if (!window.__planFileHandle) {
+          window.__planFileHandle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "HTML file", accept: { "text/html": [".html"] } }],
+          });
+        }
+        const writable = await window.__planFileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        flashSaved(btn, "Saved");
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    flashSaved(btn, "Downloaded");
+  }
+})();
+</script>
+</body>
+</html>
