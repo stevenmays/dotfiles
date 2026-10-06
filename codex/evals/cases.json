@@ -46,5 +46,17 @@
     "prompt": "Generate a watercolor illustration of a small cabin in autumn.",
     "expected_skills": [],
     "checks": ["Uses available built-in image generation", "Does not require Gemini or a provider key", "Does not activate frontend-craft for an image-only request"]
+  },
+  {
+    "id": "html-artifact-triage",
+    "prompt": "Turn these eight tickets into an HTML triage board I can drag cards on and save.",
+    "expected_skills": ["html-artifact"],
+    "checks": ["Copies the ticket-triage template and edits only its JSON block", "The JSON block parses and no sample tickets remain", "Writes outside the repository and reports the absolute path"]
+  },
+  {
+    "id": "html-artifact-text-answer",
+    "prompt": "Summarize this week's three merged pull requests in a short paragraph.",
+    "expected_skills": [],
+    "checks": ["Answers in text", "Does not activate html-artifact or create an HTML file"]
   }
 ]

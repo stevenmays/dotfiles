@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="en">
+<!--
+MIT License
+
+Copyright (c) 2026 Ahmad Othman Ammar Adi (OthmanAdi)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Annotated PR</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fafaf7;
+    --fg: #1b1b18;
+    --muted: #5b5b56;
+    --accent: #c8553d;
+    --border: #1b1b18;
+    --border-soft: #c8c8c2;
+    --code: #f1f1ec;
+    --ok: #2a6f4e;
+    --warn: #b9802b;
+    --err: #a73326;
+    --add-bg: #e6f1e6;
+    --add-fg: #1d5a2e;
+    --del-bg: #f5dedb;
+    --del-fg: #872318;
+    --gutter-bg: #ececdc;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161613;
+      --fg: #ecece6;
+      --muted: #9c9c95;
+      --accent: #e07a5f;
+      --border: #ecece6;
+      --border-soft: #3a3a36;
+      --code: #232320;
+      --ok: #6ab089;
+      --warn: #d9a25a;
+      --err: #d96959;
+      --add-bg: #1f3225;
+      --add-fg: #9ed1ad;
+      --del-bg: #3a201c;
+      --del-fg: #e3a39a;
+      --gutter-bg: #1d1d1a;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--fg);
+    line-height: 1.5;
+  }
+  header.bar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px; flex-wrap: wrap;
+  }
+  header.bar h1 {
+    margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+    font-family: ui-serif, Georgia, "Times New Roman", serif;
+  }
+  header.bar .meta {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+    font-size: 12px; color: var(--muted);
+  }
+  header.bar .actions { display: flex; gap: 8px; }
+  button {
+    font: inherit; font-size: 12px; padding: 6px 10px;
+    background: transparent; color: var(--fg);
+    border: 1px solid var(--border); border-radius: 2px;
+    cursor: pointer;
+  }
+  button:hover { background: var(--fg); color: var(--bg); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  nav.tabs {
+    display: flex; gap: 0; padding: 0 24px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  nav.tabs button {
+    border: none; border-bottom: 2px solid transparent;
+    border-radius: 0; padding: 12px 16px;
+    color: var(--muted); background: transparent;
+  }
+  nav.tabs button[aria-selected="true"] {
+    color: var(--fg); border-bottom-color: var(--accent);
+  }
+  nav.tabs button:hover { color: var(--fg); background: transparent; }
+  main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+  section[role="tabpanel"][hidden] { display: none; }
+  h2 {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 18px; font-weight: 700; margin: 0 0 12px;
+  }
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 20px;
+  }
+  @media (max-width: 700px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    padding: 12px 14px; background: var(--bg);
+  }
+  .stat .label {
+    font-family: ui-monospace, monospace; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .stat .value {
+    font-family: ui-serif, Georgia, serif;
+    font-size: 28px; font-weight: 700; line-height: 1;
+    margin-top: 6px;
+  }
+  .stat.add .value { color: var(--ok); }
+  .stat.del .value { color: var(--err); }
+  .stat.blockers .value { color: var(--err); }
+  .pr-summary {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    padding: 12px 16px; margin-bottom: 20px;
+    background: var(--code);
+    font-family: ui-monospace, monospace; font-size: 12px;
+    color: var(--muted);
+  }
+  .pr-summary strong { color: var(--fg); }
+  .jump-list {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    padding: 12px 16px; margin-bottom: 20px;
+    background: var(--bg);
+  }
+  .jump-list h3 {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); margin: 0 0 8px;
+  }
+  .jump-list ul {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 6px;
+  }
+  .jump-list a {
+    display: block;
+    font-family: ui-monospace, monospace; font-size: 12px;
+    color: var(--fg); text-decoration: none;
+    padding: 4px 8px;
+    border-left: 3px solid var(--border-soft);
+  }
+  .jump-list a:hover { background: var(--code); }
+  .jump-list a.blocker { border-left-color: var(--err); }
+  .jump-list a.major   { border-left-color: var(--warn); }
+  .jump-list a.nit     { border-left-color: var(--muted); }
+  .jump-list a.info    { border-left-color: var(--ok); }
+  .file-block {
+    border: 1px solid var(--border-soft); border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .file-header {
+    background: var(--code);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 8px 12px;
+    font-family: ui-monospace, monospace; font-size: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .file-header .path { color: var(--fg); }
+  .file-header .counts { color: var(--muted); font-size: 11px; }
+  .file-header .counts .plus { color: var(--ok); }
+  .file-header .counts .minus { color: var(--err); }
+  .hunk-header {
+    background: var(--gutter-bg);
+    padding: 4px 12px;
+    font-family: ui-monospace, monospace; font-size: 11px;
+    color: var(--muted);
+    border-top: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .diff-table {
+    width: 100%; border-collapse: collapse;
+    font-family: ui-monospace, monospace; font-size: 12px;
+    table-layout: fixed;
+  }
+  .diff-table col.gutter { width: 48px; }
+  .diff-table col.sign { width: 20px; }
+  .diff-table col.notes { width: 260px; }
+  .diff-table td {
+    padding: 0 8px;
+    border: none;
+    white-space: pre-wrap; word-break: break-word;
+    vertical-align: top;
+  }
+  .diff-table td.gutter {
+    text-align: right;
+    color: var(--muted);
+    background: var(--gutter-bg);
+    user-select: none;
+  }
+  .diff-table td.sign {
+    text-align: center;
+    user-select: none;
+  }
+  .diff-table tr.add td.gutter { color: var(--add-fg); }
+  .diff-table tr.add { background: var(--add-bg); }
+  .diff-table tr.add td.sign { color: var(--add-fg); }
+  .diff-table tr.del td.gutter { color: var(--del-fg); }
+  .diff-table tr.del { background: var(--del-bg); }
+  .diff-table tr.del td.sign { color: var(--del-fg); }
+  .diff-table td.code { color: var(--fg); }
+  .diff-table td.notes { padding: 4px 8px; }
+  .ann {
+    display: block;
+    border-left: 3px solid var(--muted);
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    background: var(--bg);
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    color: var(--fg);
+    border-radius: 0 2px 2px 0;
+  }
+  .ann + .ann { margin-top: 0; }
+  .ann.blocker { border-left-color: var(--err); }
+  .ann.major   { border-left-color: var(--warn); }
+  .ann.nit     { border-left-color: var(--muted); }
+  .ann.info    { border-left-color: var(--ok); }
+  .ann .sev {
+    font-family: ui-monospace, monospace;
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+  .ann.blocker .sev { color: var(--err); }
+  .ann.major   .sev { color: var(--warn); }
+  .ann.info    .sev { color: var(--ok); }
+  table.findings {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+    border: 1px solid var(--border-soft);
+  }
+  table.findings th, table.findings td {
+    text-align: left; padding: 8px 12px;
+    border-bottom: 1px solid var(--border-soft);
+    font-family: ui-monospace, monospace;
+    vertical-align: top;
+  }
+  table.findings th { background: var(--code); font-weight: 600; }
+  table.findings td.sev-blocker { color: var(--err); font-weight: 600; }
+  table.findings td.sev-major { color: var(--warn); font-weight: 600; }
+  table.findings td.sev-nit { color: var(--muted); }
+  table.findings td.sev-info { color: var(--ok); }
+  .skip-link {
+    position: absolute; left: -9999px; top: 8px;
+    padding: 8px 12px; background: var(--accent); color: var(--bg);
+  }
+  .skip-link:focus { left: 16px; }
+  .empty { font-style: italic; color: var(--muted); padding: 24px; text-align: center; }
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="bar" role="banner">
+  <div>
+    <h1 id="plan-title">Annotated PR</h1>
+    <div class="meta" id="plan-meta">template: annotated-pr</div>
+  </div>
+  <div class="actions" role="group" aria-label="Review actions">
+    <button type="button" id="btn-copy-md" aria-label="Copy review as Markdown">Copy as Markdown</button>
+    <button type="button" id="btn-save" aria-label="Save this file to disk">Save</button>
+    <button type="button" id="btn-copy-json" aria-label="Copy plan-data as JSON">Copy as JSON</button>
+    <button type="button" id="btn-copy-comments" aria-label="Copy each finding as a review-comment block">Copy comments</button>
+    <button type="button" id="btn-print" aria-label="Print review">Print</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Review sections">
+  <button role="tab" type="button" aria-controls="tab-review" aria-selected="true" id="tab-review-btn">Review</button>
+  <button role="tab" type="button" aria-controls="tab-findings" aria-selected="false" id="tab-findings-btn">Findings</button>
+  <button role="tab" type="button" aria-controls="tab-decisions" aria-selected="false" id="tab-decisions-btn">Decisions</button>
+  <button role="tab" type="button" aria-controls="tab-checklist" aria-selected="false" id="tab-checklist-btn">Checklist</button>
+</nav>
+
+<main id="main">
+  <section role="tabpanel" id="tab-review" aria-labelledby="tab-review-btn">
+    <div class="pr-summary" id="pr-summary"></div>
+
+    <div class="stats" role="group" aria-label="Review statistics">
+      <div class="stat"><div class="label">Files changed</div><div class="value" id="stat-files">0</div></div>
+      <div class="stat add"><div class="label">Additions</div><div class="value" id="stat-add">+0</div></div>
+      <div class="stat del"><div class="label">Deletions</div><div class="value" id="stat-del">-0</div></div>
+      <div class="stat blockers"><div class="label">Blockers</div><div class="value" id="stat-blockers">0</div></div>
+    </div>
+
+    <div class="jump-list" aria-label="Jump to findings">
+      <h3>Jump to findings (by severity)</h3>
+      <ul id="jump-root"></ul>
+    </div>
+
+    <h2>Diff</h2>
+    <div id="diff-root"></div>
+  </section>
+
+  <section role="tabpanel" id="tab-findings" aria-labelledby="tab-findings-btn" hidden>
+    <h2>All findings</h2>
+    <table class="findings">
+      <thead><tr><th>Severity</th><th>File</th><th>Line</th><th>Comment</th></tr></thead>
+      <tbody id="findings-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-decisions" aria-labelledby="tab-decisions-btn" hidden>
+    <h2>Decisions</h2>
+    <table class="findings">
+      <thead><tr><th>Decision</th><th>Rationale</th></tr></thead>
+      <tbody id="decisions-root"></tbody>
+    </table>
+  </section>
+
+  <section role="tabpanel" id="tab-checklist" aria-labelledby="tab-checklist-btn" hidden>
+    <h2>Review checklist</h2>
+    <table class="findings">
+      <thead><tr><th>Done</th><th>Item</th></tr></thead>
+      <tbody id="checklist-root"></tbody>
+    </table>
+  </section>
+</main>
+
+<script type="application/json" id="plan-data">
+{
+  "plan_title": "Review: feat/rate-limit-tokens",
+  "goal": "Sliding-window token-bucket rate limit at the edge gateway, with Redis-backed counters.",
+  "template": "annotated-pr",
+  "updated_at": "2026-05-20T00:00:00Z",
+  "decisions": [
+    {"id": "d1", "decision": "Lua script for atomic increment-and-check", "rationale": "Single round-trip beats a watch/multi loop and avoids races on the burst threshold."},
+    {"id": "d2", "decision": "Reject with 429 and Retry-After in seconds", "rationale": "Matches RFC 6585 and the well-known client retry behaviour we already document."}
+  ],
+  "pr": {
+    "title": "feat(edge): sliding-window token-bucket rate limit",
+    "base": "main",
+    "head": "feat/rate-limit-tokens",
+    "author": "oaabahussain",
+    "files_changed": 3,
+    "additions": 64,
+    "deletions": 9,
+    "url": "https://github.com/example/auth-service/pull/214"
+  },
+  "diff": [
+    {
+      "file": "src/edge/rate-limit.ts",
+      "hunks": [
+        {
+          "old_start": 1,
+          "new_start": 1,
+          "lines": [
+            {"kind": "context", "text": "import type { Redis } from \"ioredis\";"},
+            {"kind": "context", "text": "import { config } from \"../config\";"},
+            {"kind": "add",     "text": "import { logger } from \"../obs/logger\";"},
+            {"kind": "context", "text": ""},
+            {"kind": "del",     "text": "export async function rateLimit(redis: Redis, key: string) {"},
+            {"kind": "add",     "text": "export async function rateLimit(redis: Redis, key: string, now = Date.now()) {"},
+            {"kind": "context", "text": "  const window = config.rateLimit.windowMs;"},
+            {"kind": "context", "text": "  const max = config.rateLimit.maxRequests;"},
+            {"kind": "del",     "text": "  const count = await redis.incr(key);"},
+            {"kind": "del",     "text": "  if (count === 1) await redis.pexpire(key, window);"},
+            {"kind": "add",     "text": "  const bucket = `rl:${key}:${Math.floor(now / window)}`;"},
+            {"kind": "add",     "text": "  const count = await redis.eval(BUCKET_LUA, 1, bucket, String(window), String(max));"},
+            {"kind": "context", "text": "  if (count > max) {"},
+            {"kind": "add",     "text": "    logger.warn({ key, count }, \"rate limit exceeded\");"},
+            {"kind": "context", "text": "    return { allowed: false, remaining: 0 };"},
+            {"kind": "context", "text": "  }"},
+            {"kind": "context", "text": "  return { allowed: true, remaining: max - count };"},
+            {"kind": "context", "text": "}"}
+          ]
+        }
+      ]
+    },
+    {
+      "file": "src/edge/server.ts",
+      "hunks": [
+        {
+          "old_start": 42,
+          "new_start": 42,
+          "lines": [
+            {"kind": "context", "text": "app.use(async (req, res, next) => {"},
+            {"kind": "del",     "text": "  const r = await rateLimit(redis, req.ip);"},
+            {"kind": "add",     "text": "  const r = await rateLimit(redis, ipKey(req));"},
+            {"kind": "context", "text": "  if (!r.allowed) {"},
+            {"kind": "add",     "text": "    res.setHeader(\"Retry-After\", Math.ceil(config.rateLimit.windowMs / 1000));"},
+            {"kind": "context", "text": "    return res.status(429).json({ error: \"too_many_requests\" });"},
+            {"kind": "context", "text": "  }"},
+            {"kind": "context", "text": "  next();"},
+            {"kind": "context", "text": "});"}
+          ]
+        }
+      ]
+    },
+    {
+      "file": "test/rate-limit.spec.ts",
+      "hunks": [
+        {
+          "old_start": 1,
+          "new_start": 1,
+          "lines": [
+            {"kind": "add", "text": "import { rateLimit } from \"../src/edge/rate-limit\";"},
+            {"kind": "add", "text": "import { newRedisMock } from \"./helpers/redis-mock\";"},
+            {"kind": "add", "text": ""},
+            {"kind": "add", "text": "test(\"allows traffic below the burst threshold\", async () => {"},
+            {"kind": "add", "text": "  const redis = newRedisMock();"},
+            {"kind": "add", "text": "  for (let i = 0; i \u003c 5; i++) {"},
+            {"kind": "add", "text": "    const r = await rateLimit(redis, \"1.2.3.4\", 0);"},
+            {"kind": "add", "text": "    expect(r.allowed).toBe(true);"},
+            {"kind": "add", "text": "  }"},
+            {"kind": "add", "text": "});"},
+            {"kind": "add", "text": ""},
+            {"kind": "add", "text": "test(\"rejects when the bucket overflows\", async () => {"},
+            {"kind": "add", "text": "  const redis = newRedisMock();"},
+            {"kind": "add", "text": "  for (let i = 0; i \u003c 6; i++) await rateLimit(redis, \"1.2.3.4\", 0);"},
+            {"kind": "add", "text": "  const r = await rateLimit(redis, \"1.2.3.4\", 0);"},
+            {"kind": "add", "text": "  expect(r.allowed).toBe(false);"},
+            {"kind": "add", "text": "});"}
+          ]
+        }
+      ]
+    }
+  ],
+  "annotations": [
+    {"file": "src/edge/rate-limit.ts", "line": 6, "severity": "blocker",
+      "body": "BUCKET_LUA is referenced here but not defined in this file. The build will fail unless it is imported."},
+    {"file": "src/edge/rate-limit.ts", "line": 3, "severity": "info",
+      "body": "Logger import looks fine. Consider promoting to a structured field schema in a follow-up."},
+    {"file": "src/edge/rate-limit.ts", "line": 11, "severity": "major",
+      "body": "Math.floor(now / window) drifts on the boundary. Clients hitting at t = window - 1 then t = window get two full quotas. Consider a sliding window or weighted average."},
+    {"file": "src/edge/server.ts", "line": 43, "severity": "nit",
+      "body": "ipKey(req) is new. Worth a one-line comment on why it differs from req.ip (X-Forwarded-For handling)."},
+    {"file": "src/edge/server.ts", "line": 45, "severity": "major",
+      "body": "Retry-After should be the remaining seconds in the current bucket, not the full window. Otherwise clients back off too long after a near-miss."},
+    {"file": "test/rate-limit.spec.ts", "line": 12, "severity": "nit",
+      "body": "Add a third test that crosses the window boundary to confirm the bucket reset behaviour."}
+  ],
+  "checklist": [
+    {"text": "Lua script verified atomic on Redis Cluster", "done": false},
+    {"text": "Retry-After matches RFC 6585", "done": false},
+    {"text": "Metrics emitted for allowed and rejected counters", "done": true},
+    {"text": "Load test with 10x burst traffic", "done": false}
+  ]
+}
+</script>
+
+<script>
+(() => {
+  "use strict";
+
+  const dataEl = document.getElementById("plan-data");
+  let plan = {};
+  try { plan = JSON.parse(dataEl.textContent); }
+  catch (e) {
+    document.getElementById("diff-root").innerHTML =
+      '<p class="empty">plan-data JSON could not be parsed.</p>';
+    return;
+  }
+
+  // Header
+  const pr = plan.pr || {};
+  document.getElementById("plan-title").textContent = plan.plan_title || pr.title || "Annotated PR";
+  document.getElementById("plan-meta").textContent =
+    `template: ${plan.template || "(custom)"} · ${pr.base || "?"} <- ${pr.head || "?"} · ${(plan.annotations || []).length} findings`;
+
+  // PR summary line
+  const summary = document.getElementById("pr-summary");
+  const parts = [];
+  if (pr.title) parts.push(`<strong>${escapeHtml(pr.title)}</strong>`);
+  if (pr.base && pr.head) parts.push(`<strong>${escapeHtml(pr.base)}</strong> &lt;- <strong>${escapeHtml(pr.head)}</strong>`);
+  if (pr.author) parts.push(`@${escapeHtml(pr.author)}`);
+  if (pr.url) {
+    parts.push(/^https?:\/\//i.test(pr.url)
+      ? `<a style="color:var(--accent)" href="${escapeAttr(pr.url)}">${escapeHtml(pr.url)}</a>`
+      : escapeHtml(pr.url));
+  }
+  summary.innerHTML = parts.join(" · ");
+
+  // Stats
+  const additions = pr.additions ?? countLines("add");
+  const deletions = pr.deletions ?? countLines("del");
+  const filesChanged = pr.files_changed ?? (plan.diff || []).length;
+  document.getElementById("stat-files").textContent = filesChanged;
+  document.getElementById("stat-add").textContent = "+" + additions;
+  document.getElementById("stat-del").textContent = "-" + deletions;
+  const blockerCount = (plan.annotations || []).filter(a => a.severity === "blocker").length;
+  document.getElementById("stat-blockers").textContent = blockerCount;
+
+  function countLines(kind) {
+    let n = 0;
+    (plan.diff || []).forEach(f => (f.hunks || []).forEach(h => (h.lines || []).forEach(l => { if (l.kind === kind) n++; })));
+    return n;
+  }
+
+  // Group annotations by file+line for inline rendering.
+  const annByFileLine = new Map();
+  (plan.annotations || []).forEach((a, idx) => {
+    const k = a.file + "::" + a.line;
+    if (!annByFileLine.has(k)) annByFileLine.set(k, []);
+    annByFileLine.get(k).push({ ...a, idx });
+  });
+
+  const SEV_ORDER = { blocker: 0, major: 1, nit: 2, info: 3 };
+
+  // Jump list — clear before populate so re-opens of a Saved file do not double-render.
+  const jumpRoot = document.getElementById("jump-root");
+  jumpRoot.replaceChildren();
+  const sortedAnns = (plan.annotations || []).map((a, i) => ({ ...a, idx: i }))
+    .sort((a, b) => (SEV_ORDER[a.severity] ?? 9) - (SEV_ORDER[b.severity] ?? 9));
+  sortedAnns.forEach(a => {
+    const li = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = "#ann-" + a.idx;
+    link.className = a.severity;
+    link.textContent = `[${(a.severity || "info").toUpperCase()}] ${a.file}:${a.line} — ${truncate(a.body, 80)}`;
+    li.appendChild(link);
+    jumpRoot.appendChild(li);
+  });
+
+  // Render diff
+  const diffRoot = document.getElementById("diff-root");
+  diffRoot.replaceChildren();
+  (plan.diff || []).forEach((file) => {
+    const fileAdds = (file.hunks || []).reduce((n, h) => n + (h.lines || []).filter(l => l.kind === "add").length, 0);
+    const fileDels = (file.hunks || []).reduce((n, h) => n + (h.lines || []).filter(l => l.kind === "del").length, 0);
+
+    const wrap = document.createElement("article");
+    wrap.className = "file-block";
+    wrap.setAttribute("aria-label", "Diff for " + file.file);
+
+    const head = document.createElement("div");
+    head.className = "file-header";
+    const path = document.createElement("span");
+    path.className = "path"; path.textContent = file.file;
+    const counts = document.createElement("span");
+    counts.className = "counts";
+    counts.innerHTML = `<span class="plus">+${fileAdds}</span> &nbsp; <span class="minus">-${fileDels}</span>`;
+    head.appendChild(path); head.appendChild(counts);
+    wrap.appendChild(head);
+
+    (file.hunks || []).forEach(hunk => {
+      const hh = document.createElement("div");
+      hh.className = "hunk-header";
+      const oldLen = (hunk.lines || []).filter(l => l.kind !== "add").length;
+      const newLen = (hunk.lines || []).filter(l => l.kind !== "del").length;
+      hh.textContent = `@@ -${hunk.old_start},${oldLen} +${hunk.new_start},${newLen} @@`;
+      wrap.appendChild(hh);
+
+      const table = document.createElement("table");
+      table.className = "diff-table";
+      table.setAttribute("role", "grid");
+      const colG = document.createElement("col"); colG.className = "gutter";
+      const colS = document.createElement("col"); colS.className = "sign";
+      const colC = document.createElement("col");
+      const colN = document.createElement("col"); colN.className = "notes";
+      table.appendChild(colG); table.appendChild(colS); table.appendChild(colC); table.appendChild(colN);
+
+      let oldLine = hunk.old_start;
+      let newLine = hunk.new_start;
+      (hunk.lines || []).forEach(line => {
+        const tr = document.createElement("tr");
+        tr.className = line.kind;
+        const gutter = document.createElement("td"); gutter.className = "gutter";
+        const sign = document.createElement("td"); sign.className = "sign";
+        const code = document.createElement("td"); code.className = "code";
+        const notes = document.createElement("td"); notes.className = "notes";
+
+        if (line.kind === "add") {
+          gutter.textContent = newLine;
+          sign.textContent = "+";
+          newLine++;
+        } else if (line.kind === "del") {
+          gutter.textContent = oldLine;
+          sign.textContent = "-";
+          oldLine++;
+        } else {
+          gutter.textContent = newLine;
+          sign.textContent = " ";
+          oldLine++; newLine++;
+        }
+        code.textContent = line.text || "";
+
+        // Annotations match the new-file line number (or old-file for del lines, fallback to new).
+        const lineNumForAnn = line.kind === "del" ? oldLine - 1 : newLine - 1;
+        const k = file.file + "::" + lineNumForAnn;
+        const anns = annByFileLine.get(k) || [];
+        anns.forEach(a => {
+          const div = document.createElement("div");
+          div.className = "ann " + (a.severity || "info");
+          div.id = "ann-" + a.idx;
+          div.setAttribute("tabindex", "-1");
+          const sev = document.createElement("span");
+          sev.className = "sev";
+          sev.textContent = (a.severity || "info");
+          div.appendChild(sev);
+          div.appendChild(document.createTextNode(a.body || ""));
+          notes.appendChild(div);
+        });
+
+        tr.appendChild(gutter); tr.appendChild(sign); tr.appendChild(code); tr.appendChild(notes);
+        table.appendChild(tr);
+      });
+      wrap.appendChild(table);
+    });
+    diffRoot.appendChild(wrap);
+  });
+
+  // Findings table
+  const findingsRoot = document.getElementById("findings-root");
+  findingsRoot.replaceChildren();
+  sortedAnns.forEach(a => {
+    const tr = document.createElement("tr");
+    const sev = document.createElement("td");
+    sev.className = "sev-" + (a.severity || "info");
+    sev.textContent = (a.severity || "info").toUpperCase();
+    const file = document.createElement("td"); file.textContent = a.file;
+    const line = document.createElement("td"); line.textContent = a.line;
+    const body = document.createElement("td"); body.style.fontFamily = "system-ui, sans-serif"; body.textContent = a.body;
+    tr.appendChild(sev); tr.appendChild(file); tr.appendChild(line); tr.appendChild(body);
+    findingsRoot.appendChild(tr);
+  });
+
+  // Decisions
+  const decisionsRoot = document.getElementById("decisions-root");
+  decisionsRoot.replaceChildren();
+  (plan.decisions || []).forEach(d => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${escapeHtml(d.decision || "")}</td><td style="font-family:system-ui,sans-serif">${escapeHtml(d.rationale || "")}</td>`;
+    decisionsRoot.appendChild(tr);
+  });
+
+  // Checklist
+  const checklistRoot = document.getElementById("checklist-root");
+  checklistRoot.replaceChildren();
+  (plan.checklist || []).forEach(c => {
+    const tr = document.createElement("tr");
+    const td1 = document.createElement("td");
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = !!c.done;
+    cb.setAttribute("aria-label", "Mark " + (c.text || "item") + " complete");
+    cb.addEventListener("change", () => { c.done = cb.checked; plan.updated_at = new Date().toISOString(); });
+    td1.appendChild(cb);
+    const td2 = document.createElement("td");
+    td2.style.fontFamily = "system-ui, sans-serif";
+    td2.textContent = c.text || "";
+    tr.appendChild(td1); tr.appendChild(td2);
+    checklistRoot.appendChild(tr);
+  });
+
+  // Tabs
+  const tabBtns = Array.from(document.querySelectorAll('[role="tab"]'));
+  const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const selectTab = (idx) => {
+    tabBtns.forEach((b, i) => {
+      const sel = i === idx;
+      b.setAttribute("aria-selected", String(sel));
+      b.tabIndex = sel ? 0 : -1;
+    });
+    panels.forEach((p, i) => p.hidden = i !== idx);
+  };
+  tabBtns.forEach((b, i) => {
+    b.addEventListener("click", () => selectTab(i));
+    b.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") { e.preventDefault(); const n = (i + 1) % tabBtns.length; tabBtns[n].focus(); selectTab(n); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); const n = (i - 1 + tabBtns.length) % tabBtns.length; tabBtns[n].focus(); selectTab(n); }
+    });
+  });
+
+  // Copy buttons
+  const toMarkdown = () => {
+    const lines = [];
+    lines.push("# " + (plan.plan_title || pr.title || "Review"));
+    if (pr.base && pr.head) lines.push(`\n\`${pr.base} <- ${pr.head}\``);
+    if (plan.goal) lines.push("\n## Goal\n" + plan.goal);
+    lines.push(`\n## Stats\n- Files: ${filesChanged}\n- Additions: +${additions}\n- Deletions: -${deletions}\n- Blockers: ${blockerCount}`);
+    lines.push("\n## Findings");
+    sortedAnns.forEach(a => {
+      lines.push(`- **[${(a.severity || "info").toUpperCase()}]** ${a.file}:${a.line} — ${a.body}`);
+    });
+    if ((plan.decisions || []).length) {
+      lines.push("\n## Decisions");
+      plan.decisions.forEach(d => lines.push(`- **${d.decision}** — ${d.rationale}`));
+    }
+    if ((plan.checklist || []).length) {
+      lines.push("\n## Checklist");
+      plan.checklist.forEach(c => lines.push(`- [${c.done ? "x" : " "}] ${c.text}`));
+    }
+    return lines.join("\n");
+  };
+
+  const toComments = () => {
+    return sortedAnns.map(a => {
+      return [
+        "<!-- " + a.file + ":" + a.line + " -->",
+        "**[" + (a.severity || "info").toUpperCase() + "]** `" + a.file + ":" + a.line + "`",
+        "",
+        a.body,
+        ""
+      ].join("\n");
+    }).join("\n---\n");
+  };
+
+  const copyText = async (text) => {
+    try {
+      if (navigator.clipboard) await navigator.clipboard.writeText(text);
+      else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed"; ta.style.left = "-9999px";
+        document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
+      }
+    } catch (e) { /* no-op */ }
+  };
+
+  document.getElementById("btn-copy-md").addEventListener("click", () => copyText(toMarkdown()));
+  document.getElementById("btn-copy-json").addEventListener("click", () => copyText(JSON.stringify(plan, null, 2)));
+  document.getElementById("btn-copy-comments").addEventListener("click", () => copyText(toComments()));
+  document.getElementById("btn-print").addEventListener("click", () => window.print());
+  document.getElementById("btn-save").addEventListener("click", savePlanHtml);
+
+  function flashSaved(btn, msg) {
+    const orig = btn.dataset.origLabel || btn.textContent;
+    btn.dataset.origLabel = orig;
+    btn.textContent = msg;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 2000);
+  }
+
+  async function savePlanHtml() {
+    const fileName = decodeURIComponent(location.pathname.split("/").pop()) || "artifact.html";
+    const btn = document.getElementById("btn-save");
+    // Replace '<' with its \u escape on write-back to neutralize close-script
+    // sequences a user typed into a plan string. JSON.parse round-trips the
+    // escape back to '<' on reload, preserving semantics.
+    dataEl.textContent = JSON.stringify(plan, null, 2).replace(/</g, "\\u003c");
+    const html = "<!doctype html>\n" + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    if (window.showSaveFilePicker) {
+      try {
+        if (!window.__planFileHandle) {
+          window.__planFileHandle = await window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [{ description: "HTML file", accept: { "text/html": [".html"] } }],
+          });
+        }
+        const writable = await window.__planFileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        flashSaved(btn, "Saved");
+        return;
+      } catch (e) {
+        if (e && e.name === "AbortError") return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    flashSaved(btn, "Downloaded");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+  function truncate(s, n) { s = String(s || ""); return s.length > n ? s.slice(0, n - 1) + "..." : s; }
+})();
+</script>
+</body>
+</html>

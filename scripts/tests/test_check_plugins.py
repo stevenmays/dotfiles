@@ -23,7 +23,7 @@ class PackageChecks(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
 
     def test_valid_package(self):
-        self.assertEqual(len(check(self.root)), 8)
+        self.assertEqual(len(check(self.root)), 9)
 
     def test_missing_manifest_fails(self):
         (self.root / "codex/.codex-plugin/plugin.json").unlink()

@@ -41,7 +41,7 @@ codex plugin add mays@dotfiles
 ```
 
 When developing from a local checkout, replace `stevenmays/dotfiles` with the checkout path.
-Codex installs the self-contained `codex/` package with eight adapted skills. It excludes
+Codex installs the self-contained `codex/` package with nine adapted skills. It excludes
 `ste-writing`; frontend work uses Codex's built-in image capability
 when available. Claude commands, agents, and hooks stay outside that package. See the
 [Codex package guide](codex/README.md) for its skills, validation, and optional personal template.
@@ -126,6 +126,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 | `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
 | `frontend-craft` | Companion to Anthropic's `frontend-design`: seed-string variety, screenshot-only design-critic loop, generated images and video, and a subtraction pass that removes AI tells |
+| `html-artifact` | Self-contained local HTML pages from 10 interactive templates (plans, PR reviews, triage boards, incidents, and more); the agent edits only the embedded JSON. Templates adapted from [plan-it](https://github.com/OthmanAdi/plan-it) at `93f6606` under MIT |
 | `codex-image-generator` | Default image path: Codex CLI's built-in `image_gen` tool, run in a subagent, no API key |
 | `gemini-image-generator` | Nano Banana images through the Antigravity CLI's `generate_image` tool, run in a subagent, no API key; use when the user names Gemini, Nano Banana, or Antigravity |
 | `gemini-subagents` | Run any task on a Gemini model as a background subagent through the Antigravity CLI, behind a wrapper that cannot hang the session |
@@ -171,7 +172,7 @@ Wire `mays:claims-verification` into my implement-ticket skill, in the planning 
 └── marketplace.json   # Codex marketplace; source is ./codex
 codex/
 ├── .codex-plugin/     # Independent Codex manifest and version
-├── skills/            # Eight adapted skills; no STE skill
+├── skills/            # Nine adapted skills; no STE skill
 ├── templates/         # Optional personal AGENTS.md preferences
 ├── evals/             # Behavioral cases and validation results
 └── shared-resources.json # Explicit copies from canonical source files
