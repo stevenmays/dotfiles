@@ -182,6 +182,10 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 **Lists.** Introduce every list with a complete sentence ending in a colon. Numbered means order matters; bulleted means it doesn't; term-plus-colon pairs for definitions ("`--dry-run`: prints the plan"). Sentences in items get periods, fragments get nothing — consistently. Say whether the list is complete ("the following three flags") or samples ("flags such as").
 
+**Name things; don't code them.** Never coin letter-number codes such as `C1`, `L1`, or `Z1` for the steps, risks, options, or claims in a plan or document. The reader must decode every code. To point back at an item, repeat its name. A real identifier the reader already uses, such as a ticket key, stays.
+
+**Lists hold parallel items, not the argument.** Explain the approach, the reasons, and the tradeoffs in sentences. Use a list for discrete items, such as tasks to check off or flags to set. A plan written only as lists hides why each step exists.
+
 **Links.** Link text names its destination — the target's title or a descriptive phrase with the important words first. Never "click here", "this doc", or a bare URL. The standing pattern: "For more information about retries, see Configuring retry policy." Say when a link downloads a file or leaves the doc set.
 
 **No directional language.** "The preceding table", "the following command" — never "above", "below", or "the panel on the left". Layout reflows, screen readers linearize, and translations reorder.

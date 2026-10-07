@@ -351,8 +351,8 @@ SOFTWARE.
     "rationale": "Volume is well under 200 jobs/sec across all teams. We already operate Postgres at a high standard, and jobs as rows is the cheapest observability we will ever ship. Re-evaluate at the next volume doubling, or whenever a team needs scheduled-cron primitives that the queue does not give us. Approach B was tempting for the operational simplicity but the per-invocation cost on our current workload and the Lambda lock-in cost in 18 months tilt the balance back. Approach C is over-engineered for today's volume; revisit when we have a real workflow use case (e.g. onboarding sequences) rather than a job-queue one."
   },
   "decisions": [
-    {"id": "d1", "decision": "Approach A selected for the next two quarters", "rationale": "Lowest cost + reuses existing operational expertise; volume comfortably fits"},
-    {"id": "d2", "decision": "Re-evaluation trigger set at 1000 jobs/sec sustained or first scheduled-workflow use case", "rationale": "Picks the right exit ramp without forcing a premature migration"}
+    {"decision": "Approach A selected for the next two quarters", "rationale": "Lowest cost + reuses existing operational expertise; volume comfortably fits"},
+    {"decision": "Re-evaluation trigger set at 1000 jobs/sec sustained or first scheduled-workflow use case", "rationale": "Picks the right exit ramp without forcing a premature migration"}
   ],
   "progress_log": [
     {"ts": "2026-05-19T10:00:00Z", "phase": 1, "action": "Drafted three approaches from team RFC #014", "files": ["rfcs/014.md"]},

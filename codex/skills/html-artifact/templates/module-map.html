@@ -383,8 +383,8 @@ SOFTWARE.
   "goal": "Map the request path from the public API edge through auth and into the persistence layer.",
   "template": "module-map",
   "decisions": [
-    {"id": "d1", "decision": "Token validation moves into edge gateway", "rationale": "Cuts one round-trip to auth-core for every authenticated request."},
-    {"id": "d2", "decision": "Sessions store stays Redis, not Postgres", "rationale": "Sub-millisecond reads matter more than relational guarantees at this layer."}
+    {"decision": "Token validation moves into edge gateway", "rationale": "Cuts one round-trip to auth-core for every authenticated request."},
+    {"decision": "Sessions store stays Redis, not Postgres", "rationale": "Sub-millisecond reads matter more than relational guarantees at this layer."}
   ],
   "nodes": [
     {"id": "edge",      "label": "edge-gateway",  "kind": "module",    "x": 80,  "y": 80,  "hot": true,

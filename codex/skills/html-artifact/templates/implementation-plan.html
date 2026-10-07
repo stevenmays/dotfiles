@@ -105,6 +105,7 @@ SOFTWARE.
     font-family: ui-serif, Georgia, serif;
     font-size: 18px; font-weight: 700; margin: 0 0 12px;
   }
+  .goal { max-width: 70ch; margin: 0 0 16px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
   .phase {
@@ -117,6 +118,7 @@ SOFTWARE.
   .phase[data-status="blocked"] { border-color: var(--err); }
   .phase .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .phase h3 { margin: 0; font-size: 14px; font-weight: 600; }
+  .phase .summary { max-width: 70ch; margin: 8px 0 0; font-size: 14px; }
   .phase .badge {
     font-family: ui-monospace, monospace;
     font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
@@ -194,6 +196,7 @@ SOFTWARE.
 <main id="main">
   <section role="tabpanel" id="tab-phases" aria-labelledby="tab-phases-btn">
     <h2>Phases</h2>
+    <p class="goal" id="plan-goal" hidden></p>
     <div id="phases-root"></div>
   </section>
 
@@ -256,7 +259,7 @@ SOFTWARE.
 <script type="application/json" id="plan-data">
 {
   "plan_title": "Implementation Plan",
-  "goal": "Replace this with what you are building.",
+  "goal": "Replace this with one or two sentences on what you are building and why. Name the outcome the reader gets when every phase is complete.",
   "current_phase": 1,
   "template": "implementation-plan",
   "updated_at": "2026-05-20T00:00:00Z",
@@ -265,9 +268,10 @@ SOFTWARE.
       "id": 1,
       "title": "Phase 1: Foundation",
       "status": "in_progress",
+      "summary": "Replace this with what this phase sets up and why it comes first. Name the later work that depends on it.",
       "items": [
-        {"text": "Replace this item with your first task", "done": false, "owner": null},
-        {"text": "Add more items here", "done": false, "owner": null}
+        {"text": "Replace this with the first task someone can check off", "done": false, "owner": null},
+        {"text": "Add one item for each discrete task", "done": false, "owner": null}
       ],
       "milestones": ["A clear, testable milestone for end of Phase 1"]
     },
@@ -275,8 +279,9 @@ SOFTWARE.
       "id": 2,
       "title": "Phase 2: Build",
       "status": "pending",
+      "summary": "Replace this with the approach this phase takes and the reason you chose it. Keep the reasoning here and put only checkable tasks in the list.",
       "items": [
-        {"text": "Implementation tasks go here", "done": false, "owner": null}
+        {"text": "Replace this with an implementation task", "done": false, "owner": null}
       ],
       "milestones": []
     },
@@ -284,15 +289,17 @@ SOFTWARE.
       "id": 3,
       "title": "Phase 3: Verify",
       "status": "pending",
+      "summary": "Replace this with how you will prove the work is done and who signs off. Say which checks matter most and why.",
       "items": [
-        {"text": "Tests, review, sign-off", "done": false, "owner": null}
+        {"text": "Replace this with a check, such as running the full test suite", "done": false, "owner": null},
+        {"text": "Replace this with the review or sign-off step", "done": false, "owner": null}
       ],
       "milestones": []
     }
   ],
   "progress_log": [],
   "decisions": [
-    {"id": "d1", "decision": "Use HTML for the plan, not Markdown", "rationale": "Engagement, interactivity, persistence."}
+    {"decision": "Use HTML for the plan, not Markdown", "rationale": "Readers scan and edit an interactive page, and Save keeps their edits in the file."}
   ],
   "risks": [
     {"risk": "Stakeholders skip long markdown plans", "severity": "high", "mitigation": "Render as a single navigable HTML with tabs and copy-buttons."},
@@ -324,6 +331,11 @@ SOFTWARE.
   document.getElementById("plan-meta").textContent =
     `template: ${plan.template || "(custom)"} · phase ${plan.current_phase ?? "?"} of ${(plan.phases || []).length}`;
 
+  // Goal
+  const goalEl = document.getElementById("plan-goal");
+  goalEl.textContent = plan.goal || "";
+  goalEl.hidden = !plan.goal;
+
   // Render containers. Clear before populate so re-opens of a Saved file do
   // not double-render the cards baked into the serialized DOM.
   const phasesRoot = document.getElementById("phases-root");
@@ -348,6 +360,13 @@ SOFTWARE.
       row.appendChild(h3);
       row.appendChild(badge);
       div.appendChild(row);
+
+      if (ph.summary) {
+        const summary = document.createElement("p");
+        summary.className = "summary";
+        summary.textContent = ph.summary;
+        div.appendChild(summary);
+      }
 
       if ((ph.items || []).length) {
         const ul = document.createElement("ul");
@@ -484,6 +503,7 @@ SOFTWARE.
     lines.push("\n## Phases");
     (plan.phases || []).forEach((ph) => {
       lines.push(`\n### Phase ${ph.id}: ${ph.title} (${ph.status})`);
+      if (ph.summary) lines.push(ph.summary);
       (ph.items || []).forEach((it) => {
         lines.push(`- [${it.done ? "x" : " "}] ${it.text}`);
       });

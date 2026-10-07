@@ -94,6 +94,7 @@ Every branch has a default that needs no human.
 - The corrected plan replaces the plan file the caller handed in, so the next gate reviews the corrected plan.
 - Extract claims from the changed steps only. Verify them with a fresh blind verifier.
 - After that one round, a claim can still be contradicted or unsupported. Continue anyway, and append the claim to the plan under `## Known contradictions` with its evidence. The next reviewer and the human then see it. Never drop one silently.
+- The `C` and `Q` ids exist only for this skill's working table and result. When you send findings to the author or edit the plan, quote each claim in words. Never write a `C<n>` or `Q<n>` id into the plan or into a message to its author.
 
 ## Result
 

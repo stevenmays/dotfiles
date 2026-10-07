@@ -45,7 +45,7 @@ When no template fits, build 1 new file under the page rules and reuse the CSS t
 
    `command` bypasses a `cp -i` alias, which otherwise waits for input.
 3. **Read only the data block.** Find it with `grep -n 'id="plan-data"' "$OUT"`. Its keys and value shapes are the contract. The page's script reads every key, and a key you add renders nowhere. The `plan-data` id is historical; keep it.
-4. **Replace the sample data.** Replace every sample value. Don't edit the markup, CSS, JS, or license comment. One exception: the Data flow tab in `implementation-plan` is static SVG. Redraw it for the real system, or delete its tab button and its panel together.
+4. **Replace the sample data.** Replace every sample value. Don't edit the markup, CSS, JS, or license comment. One exception: the Data flow tab in `implementation-plan` is static SVG. Redraw it for the real system, or delete its tab button and its panel together. Write the replacement data by the rules in [Write the content](#write-the-content).
 5. **Follow the JSON rules.**
    - Write strict JSON, with no comments and no trailing commas.
    - Write every `<` inside the block as `\u003c`, the same escape that Save writes. A raw `<` can open a comment or a tag that keeps the block from closing. `JSON.parse` turns `\u003c` back into `<`, so `html` fields still render as markup.
@@ -59,6 +59,15 @@ When no template fits, build 1 new file under the page rules and reuse the CSS t
 
    A bad block shows "plan-data JSON could not be parsed" in 9 templates. `animation-sandbox` shows no error message, so this check is its only guard.
 7. **Open the page.** Run `open "$OUT"` on macOS or `xdg-open "$OUT"` on Linux. Report the absolute path and the template name. When the path is in the scratchpad or `$TMPDIR`, tell the user that the file is temporary and offer to move it.
+
+## Write the content
+
+Write the page for a reader who saw none of your working notes.
+
+- Name each thing in words. Never coin letter-number codes such as `C1`, `L1`, or `Z1` for steps, risks, claims, options, or decisions. To point at another item, repeat its name.
+- Several templates show an `id` on the page or in Copy as Markdown. Use the real key the reader already knows, such as a ticket or incident key, or a readable slug such as `auth-service`. Never invent a code for an id.
+- Explain the approach in sentences. In `implementation-plan`, `goal` and each phase's `summary` hold 1 to 3 sentences on what the work does and why.
+- In `implementation-plan`, a phase item is a discrete task that someone checks off. Reasoning and tradeoffs go in `goal` and `summary`, not in items.
 
 ## Read edits back
 
