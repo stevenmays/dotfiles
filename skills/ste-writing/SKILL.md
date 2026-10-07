@@ -166,6 +166,8 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 **Condition, context, and goal come before the action.** Readers execute as they read. "If lag exceeds 1,000, restart the worker" — never the reverse. "In the `deploy` directory, run `make plan`" — location first. "To reset the cache, restart the worker" — goal first, so the reader who doesn't want that outcome skips the step. Same shape for references: "For more information, see the retry policy", not "See the retry policy for more information."
 
+**Known before new.** Open a sentence with what the reader already has: the paragraph's subject or the last sentence's new term. End it on the new fact. A new term goes last in its sentence, and the next sentence starts from it: "Each request carries a trace ID. The trace ID links that request's logs across services." When the known item isn't the actor, pick a verb that makes it the subject, not a passive: "The trace ID comes from the gateway."
+
 ## Paragraph rules
 
 - At most 6 sentences per paragraph, one topic, and the first sentence carries the paragraph's most important fact — readers skim first sentences and skip the rest.
@@ -411,6 +413,7 @@ Then sentence level — each one is countable:
 - A negative the reader must invert ("won't prevent")? State the positive.
 - "Please" in an instruction, "let's", or "the user" meaning the reader? Write the bare command to "you".
 - A condition, location, or goal after its instruction? Move it before.
+- A new term in the first half of a sentence, before the reader has met it? Move it to the end.
 - Link text that does not name its destination, or "above"/"below" as a pointer? Name it.
 
 Then word level:

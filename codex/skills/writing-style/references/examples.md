@@ -6,19 +6,19 @@ Annotated examples demonstrating key techniques. Split into two modes: **Educati
 
 ## Educational/Technical Style
 
-The teaching-first voice. Hook with a measurable claim, build mental models, use worked examples.
+The teaching-first voice. Open on what happened, build mental models, use worked examples.
 
-### Measurable Hooks with "How?"
+### Openings: Start With What Happened
 
-**Number + question:**
-> Prompt caching can cut your LLM costs by 10x. But how does it actually work? What's being cached, and why does it only help sometimes?
+**What broke:**
+> Our p95 latency jumped from 140ms to 2.3s the week we added request logging. The logger serialized every response body before the handler returned, including the 4 MB ones.
 
-*States the payoff, then immediately asks what the reader is thinking.*
+*A real event with its numbers, told the way you'd tell a teammate. The number leads because the number is the news.*
 
-**Latency hook:**
-> This change dropped our p95 from 2.3s to 140ms. The mechanism isn't obvious—it's not about faster hardware or better algorithms. It's about what we stopped computing.
+**What you were trying to do:**
+> I wanted to know whether prompt caching would help a support bot that answers 2,000 questions a day. The docs promised up to 90% off input tokens. Our first week saved 4%.
 
-*Concrete numbers, then invites curiosity about the "why."*
+*Starts from the writer's real question. The gap between the promise and the result makes the reader curious, so no rhetorical question is needed.*
 
 ### Density: Write to Be Unsummarizable
 
