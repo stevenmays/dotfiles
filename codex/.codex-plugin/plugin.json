@@ -1,6 +1,6 @@
 {
   "name": "mays",
-  "version": "1.23.0+codex.20261008173622",
+  "version": "1.24.0+codex.20261008201052",
   "description": "Personal engineering and design workflows adapted for Codex.",
   "author": {
     "name": "Steven Mays",
@@ -16,7 +16,7 @@
   "interface": {
     "displayName": "Mays",
     "shortDescription": "Engineering and design skills for Codex",
-    "longDescription": "Focused workflows for strict review, refactoring, frontend design, HTML artifacts, serverless AWS, onboarding, conflict resolution, skill evaluation, and long-form writing.",
+    "longDescription": "Focused workflows for strict review, refactoring, frontend design, serverless AWS, onboarding, conflict resolution, skill evaluation, and long-form writing.",
     "developerName": "Steven Mays",
     "category": "Engineering",
     "capabilities": [
