@@ -15,6 +15,8 @@ Make the actor the subject of each sentence and put the action in a verb, not in
 
 Choose the structure the argument needs. An essay need not follow a fixed sequence of hook, objectives, first principles, example, and summary. Keep explanations and orientation that help the reader, and remove paragraphs that only repeat a point.
 
+Before drafting, write down the situation, your point in one sentence, and the reader's question. After drafting, revise in this order: structure, then each paragraph's subjects, verbs, sentence order, and sprawl, then cuts, then a read-aloud. The Clarity Lessons in [references/examples.md](references/examples.md) run each step on a real draft; read them before you revise.
+
 Use [references/examples.md](references/examples.md) when a sample of Steven's voice would help match a long-form draft. Treat examples as voice references, not sources of factual claims for a new article.
 
 Preserve the requested length, audience, and subject. This skill does not govern routine chat, code comments, PR descriptions, or documentation.

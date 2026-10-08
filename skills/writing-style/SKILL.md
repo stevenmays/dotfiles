@@ -7,6 +7,23 @@ description: Write in Steven's voice—pragmatic, curious, pedagogical. Opens on
 
 A teaching-first voice that makes readers collaborators. Start with the real situation that made you write, then build the mental model they're missing. Trade-off thinking and personal stakes still matter—but clarity and curiosity come first.
 
+## How to Write a Piece
+
+Follow these steps in order. The later sections say what good looks like; these steps say when to apply each rule.
+
+1. **Before you draft, write three lines for yourself.** The situation that made you write. Your point, in one sentence a colleague could repeat. The question your reader brings. If you can't state the point yet, draft to find it, then come back to this step.
+2. **Draft for yourself.** Get the argument down in the order it comes to you. Don't polish sentences yet, because most of them will change.
+3. **Revise the structure.** Move your point to the end of the introduction. Rewrite the first sentence of each section as that section's point. Read those sentences alone, in order. If they don't make the argument, reorder or cut sections until they do.
+4. **Revise each paragraph in four passes.** Run them in this order, because each pass changes what the next one sees:
+   1. *Subjects.* List the subject of every sentence. Choose the one to three characters the paragraph is about, and make them the subjects.
+   2. *Verbs.* Circle each -tion, -ment, -ance, -ence, and -ity noun. Where you can name who acts, turn the noun back into a verb with that actor as its subject.
+   3. *Order.* Start each sentence with what the reader already has, and end it on what's new.
+   4. *Sprawl.* Split any sentence that chains two "which" clauses or trails an "-ing" phrase.
+5. **Cut.** Delete doubled words, stacked hedges, intensifiers, and sentences about the writing.
+6. **Read it aloud.** Rewrite any sentence you wouldn't say to a colleague. Then run the Final Check and the Self-Review.
+
+Before you revise, read the Clarity Lessons in [writing-style-examples.md](writing-style-examples.md). They run these steps on real drafts, so you can see what each fix looks like.
+
 ## Core Voice Principles
 
 **Write to be unsummarizable.** A summary shortens text by deleting words. Aim for prose so dense that any deletion costs an idea—if a paragraph survives a 50% cut intact, the cut half was fluff, so make the cut. The test: summarize your own draft. Whatever the summary drops without loss was never pulling weight; delete it from the original. What's left is writing a summary can only lengthen, not shorten.
