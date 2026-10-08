@@ -352,8 +352,8 @@ SOFTWARE.
   "template": "annotated-pr",
   "updated_at": "2026-05-20T00:00:00Z",
   "decisions": [
-    {"id": "d1", "decision": "Lua script for atomic increment-and-check", "rationale": "Single round-trip beats a watch/multi loop and avoids races on the burst threshold."},
-    {"id": "d2", "decision": "Reject with 429 and Retry-After in seconds", "rationale": "Matches RFC 6585 and the well-known client retry behaviour we already document."}
+    {"decision": "Lua script for atomic increment-and-check", "rationale": "Single round-trip beats a watch/multi loop and avoids races on the burst threshold."},
+    {"decision": "Reject with 429 and Retry-After in seconds", "rationale": "Matches RFC 6585 and the well-known client retry behaviour we already document."}
   ],
   "pr": {
     "title": "feat(edge): sliding-window token-bucket rate limit",

@@ -6,19 +6,19 @@ Annotated examples demonstrating key techniques. Split into two modes: **Educati
 
 ## Educational/Technical Style
 
-The teaching-first voice. Hook with a measurable claim, build mental models, use worked examples.
+The teaching-first voice. Open on what happened, build mental models, use worked examples.
 
-### Measurable Hooks with "How?"
+### Openings: Start With What Happened
 
-**Number + question:**
-> Prompt caching can cut your LLM costs by 10x. But how does it actually work? What's being cached, and why does it only help sometimes?
+**What broke:**
+> Our p95 latency jumped from 140ms to 2.3s the week we added request logging. The logger serialized every response body before the handler returned, including the 4 MB ones.
 
-*States the payoff, then immediately asks what the reader is thinking.*
+*A real event with its numbers, told the way you'd tell a teammate. The number leads because the number is the news.*
 
-**Latency hook:**
-> This change dropped our p95 from 2.3s to 140ms. The mechanism isn't obvious—it's not about faster hardware or better algorithms. It's about what we stopped computing.
+**What you were trying to do:**
+> I wanted to know whether prompt caching would help a support bot that answers 2,000 questions a day. The docs promised up to 90% off input tokens. Our first week saved 4%.
 
-*Concrete numbers, then invites curiosity about the "why."*
+*Starts from the writer's real question. The gap between the promise and the result makes the reader curious, so no rhetorical question is needed.*
 
 ### Density: Write to Be Unsummarizable
 
@@ -33,40 +33,36 @@ The teaching-first voice. Hook with a measurable claim, build mental models, use
 ### Learning Objectives Block
 
 **Near the top of a technical post:**
-> By the end of this post, you'll understand:
-> - How LLMs process text as tokens, not characters
-> - Why attention is O(n²) and what that means for long contexts
-> - When prompt caching helps (and when it doesn't)
+> This post answers three questions:
+> - Why does an LLM read tokens instead of characters?
+> - Why does attention cost grow with the square of the prompt length?
+> - When does prompt caching help, and when doesn't it?
 
-*Specific outcomes. The reader knows what they're signing up for.*
+*Specific outcomes, phrased as the reader's own questions. The reader knows what they're signing up for.*
 
 ### First Principles Building
 
 **Define before you use:**
-> Before we talk about embeddings, we need to understand tokens. A token isn't a word—it's a chunk of text that the model treats as a single unit. "unhappiness" might be three tokens: "un", "happiness", and potentially a space.
->
-> Now that we understand tokens, we can talk about what the model does with them.
+> A model never sees words. It sees tokens: chunks of text that it treats as single units. "unhappiness" might become two tokens, "un" and "happiness". The model then turns each token into a list of numbers called an embedding.
 
-*Builds the concept, then explicitly transitions.*
+*Defines tokens before embeddings. The new term, "embedding", arrives at the end of the paragraph, where the next one picks it up. No "now that we understand" bridge is needed.*
 
 **Layered explanation:**
-> An embedding is just a list of numbers—a position in high-dimensional space. Similar words end up near each other. "king" and "queen" are close. "king" and "banana" are far apart.
->
-> That's the intuition. Now let's see how it's computed.
+> An embedding places a token at a point in a space with hundreds of dimensions. Tokens with similar meanings land near each other: "king" sits close to "queen" and far from "banana". The model learns those positions during training.
 
-*Gives the mental model first, then goes deeper.*
+*Gives the mental model first. The last sentence names the next topic, training, so the reader knows where the piece goes.*
 
 ### Permission-Giving
 
 **When it gets hard:**
-> This is the most abstract part of the whole system. The math looks intimidating, but you don't need to fully understand matrix multiplication to get the key insight. Here's what matters: attention lets the model look at all the other tokens when deciding what a token means.
+> The attention math is the hardest part of this post, and you can skip it. You need one fact from it: when the model reads a token, attention lets it weigh every earlier token in the prompt to decide what that token means.
 
-*Acknowledges difficulty, gives permission to skim, extracts the core insight.*
+*Says the part is hard, gives permission to skip it, and hands over the one fact the rest of the post needs.*
 
-**Encouraging the reader:**
-> If you've followed along this far, you already understand 80% of how transformers work. The remaining 20% is optimization tricks.
+**Telling the reader what they have:**
+> You now have the whole forward pass: tokens in, embeddings, attention, and a prediction out. Everything after this section makes that pass cheaper.
 
-*Validates progress, reduces intimidation.*
+*Names what the reader now holds in concrete terms instead of praising them or inventing a percentage.*
 
 ### Worked Micro-Examples
 
@@ -110,14 +106,12 @@ The teaching-first voice. Hook with a measurable claim, build mental models, use
 
 ### Orienting Transitions
 
-**Tell the reader where you are:**
-> That's tokenization. Now let's see what happens to these token IDs.
+**Carry the reader from the last topic to the next:**
+> Those token IDs are all the model ever sees. The next step turns each ID into a vector.
 
-> We've covered the forward pass. But training is where it gets interesting.
+> So far we've assumed unlimited memory. A 70B-parameter model needs about 140 GB for its weights at 16-bit precision, so it doesn't fit on one 80 GB GPU.
 
-> So far we've assumed unlimited memory. In practice, there's a constraint.
-
-*Short, explicit, moves the reader forward.*
+*Each transition starts from what the reader just learned and ends on the next topic. It carries a fact, not a teaser like "this is where it gets interesting".*
 
 ### Honest Uncertainty
 
@@ -146,18 +140,111 @@ The teaching-first voice. Hook with a measurable claim, build mental models, use
 
 ---
 
+## Clarity Lessons
+
+Each lesson takes a weak draft, runs one mechanical test on it, and shows the revision. The drafts are what a first pass, human or model, usually produces. Copy the method, not the sentences.
+
+### Lesson 1: One Paragraph Through Every Step
+
+**Draft:**
+> In today's world of distributed systems, observability is crucial. The implementation of structured logging across our services resulted in a significant reduction in the time required for incident investigation. There was a recognition by the team that the previous approach, which relied on free-text log lines, which were difficult to search, was a contributing factor to prolonged outages. It's worth noting that the adoption of a consistent schema was also key, ensuring that queries could be reused across services.
+
+**Before drafting, write three lines:**
+- Situation: our March outage took six hours to diagnose, mostly spent grepping logs.
+- Point: one shared log schema lets one query follow a request through every service.
+- Reader's question: is the migration worth it?
+
+**Revise the paragraph in four passes:**
+- *Subjects:* "observability", "the implementation of structured logging", "a recognition", "the adoption of a consistent schema". All four are abstractions. The characters are hiding in the objects: we, the services, the logs.
+- *Verbs:* implementation, reduction, investigation, recognition, and adoption are each an action with a doer. We implemented, we cut, we diagnosed, we realized, we adopted.
+- *Order:* the draft opens sentences on new abstractions and ends them on vague phrases ("prolonged outages", "across services").
+- *Sprawl:* "which relied… which were difficult" chains two clauses. "Ensuring that…" trails an abstract "-ing" phrase.
+
+**Then cut:** the throat-clearing first sentence, "significant" with no number, "it's worth noting", and "also key".
+
+**Revision:**
+> Our March outage took six hours to diagnose, and we spent most of those hours grepping free-text logs across eight services. Each service wrote its own format, so a search that matched an event on one service missed it on the next. We moved all eight to structured JSON logs that share one schema. Now one query follows a request through every service, and our last two incidents took under 40 minutes to diagnose.
+
+*Every subject is a character: the outage, the services, we, one query. Each sentence starts from the end of the one before it ("eight services" → "Each service" → "all eight"). The paragraph ends on the result. The numbers replace "significant".*
+
+### Lesson 2: Hold the Topic String
+
+**Draft:**
+> Cold starts were the main source of our p99 latency. A 400 ms penalty comes from loading JVM classes. Memory allocation also affects how long initialization takes. SnapStart was eventually adopted by the team, and the results were good.
+
+**Test:** list the subjects. "Cold starts", "a 400 ms penalty", "memory allocation", "SnapStart", "the results". That's five subjects for four sentences, so the reader keeps changing what the paragraph is about.
+
+**Revision:**
+> Our Lambda functions missed their p99 target because of cold starts. Each cold function spent about 400 ms loading JVM classes, and functions with less memory took longer, because Lambda gives them less CPU. With SnapStart turned on, each function now resumes from a snapshot taken after its classes load. At p99, the functions went from 1.9 s to 420 ms.
+
+*The functions are the character, so they hold the subject position in every sentence. "The results were good" became a number, and the sentence ends on it.*
+
+### Lesson 3: Old Before New
+
+**Draft:**
+> Write-ahead logging, an append-only record that Postgres flushes to disk before it changes a data page, is why a crash doesn't corrupt your tables.
+
+**Test:** where does the new term appear? Here it's the first two words. The reader meets the jargon and its definition before learning why either matters.
+
+**Revision:**
+> A crash in the middle of a write doesn't corrupt your Postgres tables. Before Postgres changes a data page, it appends a record of the change to a file on disk. That file is the write-ahead log. On restart, Postgres replays the log to redo every change since the last checkpoint.
+
+*It starts from what the reader cares about, a crash, and builds to the term. "That file" links back, and "the write-ahead log" lands at the end of its sentence, where new terms belong.*
+
+### Lesson 4: End on the News
+
+**Draft:**
+> Shared backoff schedules can turn a short blip into a full outage, at least in our experience. We cut retry storms by adding jitter, which helped a lot. The fix took one line of code, surprisingly.
+
+**Test:** read the last few words of each sentence: "in our experience", "helped a lot", "surprisingly". A hedge, a vague tag, and an aside sit where the reader expects the point.
+
+**Revision:**
+> In our experience, shared backoff schedules turn a short blip into a full outage. When we added jitter to the backoff, the retry storms stopped. The whole fix was one line.
+
+*The hedge moved to the front, where it qualifies without stealing the ending. Each sentence now ends on its news.*
+
+### Lesson 5: Section Openers That Make the Argument
+
+**Draft, the first sentence of each section:**
+1. In week one, we added Redis in front of the orders API.
+2. In week two, we started reading the database's query log.
+3. In week three, we found the N+1 query.
+
+**Test:** read them alone. They make a diary, not an argument. The point doesn't arrive until the third section.
+
+**Revision:**
+1. The orders page was slow because of one N+1 query: one query for the order list, then one more per order for its items.
+2. Redis hid the N+1 query for a week, because cached pages never reached the database.
+3. One join replaced 51 queries, and the page now loads in 180 ms without the cache.
+
+*Read alone, these three sentences carry the whole post. The weekly story can still appear inside each section as evidence.*
+
+### Lesson 6: Cut Hedges, Pairs, and Talk About the Writing
+
+**Draft:**
+> It's worth noting that the new scheduler is fast and efficient, and it seems that it could possibly reduce costs somewhat. Clearly, this is a robust and reliable approach that completely eliminates each and every race condition.
+
+**Test:** mark every word that doesn't carry a fact. "It's worth noting that" talks about the writing. "Fast and efficient" and "robust and reliable" are doubled pairs. "Seems… could possibly… somewhat" stacks three hedges on one claim. "Clearly" is an intensifier. "Completely" and "each and every" are implied by "eliminates" and "every".
+
+**Revision:**
+> The new scheduler eliminates every race condition we could reproduce. It will probably cut our compute bill, because it packs jobs onto fewer nodes, but we haven't measured that yet.
+
+*One hedge, "probably", sits on the one claim we can't prove, and the reason comes with it. The certain claim gets no hedge, but it's scoped to what we tested.*
+
+---
+
 ## Personal Essay Style
 
 For opinion pieces, life topics, and posts where personal stakes drive the argument. Personal experience establishes credibility. Trade-off thinking still applies. Wry closers are allowed here.
 
-### Opening Hooks
+### Openings
 
 **Personal context + problem statement:**
 > I've been curious about RAG (Retrieval-Augmented Generation) for a while. Reading about a technology and actually shipping it are very different. I wanted to feel the real friction—parsing, chunking, embeddings, latency, cost, quality—and see the upside. I like to think in trade-offs.
 
 *Opens with personal motivation, then immediately frames the piece around trade-offs.*
 
-**Autobiographical hook:**
+**Autobiographical opening:**
 > When I was a kid I was always hustling together some little scheme to make money - some of them skirted the edges of legality. One of my most profitable operations was running a loan sharking operation where I used my Christmas money to make loans to the tenants at my grandmother's boarding house and charged 25% interest.
 
 *Specific, memorable, slightly provocative. Establishes credibility through experience.*

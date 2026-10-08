@@ -166,6 +166,8 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 **Condition, context, and goal come before the action.** Readers execute as they read. "If lag exceeds 1,000, restart the worker" — never the reverse. "In the `deploy` directory, run `make plan`" — location first. "To reset the cache, restart the worker" — goal first, so the reader who doesn't want that outcome skips the step. Same shape for references: "For more information, see the retry policy", not "See the retry policy for more information."
 
+**Known before new.** Open a sentence with what the reader already has: the paragraph's subject or the last sentence's new term. End it on the new fact. A new term goes last in its sentence, and the next sentence starts from it: "Each request carries a trace ID. The trace ID links that request's logs across services." When the known item isn't the actor, pick a verb that makes it the subject, not a passive: "The trace ID comes from the gateway."
+
 ## Paragraph rules
 
 - At most 6 sentences per paragraph, one topic, and the first sentence carries the paragraph's most important fact — readers skim first sentences and skip the rest.
@@ -179,6 +181,10 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 **Headings.** Sentence case, no trailing period. A task heading is a bare imperative: "Configure the worker" — never "Configuring the worker" or "Worker configuration". A concept heading is a noun phrase. Don't skip levels, don't leave a heading with nothing under it, and prefix optional sections with "Optional:".
 
 **Lists.** Introduce every list with a complete sentence ending in a colon. Numbered means order matters; bulleted means it doesn't; term-plus-colon pairs for definitions ("`--dry-run`: prints the plan"). Sentences in items get periods, fragments get nothing — consistently. Say whether the list is complete ("the following three flags") or samples ("flags such as").
+
+**Name things; don't code them.** Never coin letter-number codes such as `C1`, `L1`, or `Z1` for the steps, risks, options, or claims in a plan or document. The reader must decode every code. To point back at an item, repeat its name. A real identifier the reader already uses, such as a ticket key, stays.
+
+**Lists hold parallel items, not the argument.** Explain the approach, the reasons, and the tradeoffs in sentences. Use a list for discrete items, such as tasks to check off or flags to set. A plan written only as lists hides why each step exists.
 
 **Links.** Link text names its destination — the target's title or a descriptive phrase with the important words first. Never "click here", "this doc", or a bare URL. The standing pattern: "For more information about retries, see Configuring retry policy." Say when a link downloads a file or leaves the doc set.
 
@@ -411,6 +417,7 @@ Then sentence level — each one is countable:
 - A negative the reader must invert ("won't prevent")? State the positive.
 - "Please" in an instruction, "let's", or "the user" meaning the reader? Write the bare command to "you".
 - A condition, location, or goal after its instruction? Move it before.
+- A new term in the first half of a sentence, before the reader has met it? Move it to the end.
 - Link text that does not name its destination, or "above"/"below" as a pointer? Name it.
 
 Then word level:

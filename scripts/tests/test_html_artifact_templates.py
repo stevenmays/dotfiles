@@ -25,7 +25,7 @@ EXTERNAL = (r"<script[^>]+src", r"<link[^>]+stylesheet", r'(src|href)\s*=\s*"htt
             r"@import", r"@font-face", r"(?<![.\w])(eval\s*\(|new\s+Function\s*\()")
 RESIDUE = re.compile(r"plan-it|plan\.html|/plan-|attest|integrity|sha-?256|CLAUDE_PLUGIN_ROOT|othman|\badi@",
                      re.I)
-PHASE_KEYS = {"id", "title", "status", "items", "milestones"}
+PHASE_KEYS = {"id", "title", "status", "items", "milestones", "summary"}
 FRONTMATTER = re.compile(r"\A---\nname: ([a-z0-9-]+)\ndescription: ([^\n]+)\n---\n")
 CHECK_COMMAND = re.compile(r"^ *(python3 -c '.*' \"\$OUT\")$", re.M)
 HTTP_GUARD = "/^https?:\\/\\//i.test("
@@ -129,6 +129,13 @@ class TemplateChecks(unittest.TestCase):
                 if name == "implementation-plan":
                     for phase in data["phases"]:
                         self.assertLessEqual(set(phase), PHASE_KEYS)
+
+    def test_decisions_carry_no_id(self):
+        # No script reads a decision id, and a sample id teaches the agent to label items with codes.
+        for tree, name, text in pages():
+            with self.subTest(tree=tree, page=name):
+                decisions = json.loads(DATA.search(text).group(1)).get("decisions", [])
+                self.assertEqual([d["id"] for d in decisions if "id" in d], [])
 
     def test_script_blocks_close_once(self):
         for tree, name, text in pages():

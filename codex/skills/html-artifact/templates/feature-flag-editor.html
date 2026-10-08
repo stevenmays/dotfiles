@@ -350,8 +350,8 @@ SOFTWARE.
     {"source": "Stripe webhook logs", "note": "CHECKOUT_3DS_MODE=strict produced a 1.1% extra decline on cards issued in BR — defer strict until after the May 28 review."}
   ],
   "decisions": [
-    {"id": "d1", "decision": "Keep CHECKOUT_LEGACY_SHELL wired for one more sprint", "rationale": "Kill-switch lives until the new shell clears two full weekend cycles without incident."},
-    {"id": "d2", "decision": "Roll SEARCH_RANKER_V2 to 75% before bumping to 100%", "rationale": "p95 latency rises by 18 ms above 80% load on the v2 index."}
+    {"decision": "Keep CHECKOUT_LEGACY_SHELL wired for one more sprint", "rationale": "Kill-switch lives until the new shell clears two full weekend cycles without incident."},
+    {"decision": "Roll SEARCH_RANKER_V2 to 75% before bumping to 100%", "rationale": "p95 latency rises by 18 ms above 80% load on the v2 index."}
   ],
   "progress_log": [
     {"ts": "2026-05-18T15:40:00Z", "phase": "rollout", "action": "Bumped SEARCH_RANKER_V2 to 75%", "files": ["config/flags.yaml"]},
