@@ -1,6 +1,6 @@
 ---
 name: writing-style
-description: Write in Steven's voice—pragmatic, curious, pedagogical. Opens on what actually happened, builds mental models from first principles, uses worked examples, and handles uncertainty honestly. Use for essays, blog posts, and technical articles.
+description: Write in Steven's voice—pragmatic, curious, pedagogical. Opens on what actually happened, builds mental models from first principles, uses worked examples, and handles uncertainty honestly. Use only when the user asks for an essay, blog post, or article. A tutorial, README, or explainer belongs to ste-writing.
 ---
 
 # Writing Style
@@ -11,7 +11,7 @@ For essays, posts, and articles, this skill wins wherever it differs from `ste-w
 
 ## How to Write a Piece
 
-Follow these steps in order. The later sections say what good looks like; these steps say when to apply each rule.
+Follow these steps in order. The later sections say what good looks like; these steps say when to apply each rule. Do these steps without showing them; the reply holds only the finished text.
 
 1. **Before you draft, write three lines for yourself.** The situation that made you write. Your point, in one sentence a colleague could repeat. The question your reader brings. If you can't state the point yet, draft to find it, then come back to this step.
 2. **Draft for yourself.** Get the argument down in the order it comes to you. Don't polish sentences yet, because most of them will change.
@@ -81,7 +81,7 @@ Two things hold in every piece:
 
 Order sections by claim, not by the order you discovered things. "Week 1: Redis" and "Week 2: The N+1 query" become "The N+1 query" and "Why caching hid it".
 
-Everything else is a **menu, not a mandate.** The beats below are moves to reach for, not an arc to stamp on every piece. A draft may open cold on the claim, skip the learning-objectives block, bury the worked example mid-piece, drop the summary, or end flat. **Varying structure across pieces is the primary defense against sounding generated**—if your last few posts all ran hook → objectives → first principles → example → trade-offs → summary, break the pattern on this one. Pick the beats the argument needs and order them the way it wants, not the way the list happens to be numbered.
+Everything else is a **menu, not a mandate.** The beats below are moves to reach for, not an arc to stamp on every piece. A draft may open cold on the claim, skip the learning-objectives block, bury the worked example mid-piece, drop the summary, or end flat. A fixed arc reads as generated, so never default to hook, objectives, first principles, example, trade-offs, and summary. Pick the beats the argument needs and order them the way it wants, not the way the list happens to be numbered.
 
 ### Technical/Educational moves
 - **Opening**: What happened and why it matters, in plain words
@@ -89,7 +89,7 @@ Everything else is a **menu, not a mandate.** The beats below are moves to reach
 - **First principles**: Build the mental model from primitives
 - **Worked example**: One small, concrete, end-to-end demonstration
 - **Trade-offs**: Options and consequences, pick a side
-- **In summary**: A few sentences that compress the whole post
+- **Closing restatement**: A few sentences that compress the whole post, never under a label such as "In summary"
 - **Open question**: One thing you still can't answer, stated concretely ("We can't yet predict how fast warm prefixes get evicted")
 - **Resources/Further reading**: Links for going deeper
 
@@ -110,8 +110,6 @@ Reach for these when they do real work, not to hit a quota. A technique slotted 
 
 **Pseudocode before real code.** Show the algorithm in plain pseudocode first. Then show real code if needed. Lower the barrier.
 
-**"In summary" compressions.** One paragraph that restates the core model in plain language. If you can't summarize it, you don't understand it yet.
-
 **Transitions that orient.** When the reader genuinely needs reorientation, tell them where they are—one or two per piece, not a stock phrase after every section:
 - "Those token IDs are all the model ever sees. The next step turns each one into a vector."
 - "That's the mechanism. In production, our cache hit rate was 31%, not the 90% we expected."
@@ -125,7 +123,8 @@ Reach for these when they do real work, not to hit a quota. A technique slotted 
 | Pinecone | $70/mo | High | Low |
 | S3 at runtime | $0 | ~100ms | Medium |
 | Bundle in Lambda | $0 | Lowest | Lowest |
-→ We chose bundling.
+
+We chose bundling because it costs $0, has the lowest latency, and is the simplest.
 ```
 
 **Personal stakes where relevant.** "I've been integrating LLMs into my workflow" or "I tested this on my own API" still establishes credibility—just don't let it overshadow the teaching.
@@ -133,6 +132,7 @@ Reach for these when they do real work, not to hit a quota. A technique slotted 
 ## Evidence & Support
 
 - **Every section needs at least one concrete, checkable fact**—a real figure, a named source and its finding, a dated event—not merely the *shape* of evidence. A passage with the cadence of measurement but no number in it fails; "studies show," "significantly faster," and "many teams" are the tells. If you can't name a number or a source, you're asserting, not supporting.
+- Use only numbers, sources, and events the input gives; when one is missing, qualify or omit the claim.
 - Prefer your own measurements, even small ones, over assertions
 - Use actual numbers: token counts, latency, costs, percentages
 - Cite sources in a Resources section, not inline footnotes
@@ -184,9 +184,7 @@ Keep a nominalization when it refers back to the previous sentence ("This change
 
 ## Sentence-Level Texture
 
-Vary sentences in **length and intensity.** Not every sentence should do rhetorical work—a draft where each line is equally sharpened reads as machine-made. Set a long, qualified sentence against a blunt three-word one. Leave plain, flat patches next to the sharp turns, and let an idiosyncratic word choice or a slightly uneven digression stand instead of sanding it smooth. Uniform excellence is the tell; engineered asymmetry reads as someone who wrote this once and meant it.
-
-Change length where the content turns: a short sentence after a long run lands the point. Ration flourishes. A balanced pair, a reversal, or an echoed phrase gets at most one use per piece. Build it from the piece's own words, and use it only to close an argument the piece actually made.
+Vary sentence length with the content. Don't end a paragraph on a short line for effect, except a wry closer in a personal essay. Don't build reversals or echoed phrases.
 
 ## What to Avoid
 
@@ -221,10 +219,9 @@ Run this on your own draft to catch what reads as AI-generated or unclear. Each 
 - **Nominalizations:** Can you name who does each -tion, -ment, or -ity noun? Make the doer the subject and the noun a verb. → Sentence Clarity
 - **Endings:** Do the last four words of each sentence carry new, important information, not a hedge or a tag? → Sentence Clarity
 - **Hedges:** More than one hedge on a claim, or any "clearly" or "obviously"? → Core Voice Principles
-- **Structure:** Does this piece follow the same arc as my last one? If so, break it. → Structure Patterns
+- **Structure:** Did you choose each beat because the argument needs it, or default to hook, objectives, first principles, example, trade-offs, and summary? → Structure Patterns
 - **List variety:** Are parallel runs and lists all the same length—everything in threes? Vary them. → Signature Techniques / Formatting
 - **Em-dash density:** More than one em-dash construction in any paragraph? Convert some to colons, periods, or parentheses. → Formatting
 - **Substance:** Does every section carry at least one concrete, checkable fact, or is one running on cadence alone? → Evidence & Support
 - **Manufactured framework:** Did I coin a memorable term for something that isn't actually a pattern? Cut it. → Signature Techniques
 - **Canned phrasing:** More than one stock opener or transition, or one used to cover a missing argument? → What to Avoid
-- **Uniform polish:** Is every paragraph equally worked? Equal polish everywhere is the loudest tell—leave a plain patch. → Sentence-Level Texture

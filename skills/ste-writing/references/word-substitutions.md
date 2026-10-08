@@ -1,73 +1,20 @@
 # Word substitutions and the one-meaning glossary
 
-How to use this file: when writing fresh text, skim "Bloat" and "Requirement words". When rewriting existing text, do a full pass — scan the original against every table here.
+How to use this file: when writing fresh text, skim "Plain words" and "Requirement words". When rewriting existing text, do a full pass — scan the original against every table here.
 
 Sources: the Google developer documentation style guide word list, plus software-specific entries this skill adds.
 
-## Bloat → plain
+## Plain words
+
+Use the short common word: use, to, before, after, if, because, start, stop, get, help, show, about, enough. Unsmother a verb buried in a noun: "perform validation of" is "validate", and "make a decision" is "decide".
+
+Each of these words has a second meaning, so replace it only in the sense shown:
 
 | Avoid | Write |
 |---|---|
-| utilize, leverage, employ | use |
-| allows you to | lets you |
-| in order to, for the purpose of | to |
-| prior to | before |
-| subsequent to, following | after |
-| subsequently | then, later |
-| previously | before, earlier |
-| currently, at this time, at this point in time | now, or delete (see Time-anchored words) |
-| going forward | from now on, or delete |
-| commence, initiate | start |
 | terminate | stop, end (keep it only for signal semantics: `SIGTERM` terminates) |
-| attempt, endeavor | try |
-| facilitate | help, allow, or delete |
-| accomplish | do, finish |
-| demonstrate | show |
-| indicate | show, mean |
-| ensure (in an instruction) | make sure (as a claim, see Marketing words) |
-| obtain, acquire | get |
-| possess | have |
-| retain | keep |
-| necessitate | require |
-| assist | help |
-| comprise, constitute | consist of, include, contain |
-| desire, desired | want, need |
-| approximately | about |
-| additional | more, another |
-| numerous, multiple | many — or the number |
-| sufficient / insufficient | enough / not enough |
-| erroneous | wrong, incorrect |
-| optimal | best |
-| appropriate | correct, right — or name the specific thing |
-| aforementioned | this, that — or repeat the name |
-| respectively | rewrite so each value sits next to its name |
-| the former / the latter | repeat the names |
-| upon | on, when |
-| whilst, amongst | while, among |
-| towards | toward |
-| in the event that, in the case where | if |
-| with regard to, regarding | about |
-| due to the fact that, as a consequence of | because, because of |
-| in conjunction with | with |
-| as per | per, following |
 | as (meaning because) | because — "as" also means "while" |
 | once (meaning after) | after — "once" also means "one time" |
-| in a timely manner | on time, or within N minutes/days |
-| it should be noted that, please note that | delete, or "Note:" |
-| please (in an instruction) | delete — a command is not impolite |
-| let's | delete — name the actor or use the imperative |
-| i.e. | that is |
-| e.g. | for example |
-| etc., and so on | finish the list, bound it, or open with "for example" |
-| aka | also known as |
-| via | through, by, or the specific mechanism |
-| functionality | feature, behavior, capability — or say what it does |
-| methodology | method |
-| utilization | use |
-| modification | change |
-| has the capability to | can |
-| execute (a command) | run |
-| in some cases | sometimes — or the actual condition |
 
 ## Marketing words → the actual property
 
@@ -88,29 +35,6 @@ These words praise without informing. Replace each with the specific, checkable 
 | simply, just, easily, quickly | delete |
 | basically, essentially, actually | delete |
 | very, really, quite, extremely | delete, or quantify |
-
-## Smothered verbs
-
-A verb buried inside "perform/make/conduct + noun" is weaker and longer than the verb alone.
-
-| Avoid | Write |
-|---|---|
-| perform validation of | validate |
-| perform an analysis of | analyze |
-| conduct an investigation | investigate |
-| make a decision | decide |
-| make a modification to | change |
-| provide a description of | describe |
-| take into consideration | consider |
-| carry out testing of | test |
-| perform a comparison | compare |
-| issue a notification | notify |
-| perform a migration of | migrate |
-| make an assumption | assume |
-| reach a conclusion | conclude |
-| provide support for | support |
-| have a dependency on | depend on |
-| make use of | use |
 
 ## Vague → specific
 
@@ -156,7 +80,7 @@ Contract language. Use each word for exactly one thing.
 - **may** — formal permission in policy or legal text only; elsewhere use "can" or "might".
 - **will** — a real future event, not a requirement and not current behavior.
 - **shall** — never.
-- **would** — never for hypothetical behavior ("the server would then…"); describe what the software does.
+- **would** — proposed behavior only ("the proposed limit would reject…"). For implemented behavior, use the present tense.
 - "The value should be true" hides an actor. Write "Set the value to `true`", "The server sets the value to `true`", or "If the value is `false`, …".
 
 ## Inclusive replacements
@@ -176,7 +100,7 @@ Use the plain replacement everywhere new. When the old term is entrenched, name 
 | hang, hung | stop responding, not responding |
 | crazy, insane (results) | baffling, unexpected |
 | cripples | slows, degrades |
-| kill, nuke, abort | stop, end, cancel (except signal semantics: `SIGKILL` kills) |
+| kill, nuke, abort | stop, end, cancel (keep the word when it is the system's own term for an operation: `SIGKILL` kills, a transaction aborts) |
 | grayed out, disabled (UI) | unavailable |
 | hit (a key, an endpoint) | press, call |
 | dummy value | placeholder |
@@ -201,7 +125,7 @@ Keep jargon the audience genuinely searches for (an SRE doc can say "error budge
 Software reuses words. Within one document, each of these gets exactly one meaning — qualify on first use if the reader could pick the wrong one.
 
 - **deprecated vs. removed** — deprecated still works but is discouraged; removed is gone. Never use "deprecated" for gone.
-- **update vs. upgrade** — pick a split and hold it, e.g. update changes data, upgrade changes the version.
+- **update vs. upgrade** — pick a split and hold it. For example, "update" changes data and "upgrade" changes the version.
 - **parameter vs. argument** — parameter in the definition, argument at the call site.
 - **error / exception / failure** — pick one word for each distinct thing; don't rotate them for variety.
 - **flag vs. argument** — the named option vs. the value passed to it.

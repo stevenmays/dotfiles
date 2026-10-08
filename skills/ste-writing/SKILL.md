@@ -1,6 +1,6 @@
 ---
 name: ste-writing
-description: Google developer documentation style fused with Simplified Technical English (ASD-STE100) discipline, adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader — including the user you are answering right now. Covers documentation, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, chat answers, reports, plans, and artifacts — and any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, "plain English", or strip mannered prose from existing technical text. Not for essays or blog posts — writing-style covers those.
+description: Google developer documentation style fused with Simplified Technical English (ASD-STE100) discipline, adapted for software engineering, plus economy rules that curtail verbose drafts. Use whenever writing or rewriting technical prose for any reader. Covers documentation, tutorials, READMEs, runbooks, code comments, PR descriptions, PR review comments, commit messages, tickets and bug reports, release notes, incident updates, Slack messages, status reports, reports, plans, and artifacts, plus any technical explanation, even when the user doesn't name a format. Also use when asked to simplify, shorten, condense, tighten, clarify, "plain English", or strip mannered prose from existing technical text. Not for essays, blog posts, or articles; writing-style covers those.
 ---
 
 # Technical writing for software
@@ -25,15 +25,15 @@ Every rule below serves two goals: a reader who parses a sentence once arrives a
 
 The rules in the rest of this skill govern how to write a sentence. These rules govern which sentences exist. Compress by deleting sentences and ideas, never by deleting words inside a sentence you keep.
 
-**Answer first, within a budget.** Decide the reader's question and answer it in 1–3 sentences or at most 5 bullets. Context the reader will not act on gets deleted, not summarized.
+**Answer first, within a budget.** Decide the reader's question and answer it in 1-3 sentences or at most 5 bullets. Context the reader will not act on gets deleted, not summarized.
 
 **List facts before words.** For any artifact with a budget, list the facts the reader acts on, then write each one once. Do not draft long and trim — the long draft anchors you, and the trim always spares too much.
 
-**Collapse each paragraph to its consequence.** Most explanatory paragraphs are one fact plus restatements of it. Write the fact once, fused with its effect: "The cache key ignores the lockfile, so deploys reuse stale builds." Two paragraphs in, one sentence out.
+**Collapse each paragraph to its consequence.** Most explanatory paragraphs are one fact plus restatements of it. Write the fact once, fused with its effect: "The cache key ignores the lockfile, so deploys reuse stale builds."
 
 **Cut detail from the bottom.** Order detail as effect, then cause, then mechanism. Mechanism survives only when the reader will act on it.
 
-**Record what the reader must know, not what you did to learn it.** The investigation is not the artifact. Your verification runs, ruled-out hypotheses, and measurements belong in a PR comment or a thread — never in the ticket the fixer reads. Ship the conclusion and the facts the reader acts on; the journey stays in your notes.
+**Record what the reader must know, not what you did to learn it.** Your verification runs, ruled-out hypotheses, and measurements belong in a PR comment or a thread — never in the ticket the fixer reads. Ship the conclusion and the facts the reader acts on, and keep the investigation in your notes.
 
 **No scaffolding.** Delete preamble ("This PR introduces…"), recaps, "note that", "importantly", and narration of your own structure. The first sentence carries content.
 
@@ -52,7 +52,7 @@ The dev-environment motivation dropped out because it changes nothing the reader
 
 ## Down-level by one
 
-Write for one level of expertise below the actual audience. A PR read by senior engineers is written so that QA or a new hire without context can follow it. This is not audience matching — it is a compression mechanism. To drop a level you must first collapse the concept into simpler terms, and that collapse is where complexity dies.
+Write for one level of expertise below the actual audience. A PR read by senior engineers is written so that QA or a new hire without context can follow it. Down-leveling is a compression mechanism. To drop a level, you must first restate the concept in simpler terms, and that restatement removes complexity.
 
 Boundaries:
 
@@ -111,24 +111,9 @@ The test: delete the ornament. If no fact left with it, delete the sentence.
 
 **Expand an uncommon acronym at first use.** "Time to first byte (TTFB)", then TTFB alone. Acronyms every reader knows — API, CPU, URL — need no expansion. Never "i.e.", "e.g.", or "etc." — write "that is", "for example", and finish or bound the list.
 
-**Replace bloated words with plain ones.** The high-frequency offenders:
+**Replace bloated words with plain ones.** Write "use", not "utilize", and "before", not "prior to". The word tables, plus vague quantities, spelling decisions, and software words with two meanings, are in `references/word-substitutions.md`. Read it whenever you rewrite existing text or draft anything longer than a few paragraphs.
 
-| Avoid | Write |
-|---|---|
-| utilize, leverage | use |
-| in order to | to |
-| prior to | before |
-| allows you to | lets you |
-| perform/execute an X | the verb itself: validate, query, test |
-| functionality | feature, behavior |
-| in the event that | if |
-| due to the fact that | because |
-| i.e. / e.g. | that is / for example |
-| please note that | delete, or "Note:" |
-
-The full tables — plus smothered verbs, vague quantities, spelling decisions, and software words with two meanings — are in `references/word-substitutions.md`. Read it whenever you rewrite existing text or draft anything longer than a few paragraphs.
-
-**Requirement words carry contract weight.** "Must" is a requirement; "must not" is a prohibition; "can" is ability or permission; "might" is possibility. "Should" is the ambiguous one — the reader cannot tell requirement from suggestion; replace it with "must" or "we recommend". "May" belongs only in policy or legal text. Never "shall"; never a hypothetical "would" — say what the software does. "The value should be true" hides the actor: write "Set the value to `true`" or "The server sets the value to `true`".
+**Requirement words carry contract weight.** "Must" is a requirement; "must not" is a prohibition; "can" is ability or permission; "might" is possibility. "Should" is the ambiguous one — the reader cannot tell requirement from suggestion. Replace it with "must", or with "we recommend" in a team document and "I recommend" in a reply. "May" belongs only in policy or legal text. Never "shall". Use the present tense for implemented behavior, and keep conditional wording for proposed behavior: "the proposed limit would reject the request". "The value should be true" hides the actor: write "Set the value to `true`" or "The server sets the value to `true`".
 
 **Quantify, and own your numbers.** "Several times" → "3 times". "Recently" → "since v2.31". "Much faster" → "p95 fell from 480 ms to 120 ms". "10x" → "10 times". If you lack the number, say what you know: "faster in our tests; not yet measured". A performance or security claim is a promise: "helps prevent replay attacks" survives an incident, "prevents replay attacks" does not. Superlatives — best, fastest, always, never — only when literally true.
 
@@ -142,19 +127,19 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 ## Sentence rules
 
-**Length limits: 20 words for an instruction, 25 for everything else.** This is a defect detector, not a style preference — a sentence over the limit almost always carries two ideas. Split it; don't compress it into telegraphic fragments.
+**Length limits: 20 words for an instruction, 25 for everything else.** A sentence over the limit almost always carries two ideas. Split it; don't compress it into telegraphic fragments.
 
-**One instruction per sentence.** "Run the migration and restart the workers after checking that the queue is empty" hides three actions and leaves the order ambiguous. Write:
+**One instruction per sentence.** "Run the migration and restart the workers after checking that the queue is empty" hides 3 actions and leaves the order ambiguous. Write:
 
 1. Make sure the queue is empty.
 2. Run the migration.
 3. Restart the workers.
 
-**Active voice with a named actor.** Passive voice hides the actor, and in software the actor is the component you will debug. "The job will be retried" — by whom? Write "The scheduler retries the job 3 times, then moves it to the dead-letter queue." Passive earns its place in exactly two cases: the actor is genuinely irrelevant ("the database was purged in January"), or naming the actor would blame the reader ("50 conflicts were found in the file", not "you created 50 conflicts").
+**Active voice with a named actor.** Passive voice hides the actor, and in software the actor is the component you will debug. "The job will be retried" — by whom? Write "The scheduler retries the job 3 times, then moves it to the dead-letter queue." Passive earns its place in exactly 2 cases: the actor is genuinely irrelevant ("the database was purged in January"), or naming the actor would blame the reader ("50 conflicts were found in the file", not "you created 50 conflicts").
 
-**Present tense for behavior; simple tenses for everything.** Software behavior is not a future event: "the API returns 403", not "the API will return 403". "Will" is for events genuinely later than the sentence — "add the file to the list; it will be archived on the next backup run" — never for current behavior and never as hypothetical "would". Perfect and progressive tenses blur time: "has been deprecated" hides the date — "was deprecated in v3.2" demands one; "is being rolled out" → "the rollout started Monday and finishes Friday". Conditionals stay present on both sides: "If you send an unsubscribe message, the server removes you."
+**Present tense for behavior; simple tenses for everything.** Software behavior is not a future event: "the API returns 403", not "the API will return 403". "Will" is for events genuinely later than the sentence — "add the file to the list; it will be archived on the next backup run" — never for current behavior. A proposal keeps "would", so the reader can tell it from shipped behavior. Perfect and progressive tenses blur time: "has been deprecated" hides the date — "was deprecated in v3.2" demands one; "is being rolled out" → "the rollout started Monday and finishes Friday". Conditionals stay present on both sides: "If you send an unsubscribe message, the server removes you."
 
-**Keep the small words.** Telegraphic style ("Update config before restart") saves you two words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers — so are the optional helpers: keep "that" ("confirm that the job finished"), keep "then" after "if", repeat "if" for a second condition. Arrow chains ("cache miss → rebuild → timeout"), hyphen-stacked compounds ("the retry-then-refresh-on-401 path"), and ad hoc abbreviations are telegraphy with symbols: write the sentence. Commit subjects are exempt — the 50-character target wins there.
+**Keep the small words.** Telegraphic style ("Update config before restart") saves you 2 words and costs every reader a parse: is "restart" a noun or a command? Write "Update the config file before you restart the service." Articles are load-bearing, especially for non-native speakers — so are the optional helpers: keep "that" ("confirm that the job finished"), keep "then" after "if", repeat "if" for a second condition. Arrow chains ("cache miss → rebuild → timeout"), hyphen-stacked compounds ("the retry-then-refresh-on-401 path"), and ad hoc abbreviations are telegraphy with symbols: write the sentence. Commit subjects are exempt — the 50-character target wins there.
 
 **Every pronoun has one possible noun.** If "it", "this", or "these" could point at two things, repeat the noun. "This" and "these" never stand alone: "set this value to `true`", not "set this to `true`". Use "that" for restrictive clauses, comma-plus-"which" for asides, and "who" for people.
 
@@ -162,7 +147,7 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 **State it in the positive.** "You can continue without a path", not "a missing path won't prevent you from continuing". Double negatives and exceptions-to-exceptions make the reader solve logic puzzles.
 
-**No more than three nouns in a row.** "The webhook retry queue consumer lag alert" makes the reader reverse-engineer the grammar. Unstack with prepositions: "the alert for consumer lag on the webhook retry queue". An established proper name may stay clustered — format it as a technical name.
+**No more than 3 nouns in a row.** "The webhook retry queue consumer lag alert" makes the reader reverse-engineer the grammar. Unstack with prepositions: "the alert for consumer lag on the webhook retry queue". An established proper name may stay clustered — format it as a technical name.
 
 **Condition, context, and goal come before the action.** Readers execute as they read. "If lag exceeds 1,000, restart the worker" — never the reverse. "In the `deploy` directory, run `make plan`" — location first. "To reset the cache, restart the worker" — goal first, so the reader who doesn't want that outcome skips the step. Same shape for references: "For more information, see the retry policy", not "See the retry policy for more information."
 
@@ -180,7 +165,7 @@ The full tables — plus smothered verbs, vague quantities, spelling decisions, 
 
 **Headings.** Sentence case, no trailing period. A task heading is a bare imperative: "Configure the worker" — never "Configuring the worker" or "Worker configuration". A concept heading is a noun phrase. Don't skip levels, don't leave a heading with nothing under it, and prefix optional sections with "Optional:".
 
-**Lists.** Introduce every list with a complete sentence ending in a colon. Numbered means order matters; bulleted means it doesn't; term-plus-colon pairs for definitions ("`--dry-run`: prints the plan"). Sentences in items get periods, fragments get nothing — consistently. Say whether the list is complete ("the following three flags") or samples ("flags such as").
+**Lists.** Introduce every list with a complete sentence ending in a colon. In a reply, the answer sentence introduces any list; add no separate lead-in. Numbered means order matters; bulleted means it doesn't; term-plus-colon pairs for definitions ("`--dry-run`: prints the plan"). Sentences in items get periods, fragments get nothing — consistently. Say whether the list is complete ("the following 3 flags") or samples ("flags such as").
 
 **Name things; don't code them.** Never coin letter-number codes such as `C1`, `L1`, or `Z1` for the steps, risks, options, or claims in a plan or document. The reader must decode every code. To point back at an item, repeat its name. A real identifier the reader already uses, such as a ticket key, stays.
 
@@ -198,7 +183,7 @@ The rules that come up in every artifact:
 - Em dash with no spaces for a break; never an en dash — use a hyphen or "to" for ranges.
 - Straight quotes; punctuation inside them, except after a literal string or keyword (better: backticks, no quotes).
 - No "and/or" and no slash alternatives: "A, B, or both" — slashes live in paths and code.
-- Spell out zero through nine; numerals for 10+, for anything with a unit, and for versions. Never open a sentence with a numeral. Decimals lead with a zero.
+- Use numerals for every count and quantity. Spell a number out only at the start of a sentence. Decimals lead with a zero.
 - Numeric dates are ISO 8601: `2026-08-17`. No seasons — name the month or quarter.
 - Hyphenate compound modifiers before a noun ("a well-designed app"), never after an -ly adverb.
 - No idioms or cultural references. "Out of the box", "grandfathered in", and sports metaphors fail for translated and non-native readers. Say the literal thing.
@@ -219,12 +204,12 @@ Good:
 >
 > Run `terraform destroy` to tear down the stack.
 
-Three levels, by what's at stake: **Note** for useful asides the reader may skip, **Caution** for proceed-carefully, **Warning** for irreversible damage — data loss, security, money. A notice is never a prerequisite, a step, or a cross-reference; those go in the body, before the step they govern. Never stack two notices — if everything is highlighted, nothing is.
+Three levels, by what's at stake: **Note** for useful asides the reader may skip, **Caution** for proceed-carefully, **Warning** for irreversible damage to data, security, or money. A notice is never a prerequisite, a step, or a cross-reference; those go in the body, before the step they govern. Never stack 2 notices, because the reader then can't tell which one matters.
 
 ## Placeholders and example data
 
 - Placeholders are descriptive `UPPER_SNAKE_CASE`: `PROJECT_ID`, `REGION` — never `foo`, `xx`, or `MY_PROJECT`. After a command with several, write "Replace the following:" and one bullet per placeholder, in order.
-- A copy-paste command must run unedited — no `[optional]` or `{a|b}` syntax inside a copyable block.
+- Apart from placeholders, a copy-paste command runs as written. No `[optional]` or `{a|b}` syntax goes inside a copyable block.
 - Example data is fictional by construction: `example.com`, RFC 5737 IPs (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`), phone numbers `800-555-01xx`. Never real people, emails, or credentials.
 - Example resource names describe the reader's world: `prod-orders-queue`, not `test1`.
 
@@ -238,11 +223,11 @@ Every artifact has a word or line budget — a hard cap, not a target. A number 
 | Commit body | ≤ 10 lines |
 | PR description | ≤ 10 lines beyond the template |
 | Ticket or bug report body | ≤ 200 words |
-| Code comment | 1 line |
+| Code comment | 1 line by default; longer only to record a decision |
 | PR review comment | 1 question or phrase; a second sentence only for the consequence |
 | Slack message | ≤ 4 sentences; detail goes to the thread |
-| Status update | 3 lines: done, next, blocked |
-| Answer to the user | 1–3 sentences or ≤ 5 bullets before any detail |
+| Status update | ≤ 4 sentences |
+| Answer to the user | 1-3 sentences or ≤ 5 bullets before any detail |
 | Runbook intro | ≤ 3 sentences before the prerequisites |
 
 Each guide's section list is closed: write the listed sections and no others. A new section earns its place only if the reader acts differently without it.
@@ -277,7 +262,7 @@ Body:
 
 ### PR descriptions
 
-Keep the house shape — a 1–3 bullet summary plus a test plan — and write it in this style. Budget: 10 lines beyond the template.
+Keep the house shape — a 1-3 bullet summary plus a test plan — and write it in this style. Budget: 10 lines beyond the template.
 
 - Each bullet states one change and its why, in at most 20 words, active voice.
 - Test plan steps are commands a reviewer can run, each with its expected result.
@@ -309,7 +294,7 @@ The default is no comment. Code already says what it does; a comment earns its p
 
 ### PR review comments
 
-The author reads this in a queue of twenty, on someone else's schedule. Two rules hold at once: keep the comment to a phrase or a sentence, and ask for the change instead of ordering it. You are proposing an edit to someone else's work, and the author knows things about the code that you don't.
+The author reads this in a queue of 20, on someone else's schedule. Two rules hold at once: keep the comment to a phrase or a sentence, and ask for the change instead of ordering it. You are proposing an edit to someone else's work, and the author knows things about the code that you don't.
 
 **Put the fix in a question the author can answer.** "Can we await `flushBuffer()` here?" beats "Await `flushBuffer()`". This is the one place in this skill where a question beats a bare command. Drop the question and state the defect flat when it is mechanical and has one answer: "typo: `recieve`", "dead code — delete".
 
@@ -335,29 +320,28 @@ Every fact the author acts on survived. The Promise tutorial, the "hard to debug
 
 ### Slack messages and status updates
 
-- Budget: 4 sentences. The thread absorbs everything else.
+- Budget: 4 sentences for a Slack message or a status update. The thread absorbs everything else.
 - The first sentence carries the point: the answer, the ask, or the status. Details follow or go in the thread.
 - One message, one topic. Two topics are two messages.
 - If you need action, name the person and the deadline.
-- Status updates follow the shape: done, next, blocked.
+- A status update covers what finished, what's next, and what blocks you, in that order. Write each as a plain sentence, not a labeled line such as "Done:". Skip a category the facts don't supply. Use labels only when a template requires them.
 
 Bad: "Hey, so I was looking into the deploy thing from yesterday and there might be some issues with how the pipeline handles caching, happy to go into detail but wanted to flag it."
 
-Good: "Found the deploy bug: the pipeline reuses the old build artifact because the cache key ignores the lockfile. One-line fix — I can ship it today unless anyone objects."
+Good: "Found the deploy bug: the pipeline reuses the old build artifact because the cache key ignores the lockfile. The fix is one line, and I can ship it today unless anyone objects."
 
 ### Answers to the user
 
 The reader is the person who asked. They have the code open and they know what they asked for. They may have seen none of your tool calls, tool output, or working notes, so the final message stands alone.
 
-- Budget: the answer in 1–3 sentences or 5 bullets. Detail after only when the reader acts on it. Fitting the budget by packing two facts into one sentence is a defect — spend a bullet per fact instead.
+- Budget: the answer in 1-3 sentences or 5 bullets. Detail after only when the reader acts on it. Fitting the budget by packing two facts into one sentence is a defect — spend a bullet per fact instead.
 - Lead with the answer, the result, or the blocker. Never with what you are about to say.
 - Report a finished change by its effect and where it lives: "`retry.ts:88` now backs off with jitter." No tour of the diff.
-- Every progress claim points at a tool result from this session: a test run, a diff, a command's output. State a verified result plainly, without hedging. Label anything else "unverified".
+- A claim about work you did in this session points at a tool result: a test run, a diff, or a command's output. State a verified result plainly, without hedging. Label such a claim "unverified" when no result backs it. Facts the user gave you need no label.
 - Never refer to tool output, a thinking step, or a label you coined while working. The reader saw none of it. Reintroduce the term or drop it.
-- Give each file, commit, or flag its own plain-language clause. A bare list of identifiers is not a report.
+- Name a file, commit, or flag only when it locates the outcome or the next step. Give each one a plain-language clause. A bare list of identifiers is not a report.
 - When the user was away for the work, the message is their first look at any of it. Re-ground them: the outcome, then the one or two things you need from them, each explained as new.
 - Cite `file.ts:42`; do not paste code the user already has. Paste only what they cannot see: an error string, a test failure, a command's real output.
-- One line per changed file beats a paragraph per changed file.
 - Bad news goes first and plainly: what failed, what you skipped, what you are unsure of. Compression never eats a caveat, a risk, a disagreement, or a number — absolute values and dates survive, and a delta never replaces its endpoints.
 - No closing summary that repeats the opening. No "let me know if you'd like me to…" when you have already offered.
 
@@ -365,7 +349,7 @@ Bad: "Great question! I've gone ahead and made some updates to the retry logic. 
 
 Bad: "retry path → jitter added → tests green. The 401-refresh thing from earlier is still open, see above."
 
-Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every client retrying in lockstep after an outage. Tests pass; I did not touch the circuit breaker."
+Good: "`retry.ts:88` now backs off with jitter. The fixed 200 ms backoff had every client retrying in lockstep after an outage. Tests pass; I didn't touch the circuit breaker."
 
 ### Explanations
 
@@ -376,9 +360,9 @@ Good: "Retries now jitter — `retry.ts:88`. The fixed 200 ms backoff had every 
 
 ## What this is not
 
-- **Not a tone flattener.** Greetings, contractions, and humor stay in Slack and chat. In documentation, personality yields to translatability — the style removes ambiguity everywhere and jokes only where the reader chose to chat.
+- **Not a tone flattener.** Greetings and humor stay in Slack and chat. In documentation, personality yields to translatability — the style removes ambiguity everywhere and jokes only where the reader chose to chat.
 - **Not telegraphy.** Brevity comes from fewer sentences, never from dropping articles or actors in a sentence you keep. Arrow chains and ad hoc abbreviations are the same defect with symbols. A kept sentence stays fully formed.
-- **Not for voice-driven prose.** Essays and blog posts use the writing-style skill.
+- **Not for voice-driven prose.** Essays, blog posts, and articles use the writing-style skill.
 - **Not for quoted material.** Code, log output, error messages, and other people's words stay verbatim.
 
 ## Rewriting existing text
@@ -399,41 +383,13 @@ Document level first — these catch what sentence fixes cannot:
 - Would deleting any section change what the reader does? If not, delete the section.
 - Any sentence that records what you did to learn, not what the reader must know? Move it to a comment or thread.
 - Does every paragraph lead with its point? Does the document?
-- A progress claim with no tool result from this session behind it? Label it "unverified".
+- A claim about your own work with no tool result from this session behind it? Label it "unverified". Facts the user gave need no label.
 - A reference to tool output, a thinking step, or a label the reader never saw? Reintroduce it or delete it.
 
-Then sentence level — each one is countable:
+Then sentence and word level:
 
-- A sentence over 25 words (20 for an instruction)? Split it.
-- A paragraph over 6 sentences? Split it.
-- More than 3 nouns in a row? Unstack it.
-- Passive voice hiding a debuggable actor? Name the actor — unless naming it blames the reader.
-- Software wanting, seeing, or knowing? Give it a technical verb.
-- Perfect or progressive tense? Use simple past, present, or future — and add the date or version it was hiding.
-- "Will" or "would" describing what the software does today? Use the present.
-- A bare "this" or an "it" with two possible antecedents? Add the noun.
-- An "only" far from the word it limits? Move it next door.
-- An antithesis, an aphoristic fragment, a rhetorical question, or a second em dash in one paragraph? Rewrite it flat.
-- A negative the reader must invert ("won't prevent")? State the positive.
-- "Please" in an instruction, "let's", or "the user" meaning the reader? Write the bare command to "you".
-- A condition, location, or goal after its instruction? Move it before.
-- A new term in the first half of a sentence, before the reader has met it? Move it to the end.
-- Link text that does not name its destination, or "above"/"below" as a pointer? Name it.
-
-Then word level:
-
-- A code item pluralized, verbed, or paraphrased? Backtick the exact literal and rebuild the sentence around it.
-- The same thing under two names? Unify them.
-- A bare "should", a casual "may", a hypothetical "would"? Decide: "must", "we recommend", "can", or "might".
-- A word from the substitution tables — bloat, vague, time-anchored, non-inclusive? Substitute it.
-- A superlative or guarantee you cannot prove? Scope it: "helps", the number, or delete.
-- A vague quantity where a number exists? Use the number.
-- Missing articles or a dropped "that"? Restore them.
-- An arrow chain, a hyphen-stacked compound, or an ad hoc abbreviation? Write the sentence.
-- `foo`, `test1`, or a real email in an example? Use descriptive placeholders and reserved example data.
-- A commit subject over 50 characters, non-imperative, or run into the body with no blank line? Fix it.
-- A code comment that restates the code? Delete it, or fix the code it apologizes for.
-- A review comment past two sentences, opening with a hedge, or quoting the author's code back? Cut to the question plus its consequence.
-- A review comment ordering a fix that the author could reasonably refuse? Ask it as a question.
-- A sentence whose deletion changes nothing the reader does? Delete it.
-- Would a reader one level down (QA, support, a new hire) need a follow-up question? Down-level it.
+- A sentence over 25 words, or over 20 for an instruction? Split it.
+- A bare "should" or a casual "may"? Decide: "must", "we recommend" in a team document, "I recommend" in a reply, "can", or "might". A "would" that describes shipped behavior? Use the present.
+- Passive voice hiding a debuggable actor? Name the actor, unless naming it blames the reader.
+- An arrow chain or a dropped article? Write the full sentence.
+- A review comment that orders a fix the author could refuse? Ask it as a question.
