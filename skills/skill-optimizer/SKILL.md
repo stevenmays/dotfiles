@@ -101,11 +101,18 @@ Run the skill as-is before changing anything.
 Use `claude -p` for each run to get isolated execution with no memory between runs. Inject the skill via `--append-system-prompt` — that approximates how a triggered skill lands in context, while the task stays in the user turn:
 
 ```bash
+cd optimizer-[skill-name]   # the Step 2 workspace, outside any repo
 claude -p "$(cat inputs/input1.txt)" \
   --append-system-prompt "$(cat optimized.md)" \
   --model <same model every experiment> \
-  > outputs/exp0-run1.txt 2>&1
+  --safe-mode --tools "" --setting-sources project \
+  --no-session-persistence \
+  > outputs/exp0-run1.txt 2>&1 </dev/null
 ```
+
+A plain `claude -p` is not isolated. It loads the user's `CLAUDE.md`, auto-memory, MCP servers, and user settings. If that `CLAUDE.md` restates the skill's rules, every run sees them, and a no-skill arm is not a no-skill arm. A live Skill tool can also load the installed skill instead of `optimized.md`. `--safe-mode` drops `CLAUDE.md`, memory, skills, plugins, and MCP servers. `--setting-sources project` drops user settings, which can add tools such as the advisor. `--tools ""` removes the Skill tool. `--bare` ignores a subscription login. Before Experiment 0, ask one instance whether it sees any `CLAUDE.md` or tools.
+
+With no tools, an instance cannot read the skill's `references/`. Append each reference file to the `--append-system-prompt` payload after the skill. Give grader calls the same flags.
 
 Pin `--model` for the whole optimization run. A model change mid-loop makes every score before it incomparable to every score after it.
 
