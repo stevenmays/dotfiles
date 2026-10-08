@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SKILLS = {"claude": ROOT / "skills/html-artifact", "codex": ROOT / "codex/skills/html-artifact"}
 SAVE = ("implementation-plan", "annotated-pr", "feature-flag-editor",
         "incident-timeline", "animation-sandbox", "ticket-triage")
-DISPLAY = ("living-design-system", "module-map", "three-approaches", "weekly-status")
+DISPLAY = ("living-design-system", "module-map", "three-approaches", "weekly-status", "plan-document")
 NAMES = SAVE + DISPLAY
 
 COPYRIGHT = "Copyright (c) 2026 Ahmad Othman Ammar Adi"
@@ -136,6 +136,14 @@ class TemplateChecks(unittest.TestCase):
             with self.subTest(tree=tree, page=name):
                 decisions = json.loads(DATA.search(text).group(1)).get("decisions", [])
                 self.assertEqual([d["id"] for d in decisions if "id" in d], [])
+
+    def test_plan_document_sample_has_no_item_codes(self):
+        # The page numbers each item, so a sample code like "U1" would teach the agent to coin codes.
+        for tree, skill in SKILLS.items():
+            with self.subTest(tree=tree):
+                data = json.loads(DATA.search((skill / "templates/plan-document.html").read_text()).group(1))
+                ids = [item["id"] for key in ("units", "gates", "questions") for item in data.get(key, []) if "id" in item]
+                self.assertEqual([i for i in ids if re.fullmatch(r"[A-Za-z]{1,2}\d+", str(i))], [])
 
     def test_script_blocks_close_once(self):
         for tree, name, text in pages():
