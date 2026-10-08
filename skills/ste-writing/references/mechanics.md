@@ -8,9 +8,9 @@ Source: the Google developer documentation style guide, trimmed to what applies 
 
 - Serial comma always: "the scheduler, the worker, and the queue".
 - Comma after an introductory phrase: "After the deploy, check the dashboard."
-- Two independent clauses joined by and/but/or/so get a comma before the conjunction — unless both are very short ("Type your ID and click OK").
+- Two independent clauses joined by "and", "but", "or", or "so" get a comma before the conjunction. Skip the comma when both clauses are short, as in "Type your ID and click OK."
 - Conjunctive adverbs (otherwise, however, therefore) take a semicolon or period before and a comma after: "The variable must have a value; otherwise, the server returns an error."
-- Em dash (—) with no spaces marks a break: "Enter a name — for example, `my-instance-99`." Never use an en dash; use a hyphen or the word "to". At most one em dash per paragraph; a second one is drama, so use a period or a comma.
+- Em dash (—) with no spaces marks a break: "Enter a name—for example, `my-instance-99`." Never use an en dash; use a hyphen or the word "to". At most one em dash per paragraph; for a second break, use a period or a comma.
 - Term-definition pairs use a colon, never a dash: "`--dry-run`: prints the plan without applying it."
 - The text before a colon that introduces a list is a complete sentence: "The command takes the following flags:", not "The flags are:".
 - Lowercase after a colon mid-sentence, unless what follows is a proper noun, a heading, or a quotation.
@@ -25,20 +25,18 @@ Source: the Google developer documentation style guide, trimmed to what applies 
 
 ## Hyphens
 
-- Hyphenate compound modifiers before a noun: "a well-designed app", "a 64-bit system", "a five-minute wait".
+- Hyphenate compound modifiers before a noun: "a well-designed app", "a 64-bit system", "a 5-minute wait".
 - Don't hyphenate the same compound after the verb: "the app is well designed", "runs in real time".
 - Never hyphenate after an -ly adverb: "publicly available API".
 - Don't hyphenate abbreviated units as modifiers: "a 200 GB disk".
-- Compound modifiers longer than two words: rewrite instead — "test cases specific to the 2023 edition", not "edition-2023-specific test cases".
+- Compound modifiers longer than 2 words: rewrite instead — "test cases specific to the 2023 edition", not "edition-2023-specific test cases".
 - Prefixes close up (preprocessing, metadata, subcommand) except before a capital or a number (non-Google, post-2000), with self-/cross- (self-hosted, cross-region), or to prevent misreading (re-sign vs. resign).
-- Suspended hyphens share a base: "one- or two-hour intervals".
+- Suspended hyphens share a base: "1- or 2-hour intervals".
 - Always-hyphenated regardless of position: on-premises, add-on, user-facing, customer-facing.
 
 ## Numbers
 
-- Spell out zero through nine; numerals for 10 and up.
-- Exceptions — always numerals: versions ("version 3"), numbers with units or technical quantities ("6 queries per second", "8 CPUs"), step/page numbers, prices, and any number sitting next to a ≥10 number in the same context ("15 workers but 6 of them").
-- Never start a sentence with a numeral — spell it out or rewrite.
+- Use numerals for every count and quantity. Spell a number out only at the start of a sentence.
 - Spell out ordinals: "first", "21st" never appears as "1st".
 - "10 times faster", never "10x faster".
 - Percentages: numeral plus %, no space: "40%". Spelled out only at a sentence start: "Forty percent…".
@@ -90,7 +88,7 @@ Source: the Google developer documentation style guide, trimmed to what applies 
 ## Lists
 
 - Introduce every list with a complete sentence ending in a colon (or a period if text intervenes).
-- Numbered list = order matters. Bulleted list = it doesn't. Term + description list for pairs.
+- Use a numbered list when order matters and a bulleted list when it doesn't. Use a term-and-description list for pairs.
 - One idea per item; parallel grammar across items.
 - Items that are sentences get periods; single words or fragments get nothing. Don't mix — if one item needs a period, give them all one.
 - No single-item lists. A single step is a sentence or a bullet, not "1.".
@@ -125,7 +123,7 @@ Source: the Google developer documentation style guide, trimmed to what applies 
 
 - Placeholders are descriptive `UPPER_SNAKE_CASE`: `PROJECT_ID`, `REGION`. Never `foo`, `bar`, `xx`, `myValue`, or possessives like `MY_PROJECT`.
 - One placeholder: "Replace `PROJECT_ID` with the project's ID." Several: after the command, write "Replace the following:" and one bullet per placeholder, in the order they appear.
-- A copy-paste command must run unedited — no `[optional]`, `{a|b}`, or `...` syntax inside a copyable block. Show variants as separate blocks.
+- Apart from placeholders, a copy-paste command runs as written. No `[optional]`, `{a|b}`, or `...` syntax goes inside a copyable block. Show variants as separate blocks.
 - Example domains: `example.com`, `example.org`, `example.net`. Example IPv4: `192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`. IPv6: `2001:db8::/32`. US phone numbers: `800-555-0100` through `800-555-0199`.
 - Never real people, real emails, real IPs, or real credentials — even expired ones.
 - Example resource names describe the reader's world: `prod-orders-queue`, not `test1` or `mydb`.

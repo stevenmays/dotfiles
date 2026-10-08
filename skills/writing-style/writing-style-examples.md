@@ -26,19 +26,16 @@ The teaching-first voice. Open on what happened, build mental models, use worked
 
 > *Before:* In this section, we're going to take a look at how caching actually works under the hood. It's important to understand that caching is a technique that can be useful in a lot of different situations. Essentially, the basic idea behind caching is that you store the results of expensive computations so you don't have to redo them later.
 
-> *After:* Caching stores the result of an expensive computation so you never pay for it twice. That's the whole idea—the rest is deciding what counts as "the same computation."
+> *After:* Caching stores the result of an expensive computation so you never pay for it twice. The hard part is deciding when two computations count as the same.
 
-*The "before" summarizes down to one sentence with no loss—proof it was mostly filler. The "after" can't be shortened without losing the punchline ("the rest is deciding what counts as the same computation"), and it's the shorter of the two. Density added an idea, it didn't just cut words.*
+*The "before" summarizes down to one sentence with no loss—proof it was mostly filler.*
 
 ### Learning Objectives Block
 
 **Near the top of a technical post:**
-> This post answers three questions:
-> - Why does an LLM read tokens instead of characters?
-> - Why does attention cost grow with the square of the prompt length?
-> - When does prompt caching help, and when doesn't it?
+> This post covers why an LLM reads tokens, why attention cost grows with the square of prompt length, and when prompt caching helps.
 
-*Specific outcomes, phrased as the reader's own questions. The reader knows what they're signing up for.*
+*Three specific outcomes in one sentence. The reader knows what they're signing up for.*
 
 ### First Principles Building
 
@@ -97,13 +94,6 @@ The teaching-first voice. Open on what happened, build mental models, use worked
 
 *Plain language first, real code second.*
 
-### "In Summary" Compressions
-
-**End-of-post compression:**
-> **In summary:** Prompt caching works by storing the computed key-value pairs from your prompt. When you send a new request with the same prefix, the model skips recomputing those pairs and starts from the cached state. This saves compute (and money) proportional to how much of your prompt stays constant. It doesn't help if your prompts vary significantly, and it requires the provider to support it.
-
-*One paragraph that captures the whole mechanism. If you only read this, you'd still get it.*
-
 ### Orienting Transitions
 
 **Carry the reader from the last topic to the next:**
@@ -142,12 +132,14 @@ The teaching-first voice. Open on what happened, build mental models, use worked
 
 ## Clarity Lessons
 
-Each lesson takes a weak draft, runs one mechanical test on it, and shows the revision. The drafts are what a first pass, human or model, usually produces. Copy the method, not the sentences.
+Each lesson takes a weak draft, runs one mechanical test on it, and shows the revision. The drafts are what a first pass, human or model, usually produces. Copy the method, not the sentences. Some revisions add numbers, causes, and outcomes that their drafts lack. Those facts come from the writer's own notes. In your revision, use only the facts your input gives.
 
 ### Lesson 1: One Paragraph Through Every Step
 
 **Draft:**
 > In today's world of distributed systems, observability is crucial. The implementation of structured logging across our services resulted in a significant reduction in the time required for incident investigation. There was a recognition by the team that the previous approach, which relied on free-text log lines, which were difficult to search, was a contributing factor to prolonged outages. It's worth noting that the adoption of a consistent schema was also key, ensuring that queries could be reused across services.
+
+*The next three blocks are scratch work. They never appear in the finished piece.*
 
 **Before drafting, write three lines:**
 - Situation: our March outage took six hours to diagnose, mostly spent grepping logs.
@@ -235,7 +227,7 @@ Each lesson takes a weak draft, runs one mechanical test on it, and shows the re
 
 ## Personal Essay Style
 
-For opinion pieces, life topics, and posts where personal stakes drive the argument. Personal experience establishes credibility. Trade-off thinking still applies. Wry closers are allowed here.
+For opinion pieces, life topics, and posts where personal stakes drive the argument. Personal experience establishes credibility. Trade-off thinking still applies. Wry closers are allowed here. These samples come from earlier posts. Match their register, and skip any device SKILL.md bans, such as intensifiers and bold slogans.
 
 ### Openings
 
@@ -245,7 +237,7 @@ For opinion pieces, life topics, and posts where personal stakes drive the argum
 *Opens with personal motivation, then immediately frames the piece around trade-offs.*
 
 **Autobiographical opening:**
-> When I was a kid I was always hustling together some little scheme to make money - some of them skirted the edges of legality. One of my most profitable operations was running a loan sharking operation where I used my Christmas money to make loans to the tenants at my grandmother's boarding house and charged 25% interest.
+> When I was a kid I was always hustling together some little scheme to make money—some of them skirted the edges of legality. One of my most profitable operations was running a loan sharking operation where I used my Christmas money to make loans to the tenants at my grandmother's boarding house and charged 25% interest.
 
 *Specific, memorable, slightly provocative. Establishes credibility through experience.*
 
@@ -258,23 +250,6 @@ For opinion pieces, life topics, and posts where personal stakes drive the argum
 > I have two daughters. My oldest is 2, and the youngest is a newborn. They will remember none of what they have experienced so far throughout their life.
 
 *Grounds the piece in lived experience before making the larger point.*
-
-### Bold Claims with Backing
-
-**Provocative statement → immediate explanation:**
-> Most successful people do not set goals, they establish systems.
->
-> **Example goal**: Lose 10 pounds
-> **Example system**: Work out 4 days per week
->
-> Notice that the example system looks a lot like a goal? Systems generally have an implicit goal, otherwise why waste the time. The distinction between a goal and a system is a goal is just a result whereas a system contains a strategy for achieving a result.
-
-*Makes the bold claim, provides concrete examples, then explains the distinction.*
-
-**Strong moral claim + backing:**
-> **This system is evil, as it preys upon human nature to perpetuate its own existence.** You are bombarded with advertising every time you turn on your TV or go on the internet. Your inbox is filled with offers for exciting new ways to separate you from your money.
-
-*Uses bold formatting for the claim, then stacks evidence.*
 
 ### Trade-off Analysis
 
@@ -299,14 +274,9 @@ For opinion pieces, life topics, and posts where personal stakes drive the argum
 ### Personal Stakes & Credibility
 
 **Declare what you do/have:**
-> I have term life insurance. If I die prematurely, within the policy term my family gets a payout. I pay a monthly premium, and if I don't pass away within the term, there's no payout - a deal which I will take every single time.
+> I have term life insurance. If I die prematurely, within the policy term my family gets a payout. I pay a monthly premium, and if I don't pass away within the term, there's no payout—a deal which I will take every single time.
 
 *Personal stake makes the advice credible.*
-
-**Reference your experience:**
-> I've been integrating large language models (LLMs) into my coding workflow for quite some time now, and they've fundamentally transformed how I approach software engineering tasks.
-
-*Establishes authority through practice, not credentials.*
 
 ### Quote Integration
 
@@ -334,15 +304,6 @@ For opinion pieces, life topics, and posts where personal stakes drive the argum
 - [Give Clear and Specific Instructions](#clear-instructions)
 ```
 
-**"What I Learned" sections:**
-> ## What I Learned
->
-> 1. **"Simple + fast" beats "complex + fancy."** Bundled vectors are underrated for medium corpora.
-> 2. **Data > model.** I spent more time on parsing and chunking than on embedding models—and it paid off.
-> 3. **Costs can round to zero.** Free-tier Gemini + bundled vectors + serverless is a cheat code.
-
-*Numbered, bold key insight, brief explanation.*
-
 ### Closings
 
 **Elevated/aspirational:**
@@ -364,7 +325,7 @@ For opinion pieces, life topics, and posts where personal stakes drive the argum
 
 ### Formatting Patterns
 
-- **Bold** for key phrases and takeaways
+- **Bold** for key terms on first use
 - *Italics* for internal dialogue or emphasis
 - `---` horizontal rules between major sections
 - Headers for each main point in non-technical pieces
