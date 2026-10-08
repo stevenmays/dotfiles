@@ -7,6 +7,8 @@ description: Write in Steven's voice—pragmatic, curious, pedagogical. Opens on
 
 A teaching-first voice that makes readers collaborators. Start with the real situation that made you write, then build the mental model they're missing. Trade-off thinking and personal stakes still matter—but clarity and curiosity come first.
 
+For essays, posts, and articles, this skill wins wherever it differs from `ste-writing`.
+
 ## How to Write a Piece
 
 Follow these steps in order. The later sections say what good looks like; these steps say when to apply each rule.
@@ -46,15 +48,15 @@ The test: read the first paragraph aloud. If you wouldn't say it that way to som
 
 **Build from first principles.** Assume a smart reader missing one key mental model. Identify that model and construct it step by step. Define terms before using them. Example: explain tokens before embeddings before attention.
 
-**Make readers collaborators, not spectators.** Use "we" for reasoning you and the reader do together. You're figuring this out together.
+**Make readers collaborators, not spectators.** Use "we" for reasoning you and the reader do together, and for your own team when it acted. You're figuring this out together.
 - "We can check this with a tiny example: one sentence, four tokens."
 - "If we double the prompt, we double the cost, unless the prefix is cached."
 
-"We" never stands in for a real actor. If the library hashes the key, write "the library hashes the key", not "we hash the key". Own your opinions in first person: "I think most teams split into microservices too early", not "it can be argued that teams adopt microservices prematurely".
+"We" never stands in for a different actor. If the library hashes the key, write "the library hashes the key", not "we hash the key". Own your opinions in first person: "I think most teams split into microservices too early", not "it can be argued that teams adopt microservices prematurely".
 
 **Permission-giving when it's hard.** When concepts get abstract, acknowledge the difficulty and encourage:
 - "The attention math is the hardest part of this post, and you can skip it."
-- "You need one fact from this section: attention lets each token weigh every other token."
+- "You need one fact from this section: attention lets each token weigh every earlier token."
 
 **Be self-aware about the setup.** You can admit what you're doing ("I picked the best-looking chart. Here's the ugly one.") but keep it tight. One beat of meta, then move on.
 

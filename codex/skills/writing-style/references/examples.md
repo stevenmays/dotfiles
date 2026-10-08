@@ -55,7 +55,7 @@ The teaching-first voice. Open on what happened, build mental models, use worked
 ### Permission-Giving
 
 **When it gets hard:**
-> The attention math is the hardest part of this post, and you can skip it. You need one fact from it: when the model reads a token, attention lets it weigh every other token in the prompt to decide what that token means.
+> The attention math is the hardest part of this post, and you can skip it. You need one fact from it: when the model reads a token, attention lets it weigh every earlier token in the prompt to decide what that token means.
 
 *Says the part is hard, gives permission to skip it, and hands over the one fact the rest of the post needs.*
 
@@ -142,25 +142,25 @@ The teaching-first voice. Open on what happened, build mental models, use worked
 
 ## Clarity Lessons
 
-Each lesson takes a weak draft, runs one test from "How to Write a Piece", and shows the revision. The drafts are what a first pass, human or model, usually produces. Copy the method, not the sentences.
+Each lesson takes a weak draft, runs one mechanical test on it, and shows the revision. The drafts are what a first pass, human or model, usually produces. Copy the method, not the sentences.
 
 ### Lesson 1: One Paragraph Through Every Step
 
 **Draft:**
 > In today's world of distributed systems, observability is crucial. The implementation of structured logging across our services resulted in a significant reduction in the time required for incident investigation. There was a recognition by the team that the previous approach, which relied on free-text log lines, which were difficult to search, was a contributing factor to prolonged outages. It's worth noting that the adoption of a consistent schema was also key, ensuring that queries could be reused across services.
 
-**Step 1, the three lines:**
+**Before drafting, write three lines:**
 - Situation: our March outage took six hours to diagnose, mostly spent grepping logs.
 - Point: one shared log schema lets one query follow a request through every service.
 - Reader's question: is the migration worth it?
 
-**Step 4, the passes:**
+**Revise the paragraph in four passes:**
 - *Subjects:* "observability", "the implementation of structured logging", "a recognition", "the adoption of a consistent schema". All four are abstractions. The characters are hiding in the objects: we, the services, the logs.
 - *Verbs:* implementation, reduction, investigation, recognition, and adoption are each an action with a doer. We implemented, we cut, we diagnosed, we realized, we adopted.
 - *Order:* the draft opens sentences on new abstractions and ends them on vague phrases ("prolonged outages", "across services").
 - *Sprawl:* "which relied… which were difficult" chains two clauses. "Ensuring that…" trails an abstract "-ing" phrase.
 
-**Step 5, the cuts:** the throat-clearing first sentence, "significant" with no number, "it's worth noting", and "also key".
+**Then cut:** the throat-clearing first sentence, "significant" with no number, "it's worth noting", and "also key".
 
 **Revision:**
 > Our March outage took six hours to diagnose, and we spent most of those hours grepping free-text logs across eight services. Each service wrote its own format, so a search that matched an event on one service missed it on the next. We moved all eight to structured JSON logs that share one schema. Now one query follows a request through every service, and our last two incidents took under 40 minutes to diagnose.
@@ -175,9 +175,9 @@ Each lesson takes a weak draft, runs one test from "How to Write a Piece", and s
 **Test:** list the subjects. "Cold starts", "a 400 ms penalty", "memory allocation", "SnapStart", "the results". That's five subjects for four sentences, so the reader keeps changing what the paragraph is about.
 
 **Revision:**
-> Our Lambda functions missed their p99 target because of cold starts. Each cold function spent about 400 ms loading JVM classes, and functions with less memory took longer, because Lambda gives them less CPU. We turned on SnapStart, which restores each function from a snapshot taken after initialization. The functions' p99 dropped from 1.9 s to 420 ms.
+> Our Lambda functions missed their p99 target because of cold starts. Each cold function spent about 400 ms loading JVM classes, and functions with less memory took longer, because Lambda gives them less CPU. With SnapStart turned on, each function now resumes from a snapshot taken after its classes load. At p99, the functions went from 1.9 s to 420 ms.
 
-*The functions are the character, so they hold the subject position. "The results were good" became a number.*
+*The functions are the character, so they hold the subject position in every sentence. "The results were good" became a number, and the sentence ends on it.*
 
 ### Lesson 3: Old Before New
 
@@ -187,7 +187,7 @@ Each lesson takes a weak draft, runs one test from "How to Write a Piece", and s
 **Test:** where does the new term appear? Here it's the first two words. The reader meets the jargon and its definition before learning why either matters.
 
 **Revision:**
-> A crash in the middle of a write doesn't corrupt your Postgres tables. Before Postgres changes a data page, it appends a record of the change to a file on disk. That file is the write-ahead log. On restart, Postgres replays it to redo every change the log recorded.
+> A crash in the middle of a write doesn't corrupt your Postgres tables. Before Postgres changes a data page, it appends a record of the change to a file on disk. That file is the write-ahead log. On restart, Postgres replays the log to redo every change since the last checkpoint.
 
 *It starts from what the reader cares about, a crash, and builds to the term. "That file" links back, and "the write-ahead log" lands at the end of its sentence, where new terms belong.*
 
@@ -237,14 +237,14 @@ Each lesson takes a weak draft, runs one test from "How to Write a Piece", and s
 
 For opinion pieces, life topics, and posts where personal stakes drive the argument. Personal experience establishes credibility. Trade-off thinking still applies. Wry closers are allowed here.
 
-### Opening Hooks
+### Openings
 
 **Personal context + problem statement:**
 > I've been curious about RAG (Retrieval-Augmented Generation) for a while. Reading about a technology and actually shipping it are very different. I wanted to feel the real friction—parsing, chunking, embeddings, latency, cost, quality—and see the upside. I like to think in trade-offs.
 
 *Opens with personal motivation, then immediately frames the piece around trade-offs.*
 
-**Autobiographical hook:**
+**Autobiographical opening:**
 > When I was a kid I was always hustling together some little scheme to make money - some of them skirted the edges of legality. One of my most profitable operations was running a loan sharking operation where I used my Christmas money to make loans to the tenants at my grandmother's boarding house and charged 25% interest.
 
 *Specific, memorable, slightly provocative. Establishes credibility through experience.*
