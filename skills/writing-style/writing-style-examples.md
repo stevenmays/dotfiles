@@ -33,12 +33,12 @@ The teaching-first voice. Open on what happened, build mental models, use worked
 ### Learning Objectives Block
 
 **Near the top of a technical post:**
-> By the end of this post, you'll understand:
-> - How LLMs process text as tokens, not characters
-> - Why attention is O(n²) and what that means for long contexts
-> - When prompt caching helps (and when it doesn't)
+> This post answers three questions:
+> - Why does an LLM read tokens instead of characters?
+> - Why does attention cost grow with the square of the prompt length?
+> - When does prompt caching help, and when doesn't it?
 
-*Specific outcomes. The reader knows what they're signing up for.*
+*Specific outcomes, phrased as the reader's own questions. The reader knows what they're signing up for.*
 
 ### First Principles Building
 

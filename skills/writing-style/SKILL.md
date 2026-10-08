@@ -47,16 +47,16 @@ The test: read the first paragraph aloud. If you wouldn't say it that way to som
 **Build from first principles.** Assume a smart reader missing one key mental model. Identify that model and construct it step by step. Define terms before using them. Example: explain tokens before embeddings before attention.
 
 **Make readers collaborators, not spectators.** Use "we" for reasoning you and the reader do together. You're figuring this out together.
-- "Now that we understand tokens, we can talk about embeddings."
-- "Let's work through a tiny example."
+- "We can check this with a tiny example: one sentence, four tokens."
+- "If we double the prompt, we double the cost, unless the prefix is cached."
 
 "We" never stands in for a real actor. If the library hashes the key, write "the library hashes the key", not "we hash the key". Own your opinions in first person: "I think most teams split into microservices too early", not "it can be argued that teams adopt microservices prematurely".
 
 **Permission-giving when it's hard.** When concepts get abstract, acknowledge the difficulty and encourage:
-- "This is the most complicated part so far. Stick with me."
-- "You don't need to fully grok the math—here's what matters."
+- "The attention math is the hardest part of this post, and you can skip it."
+- "You need one fact from this section: attention lets each token weigh every other token."
 
-**Be self-aware about the setup.** You can acknowledge theatrics ("Now that I've hooked you with fancy charts...") but keep it tight. One beat of meta, then move on.
+**Be self-aware about the setup.** You can admit what you're doing ("I picked the best-looking chart. Here's the ugly one.") but keep it tight. One beat of meta, then move on.
 
 **Honest uncertainty.** When you don't know, say so plainly—then say what's still useful.
 - "We don't really know what's inside this matrix. But we know what it does, and that's enough."
@@ -83,7 +83,7 @@ Everything else is a **menu, not a mandate.** The beats below are moves to reach
 
 ### Technical/Educational moves
 - **Opening**: What happened and why it matters, in plain words
-- **"By the end of this post..."**: What the reader will be able to do—only when there's a real payoff to promise
+- **What the reader gets**: The questions the post answers—only when there's a real payoff to promise
 - **First principles**: Build the mental model from primitives
 - **Worked example**: One small, concrete, end-to-end demonstration
 - **Trade-offs**: Options and consequences, pick a side
@@ -101,8 +101,8 @@ Everything else is a **menu, not a mandate.** The beats below are moves to reach
 
 Reach for these when they do real work, not to hit a quota. A technique slotted in because the template expects it—an objectives block over thin content, a trade-off table with a single real axis, a transition the reader didn't need—is exactly the manufactured polish that reads as generated.
 
-**Learning objectives block.** Near the top, state what the reader will get:
-- "By the end of this post, you'll understand the mechanism behind prompt caching and know when to use it."
+**Learning objectives block.** Near the top, state what the reader will get, in concrete terms:
+- "This post covers how prompt caching decides what to reuse, and the two prompt layouts that defeat it."
 
 **Worked micro-examples.** One tiny, repeating example that threads through the piece. Use the same tokens, the same 5-step flow, the same toy dataset. This creates continuity and lets readers track transformations.
 
@@ -111,8 +111,8 @@ Reach for these when they do real work, not to hit a quota. A technique slotted 
 **"In summary" compressions.** One paragraph that restates the core model in plain language. If you can't summarize it, you don't understand it yet.
 
 **Transitions that orient.** When the reader genuinely needs reorientation, tell them where they are—one or two per piece, not a stock phrase after every section:
-- "Now that we've defined X, we can finally talk about Y."
-- "That's the theory. Let's see it in practice."
+- "Those token IDs are all the model ever sees. The next step turns each one into a vector."
+- "That's the mechanism. In production, our cache hit rate was 31%, not the 90% we expected."
 
 **Name a pattern only when it's real.** Coining a memorable term—a label, an acronym, a "the X principle"—manufactures the feeling of insight, so it's the highest-risk move here. Do it only when the thing named is a genuine, defensible pattern you could point at twice. Never to fill a slot or make a thin point feel sticky.
 
