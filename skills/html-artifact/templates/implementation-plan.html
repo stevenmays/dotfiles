@@ -472,6 +472,22 @@ SOFTWARE.
   // Tabs
   const tabBtns = Array.from(document.querySelectorAll('[role="tab"]'));
   const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+  const emptyTab = {
+    "tab-phases": false,
+    "tab-mockups": !(plan.mockups || []).length,
+    "tab-dataflow": !Array.from(document.querySelectorAll("#tab-dataflow svg")).some((svg) => svg.childElementCount),
+    "tab-risks": !(plan.risks || []).length,
+    "tab-decisions": !(plan.decisions || []).length,
+    "tab-progress": !(plan.progress_log || []).length,
+  };
+  // Set both ways: a saved file carries the hidden attributes from when it was saved.
+  tabBtns.forEach((b) => { b.hidden = emptyTab[b.getAttribute("aria-controls")]; });
+  // Phases never hides, so this loop always stops.
+  const nextShown = (i, dir) => {
+    let n = i;
+    do n = (n + dir + tabBtns.length) % tabBtns.length; while (tabBtns[n].hidden);
+    return n;
+  };
   const selectTab = (idx) => {
     tabBtns.forEach((b, i) => {
       const sel = i === idx;
@@ -485,15 +501,17 @@ SOFTWARE.
     b.addEventListener("keydown", (e) => {
       if (e.key === "ArrowRight") {
         e.preventDefault();
-        const n = (i + 1) % tabBtns.length;
+        const n = nextShown(i, 1);
         tabBtns[n].focus(); selectTab(n);
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        const n = (i - 1 + tabBtns.length) % tabBtns.length;
+        const n = nextShown(i, -1);
         tabBtns[n].focus(); selectTab(n);
       }
     });
   });
+  const savedTab = tabBtns.findIndex((b) => b.getAttribute("aria-selected") === "true");
+  selectTab(savedTab >= 0 && !tabBtns[savedTab].hidden ? savedTab : 0);
 
   // Copy buttons
   const toMarkdown = () => {
