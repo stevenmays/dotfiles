@@ -126,7 +126,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 | `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
 | `frontend-craft` | Companion to Anthropic's `frontend-design`: seed-string variety, screenshot-only design-critic loop, generated images and video, and a subtraction pass that removes AI tells |
-| `html-artifact` | Self-contained local HTML pages from 10 interactive templates (plans, PR reviews, triage boards, incidents, and more); the agent edits only the embedded JSON. Templates adapted from [plan-it](https://github.com/OthmanAdi/plan-it) at `93f6606` under MIT |
+| `html-artifact` | Self-contained local HTML pages from 11 interactive templates (plans, PR reviews, triage boards, incidents, and more); the agent edits only the embedded JSON. Templates adapted from [plan-it](https://github.com/OthmanAdi/plan-it) at `93f6606` under MIT |
 | `codex-image-generator` | Default image path: Codex CLI's built-in `image_gen` tool, run in a subagent, no API key |
 | `gemini-image-generator` | Nano Banana images through the Antigravity CLI's `generate_image` tool, run in a subagent, no API key; use when the user names Gemini, Nano Banana, or Antigravity |
 | `gemini-subagents` | Run any task on a Gemini model as a background subagent through the Antigravity CLI, behind a wrapper that cannot hang the session |
