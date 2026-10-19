@@ -129,6 +129,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 | `codex-image-generator` | Default image path: Codex CLI's built-in `image_gen` tool, run in a subagent, no API key |
 | `gemini-image-generator` | Nano Banana images through the Antigravity CLI's `generate_image` tool, run in a subagent, no API key; use when the user names Gemini, Nano Banana, or Antigravity |
 | `gemini-subagents` | Run any task on a Gemini model as a background subagent through the Antigravity CLI, behind a wrapper that cannot hang the session |
+| `teach-me` | Learn a technical concept to long-term mastery: an interactive HTML lesson page first, then practice and quizzes with confidence ratings in chat, drills on gaps and shaky right answers, and spaced reviews tracked in an in-chat progress card or a ledger file |
 | `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
 | `skill-optimizer` | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
 | `ste-writing` | Simplified Technical English for docs, PR descriptions, and review comments — every review command drafts findings with it |

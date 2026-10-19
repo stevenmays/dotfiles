@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>Tensors for Chapter 2</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Literata:opsz,wght@7..72,400;7..72,600&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+    <style>
+      /* Layout: one reading column; each section = short prose + one live diagram. Shape strings are the recurring visual unit. */
+      :root {
+        --bg: #f5f7f8;
+        --panel: #ffffff;
+        --fg: #17222b;
+        --muted: #5b6a75;
+        --line: #d5dde2;
+        --tok: #1f7a8c; /* token embeddings / IDs */
+        --tok-soft: #d6eef2;
+        --pos: #c2731d; /* positional embeddings */
+        --pos-soft: #f7e6d2;
+        --batch: #5b4bb7; /* batch axis */
+        --batch-soft: #e4e0f7;
+        --display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+        --body: "Literata", Georgia, serif;
+        --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #10171c;
+          --panel: #18222a;
+          --fg: #e4ebef;
+          --muted: #93a3ae;
+          --line: #2b3943;
+          --tok: #5cc3d6;
+          --tok-soft: #16353d;
+          --pos: #eba35a;
+          --pos-soft: #3b2a17;
+          --batch: #a597f2;
+          --batch-soft: #2a2547;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #10171c;
+        --panel: #18222a;
+        --fg: #e4ebef;
+        --muted: #93a3ae;
+        --line: #2b3943;
+        --tok: #5cc3d6;
+        --tok-soft: #16353d;
+        --pos: #eba35a;
+        --pos-soft: #3b2a17;
+        --batch: #a597f2;
+        --batch-soft: #2a2547;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--body);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+      main {
+        max-width: 760px;
+        margin: 0 auto;
+        padding-block: 40px 80px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+      }
+      h1,
+      h2 {
+        font-family: var(--display);
+        text-wrap: balance;
+        line-height: 1.15;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(2rem, 6vw, 3rem);
+      }
+      h2 {
+        font-size: 1.5rem;
+      }
+      p {
+        margin: 0;
+        max-width: 65ch;
+      }
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .eyebrow {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      code,
+      .mono {
+        font-family: var(--mono);
+        font-size: 0.88em;
+      }
+      .shape {
+        font-family: var(--mono);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .b {
+        color: var(--batch);
+      }
+      .t {
+        color: var(--tok);
+      }
+      .p {
+        color: var(--pos);
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-width: 0;
+      }
+      .scroll {
+        overflow-x: auto;
+      }
+      pre {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        line-height: 1.55;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px 14px;
+        overflow-x: auto;
+      }
+      .note {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+      .lede {
+        font-size: 1.15rem;
+      }
+
+      /* rank ladder */
+      .ladder {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        align-items: end;
+      }
+      @media (max-width: 560px) {
+        .ladder {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .rung {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+        text-align: center;
+      }
+      .rung .lbl {
+        font-family: var(--display);
+        font-weight: 700;
+      }
+      .cells {
+        display: grid;
+        gap: 3px;
+      }
+      .cell {
+        width: 18px;
+        height: 18px;
+        border-radius: 3px;
+        background: var(--tok-soft);
+        border: 1px solid var(--tok);
+      }
+      .stack {
+        position: relative;
+        width: 96px;
+        height: 96px;
+      }
+      .stack .cells {
+        position: absolute;
+      }
+
+      /* sliding window */
+      .tokens {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .tk {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: var(--bg);
+        white-space: pre;
+      }
+      .tk.in {
+        background: var(--tok-soft);
+        border-color: var(--tok);
+      }
+      .tk.tg {
+        box-shadow: inset 0 -3px 0 var(--pos);
+      }
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 24px;
+        align-items: center;
+      }
+      label {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      input[type="range"] {
+        accent-color: var(--tok);
+      }
+      button {
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--tok);
+        background: var(--tok-soft);
+        color: var(--fg);
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 2px solid var(--tok);
+        outline-offset: 2px;
+      }
+
+      /* embedding lookup */
+      .lookup {
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        gap: 20px;
+        align-items: center;
+      }
+      @media (max-width: 620px) {
+        .lookup {
+          grid-template-columns: 1fr;
+        }
+      }
+      table {
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        font-variant-numeric: tabular-nums;
+      }
+      td,
+      th {
+        padding: 4px 8px;
+        text-align: right;
+        border: 1px solid var(--line);
+      }
+      th {
+        color: var(--muted);
+        font-weight: 400;
+      }
+      tr.hit td {
+        background: var(--tok-soft);
+      }
+      .ids {
+        display: flex;
+        gap: 6px;
+      }
+      .id {
+        font-family: var(--mono);
+        padding: 6px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--tok);
+        background: var(--panel);
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .id.on {
+        background: var(--tok);
+        color: var(--panel);
+      }
+
+      /* pipeline */
+      .pipe {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+      .step {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px 16px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .step:last-child {
+        border-bottom: 0;
+      }
+      .step .what {
+        min-width: 0;
+      }
+      .step .what b {
+        font-family: var(--display);
+      }
+      .step .shape {
+        align-self: center;
+        font-size: 0.95rem;
+      }
+      @media (max-width: 520px) {
+        .step {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* broadcast */
+      canvas {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        display: block;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .sw {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        margin-right: 6px;
+        vertical-align: -1px;
+      }
+
+      ul.rules {
+        margin: 0;
+        padding-left: 1.2em;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-width: 65ch;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header style="display: flex; flex-direction: column; gap: 12px">
+        <div class="eyebrow">
+          Build a Large Language Model · Ch. 2, §2.6–2.8
+        </div>
+        <h1>A tensor is a grid of numbers with a shape</h1>
+        <p class="lede">
+          Forget the physics definition. In PyTorch a tensor is an n‑dimensional
+          array plus three facts: its <b>shape</b>, its <b>dtype</b>, and its
+          <b>device</b>. The shape is the part that matters for Chapter 2. Every
+          step in the second half of the chapter takes a tensor of one shape and
+          returns a tensor of another shape. If you can track the shape, you
+          understand the code.
+        </p>
+      </header>
+
+      <section>
+        <div class="eyebrow">The idea</div>
+        <h2>Rank = how many indices name one number</h2>
+        <p>
+          A scalar needs 0 indices. A vector needs 1 (<code>v[2]</code>). A
+          matrix needs 2 (<code>m[row, col]</code>). A 3D tensor needs 3 (<code
+            >x[batch, position, feature]</code
+          >). That's all "dimension" means here: one more axis to index along.
+        </p>
+        <div class="panel">
+          <div class="ladder" id="ladder"></div>
+          <p class="note">
+            Each axis gets a job. In Chapter 2 the jobs are always the same
+            three: <span class="b">which sequence in the batch</span>,
+            <span class="t">which position in the sequence</span>, and
+            <span class="p">which feature of the vector</span>.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">§2.6 · Data sampling</div>
+        <h2>The sliding window makes a 2D tensor of token IDs</h2>
+        <p>
+          The tokenizer turns text into one long list of integers.
+          <code>GPTDatasetV1</code> cuts that list into chunks of
+          <code>max_length</code> tokens. The target for each chunk is the same
+          chunk shifted right by 1 token, because the model's job is to predict
+          the next token. <code>stride</code> sets how far the window moves
+          between chunks.
+        </p>
+        <div class="panel">
+          <div class="controls">
+            <label for="ml"
+              >max_length
+              <input id="ml" type="range" min="2" max="6" value="4" /><span
+                id="mlv"
+                >4</span
+              ></label
+            >
+            <label for="st"
+              >stride
+              <input id="st" type="range" min="1" max="6" value="1" /><span
+                id="stv"
+                >1</span
+              ></label
+            >
+            <button id="next" type="button">Next window →</button>
+          </div>
+          <div class="tokens" id="tokens"></div>
+          <div class="legend">
+            <span
+              ><span
+                class="sw"
+                style="
+                  background: var(--tok-soft);
+                  border: 1px solid var(--tok);
+                "
+              ></span
+              >input row</span
+            ><span
+              ><span class="sw" style="background: var(--pos)"></span>target row
+              (input shifted by 1)</span
+            >
+          </div>
+          <pre id="winout"></pre>
+        </div>
+        <p>
+          The <code>DataLoader</code> stacks <code>batch_size</code> of these
+          rows. With <code>batch_size=8, max_length=4</code>, one batch of
+          inputs has shape
+          <span class="shape"
+            ><span class="b">[8</span>, <span class="t">4]</span></span
+          >: 8 rows, 4 token IDs each. The dtype is <code>torch.long</code>,
+          because IDs are integers you look things up with, not numbers you do
+          math on.
+        </p>
+      </section>
+
+      <section>
+        <div class="eyebrow">§2.7 · Token embeddings</div>
+        <h2>An embedding layer is a lookup table</h2>
+        <p>
+          Think of a spreadsheet. Each row is one word in the vocabulary, and
+          the row number is the token ID. Each row holds a short list of numbers
+          for that word. To embed a token, you go to its row and copy it out.
+          That's the whole operation.
+        </p>
+        <p>
+          The book's toy table has 6 words with 3 numbers each, so it's 6 rows ×
+          3 columns. The numbers start random, and training adjusts them. Click
+          an ID below to change it and see which row gets copied.
+        </p>
+        <div class="panel">
+          <div class="lookup">
+            <div style="display: flex; flex-direction: column; gap: 8px">
+              <span class="mono note">input_ids</span>
+              <div class="ids" id="ids"></div>
+            </div>
+            <div class="scroll"><table id="wt"></table></div>
+            <div class="scroll"><table id="out"></table></div>
+          </div>
+          <p class="note">
+            Values are random stand-ins; the book's printout uses
+            <code>torch.manual_seed(123)</code>. The weights start random and
+            training adjusts them. The output shape is the input shape with one
+            new axis on the end: <span class="shape">[4]</span> →
+            <span class="shape">[4, 3]</span>.
+          </p>
+        </div>
+        <p>
+          Why not a one-hot vector times a matrix? That gives the same result. A
+          one-hot row times <code>W</code> selects one row of <code>W</code>.
+          The embedding layer skips the multiplication and indexes directly, so
+          it's much faster. Both are differentiable, so backprop updates exactly
+          the rows that were used.
+        </p>
+      </section>
+
+      <section>
+        <div class="eyebrow">§2.8 · Positional embeddings</div>
+        <h2>Broadcasting adds one position table to every row in the batch</h2>
+        <p>
+          Token embeddings don't know where a token sits. Token 40 gets the same
+          vector at position 0 and at position 3. GPT fixes this with a second
+          embedding layer, indexed by
+          <code>torch.arange(context_length)</code> instead of token IDs. Its
+          output has shape
+          <span class="shape"
+            ><span class="t">[4</span>, <span class="p">256]</span></span
+          >: one vector per position, no batch axis.
+        </p>
+        <p>
+          The book then adds <span class="shape">[8, 4, 256]</span> +
+          <span class="shape">[4, 256]</span>. Those shapes differ, so PyTorch
+          <b>broadcasts</b>: it lines the shapes up from the right, sees the
+          smaller tensor is missing the leading batch axis, and reuses it for
+          all 8 sequences. No copy is made in memory.
+        </p>
+        <div class="panel">
+          <canvas
+            id="bc"
+            width="720"
+            height="300"
+            aria-label="Diagram: a 4 by D position table added to each of 8 sequences in a batch"
+          ></canvas>
+          <div class="legend">
+            <span
+              ><span class="sw" style="background: var(--tok)"></span>token
+              embeddings [8, 4, 256]</span
+            >
+            <span
+              ><span class="sw" style="background: var(--pos)"></span>positional
+              embeddings [4, 256], reused per sequence</span
+            >
+          </div>
+          <pre>
+Broadcast rule: align shapes from the right.
+token_embeddings     [8, 4, 256]
+pos_embeddings          [4, 256]   ← missing axis treated as size 1, stretched to 8
+input_embeddings     [8, 4, 256]</pre>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">The whole half-chapter</div>
+        <h2>Shape tracker</h2>
+        <p>
+          Change the hyperparameters and watch every shape update. This is the
+          habit to build: before you read a line of model code, write the shape
+          next to it.
+        </p>
+        <div class="panel">
+          <div class="controls">
+            <label for="B"
+              >batch_size
+              <input id="B" type="range" min="1" max="16" value="8" /><span
+                id="Bv"
+                >8</span
+              ></label
+            >
+            <label for="T"
+              >max_length
+              <input id="T" type="range" min="2" max="1024" value="4" /><span
+                id="Tv"
+                >4</span
+              ></label
+            >
+            <label for="D"
+              >output_dim
+              <input
+                id="D"
+                type="range"
+                min="2"
+                max="1024"
+                step="2"
+                value="256"
+              /><span id="Dv">256</span></label
+            >
+          </div>
+          <div class="pipe" id="pipe"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="eyebrow">Keep these</div>
+        <h2>Rules that cover the rest of the book</h2>
+        <ul class="rules">
+          <li>
+            Print <code>x.shape</code> after every line you don't understand.
+            Most confusion in Chapters 3–5 is a shape you lost track of.
+          </li>
+          <li>
+            The last axis is the feature axis. Linear layers and attention
+            operate on it. Every earlier axis is a "which one" index.
+          </li>
+          <li>
+            Embedding layers add an axis. IDs of shape
+            <span class="shape">[B, T]</span> become vectors of shape
+            <span class="shape">[B, T, D]</span>.
+          </li>
+          <li>
+            IDs are <code>long</code>, embeddings are <code>float</code>.
+            Feeding floats to <code>nn.Embedding</code> raises an error.
+          </li>
+          <li>
+            Broadcasting aligns shapes from the right. A size-1 or missing axis
+            stretches to match. This is how one position table serves the whole
+            batch.
+          </li>
+          <li>
+            <code>output_dim</code> is 256 in the chapter for speed. GPT-2 small
+            uses 768, and GPT-3 uses 12,288. Same code, bigger last axis.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        // ---- rank ladder
+        const ladder = document.getElementById("ladder");
+        function grid(r, c) {
+          const g = document.createElement("div");
+          g.className = "cells";
+          g.style.gridTemplateColumns = `repeat(${c},18px)`;
+          for (let i = 0; i < r * c; i++) {
+            const d = document.createElement("div");
+            d.className = "cell";
+            g.appendChild(d);
+          }
+          return g;
+        }
+        const rungs = [
+          { l: "Scalar", s: "[]", ex: "loss", el: () => grid(1, 1) },
+          {
+            l: "Vector",
+            s: "[4]",
+            ex: "one token's IDs row",
+            el: () => grid(1, 4),
+          },
+          {
+            l: "Matrix",
+            s: "[3, 4]",
+            ex: "batch of ID rows",
+            el: () => grid(3, 4),
+          },
+          {
+            l: "3D tensor",
+            s: "[3, 4, 3]",
+            ex: "batch of embedded rows",
+            el: () => {
+              const s = document.createElement("div");
+              s.className = "stack";
+              for (let k = 2; k >= 0; k--) {
+                const g = grid(3, 4);
+                g.style.left = k * 10 + "px";
+                g.style.top = k * 10 + "px";
+                g.style.opacity = 1 - k * 0.25;
+                s.appendChild(g);
+              }
+              return s;
+            },
+          },
+        ];
+        rungs.forEach((r) => {
+          const d = document.createElement("div");
+          d.className = "rung";
+          d.appendChild(r.el());
+          d.insertAdjacentHTML(
+            "beforeend",
+            `<span class="lbl">${r.l}</span><span class="shape">${r.s}</span><span class="note">${r.ex}</span>`,
+          );
+          ladder.appendChild(d);
+        });
+
+        // ---- sliding window
+        const toks = [
+          "I",
+          " H",
+          "AD",
+          " always",
+          " thought",
+          " Jack",
+          " Gis",
+          "burn",
+          " rather",
+          " a",
+          " cheap",
+          " genius",
+          "--",
+          "though",
+          " a",
+          " good",
+          " fellow",
+        ];
+        let start = 0;
+        const ml = document.getElementById("ml"),
+          st = document.getElementById("st"),
+          tk = document.getElementById("tokens"),
+          wo = document.getElementById("winout");
+        function drawWin() {
+          const L = +ml.value,
+            S = +st.value;
+          document.getElementById("mlv").textContent = L;
+          document.getElementById("stv").textContent = S;
+          if (start + L + 1 > toks.length) start = 0;
+          tk.innerHTML = "";
+          toks.forEach((t, i) => {
+            const s = document.createElement("span");
+            s.className = "tk";
+            s.textContent = JSON.stringify(t).slice(1, -1);
+            if (i >= start && i < start + L) s.classList.add("in");
+            if (i >= start + 1 && i < start + L + 1) s.classList.add("tg");
+            tk.appendChild(s);
+          });
+          const inp = toks.slice(start, start + L),
+            tgt = toks.slice(start + 1, start + L + 1);
+          const q = (a) =>
+            "[" + a.map((x) => JSON.stringify(x)).join(", ") + "]";
+          wo.textContent = `window starts at token ${start}\ninput : ${q(inp)}\ntarget: ${q(tgt)}\nnext window starts at ${start}+${S} = ${start + S}`;
+        }
+        ml.oninput = () => {
+          start = 0;
+          drawWin();
+        };
+        st.oninput = () => {
+          start = 0;
+          drawWin();
+        };
+        document.getElementById("next").onclick = () => {
+          start += +st.value;
+          if (start + +ml.value + 1 > toks.length) start = 0;
+          drawWin();
+        };
+        drawWin();
+
+        // ---- embedding lookup
+        const W = [
+          [0.34, -0.18, 1.12],
+          [-0.92, 0.45, 0.07],
+          [1.27, -0.61, 0.33],
+          [-0.24, 0.88, -1.4],
+          [0.51, 0.02, -0.77],
+          [-1.05, 1.31, 0.29],
+        ];
+        let ids = [2, 3, 5, 1];
+        const idsEl = document.getElementById("ids"),
+          wt = document.getElementById("wt"),
+          out = document.getElementById("out");
+        function f(v) {
+          return (v < 0 ? "" : " ") + v.toFixed(2);
+        }
+        function drawLookup() {
+          idsEl.innerHTML = "";
+          ids.forEach((v, k) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "id on";
+            b.textContent = v;
+            b.title = "Click to cycle this ID";
+            b.onclick = () => {
+              ids[k] = (ids[k] + 1) % 6;
+              drawLookup();
+            };
+            idsEl.appendChild(b);
+          });
+          wt.innerHTML =
+            '<caption class="mono note" style="text-align:left;padding-bottom:4px">weight [6, 3]</caption><tr><th>id</th><th>d0</th><th>d1</th><th>d2</th></tr>' +
+            W.map(
+              (r, i) =>
+                `<tr class="${ids.includes(i) ? "hit" : ""}"><th>${i}</th>${r.map((v) => `<td>${f(v)}</td>`).join("")}</tr>`,
+            ).join("");
+          out.innerHTML =
+            '<caption class="mono note" style="text-align:left;padding-bottom:4px">output [4, 3]</caption><tr><th>pos</th><th>d0</th><th>d1</th><th>d2</th></tr>' +
+            ids
+              .map(
+                (id, p) =>
+                  `<tr class="hit"><th>${p}←${id}</th>${W[id].map((v) => `<td>${f(v)}</td>`).join("")}</tr>`,
+              )
+              .join("");
+        }
+        drawLookup();
+
+        // ---- broadcast canvas
+        const cv = document.getElementById("bc"),
+          cx = cv.getContext("2d");
+        function css(n) {
+          return getComputedStyle(document.documentElement)
+            .getPropertyValue(n)
+            .trim();
+        }
+        function drawBC() {
+          const w = 720,
+            h = 300;
+          cx.clearRect(0, 0, w, h);
+          const tok = css("--tok"),
+            pos = css("--pos"),
+            fg = css("--fg"),
+            mut = css("--muted");
+          cx.font = "12px " + css("--mono");
+          const cols = 6,
+            cw = 14,
+            ch = 14,
+            gap = 2;
+          const px = 20,
+            py = 70;
+          cx.fillStyle = mut;
+          cx.fillText("pos_embeddings [4, D]", px, py - 14);
+          for (let r = 0; r < 4; r++)
+            for (let c = 0; c < cols; c++) {
+              cx.globalAlpha = 0.35 + (0.65 * ((r + c) % 4)) / 3;
+              cx.fillStyle = pos;
+              cx.fillRect(px + c * (cw + gap), py + r * (ch + gap), cw, ch);
+            }
+          cx.globalAlpha = 1;
+          cx.fillStyle = fg;
+          cx.font = "bold 22px " + css("--mono");
+          cx.fillText("+", px + cols * (cw + gap) + 18, py + 40);
+          cx.font = "12px " + css("--mono");
+          const bx = px + cols * (cw + gap) + 60,
+            by = 30,
+            bw = cols * (cw + gap),
+            bh = 4 * (ch + gap);
+          cx.fillStyle = mut;
+          cx.fillText(
+            "token_embeddings [8, 4, D] — one block per sequence",
+            bx,
+            by - 12,
+          );
+          for (let s = 0; s < 8; s++) {
+            const ox = bx + (s % 4) * (bw + 16),
+              oy = by + Math.floor(s / 4) * (bh + 46);
+            if (ox + bw > w - 4) continue;
+            for (let r = 0; r < 4; r++)
+              for (let c = 0; c < cols; c++) {
+                cx.globalAlpha =
+                  0.3 + 0.7 * (((s * 7 + r * 3 + c * 5) % 9) / 8);
+                cx.fillStyle = tok;
+                cx.fillRect(ox + c * (cw + gap), oy + r * (ch + gap), cw, ch);
+              }
+            cx.globalAlpha = 1;
+            cx.strokeStyle = pos;
+            cx.lineWidth = 2;
+            cx.strokeRect(ox - 2, oy - 2, bw + 2, bh + 2);
+            cx.fillStyle = mut;
+            cx.fillText("seq " + s, ox, oy + bh + 14);
+          }
+          cx.strokeStyle = pos;
+          cx.lineWidth = 1;
+          cx.setLineDash([4, 4]);
+          for (let s = 0; s < 8; s++) {
+            const ox = bx + (s % 4) * (bw + 16),
+              oy = by + Math.floor(s / 4) * (bh + 46);
+            if (ox + bw > w - 4) continue;
+            cx.beginPath();
+            cx.moveTo(px + bw, py + bh / 2);
+            cx.lineTo(ox, oy + bh / 2);
+            cx.stroke();
+          }
+          cx.setLineDash([]);
+          cx.fillStyle = fg;
+          cx.fillText(
+            "Same 4 position vectors added to every sequence. D drawn as 6 columns; real D = 256.",
+            20,
+            h - 14,
+          );
+        }
+        function fit() {
+          const r = window.devicePixelRatio || 1;
+          cv.width = 720 * r;
+          cv.height = 300 * r;
+          cx.setTransform(r, 0, 0, r, 0, 0);
+          drawBC();
+        }
+        if (window.matchMedia) {
+          matchMedia("(prefers-color-scheme: dark)").addEventListener?.(
+            "change",
+            drawBC,
+          );
+        }
+        new MutationObserver(drawBC).observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ["data-theme"],
+        });
+        fit();
+
+        // ---- shape tracker
+        const B = document.getElementById("B"),
+          T = document.getElementById("T"),
+          D = document.getElementById("D"),
+          pipe = document.getElementById("pipe");
+        function sh(parts) {
+          return (
+            "[" +
+            parts.map(([v, c]) => `<span class="${c}">${v}</span>`).join(", ") +
+            "]"
+          );
+        }
+        function drawPipe() {
+          const b = +B.value,
+            t = +T.value,
+            d = +D.value,
+            V = 50257;
+          document.getElementById("Bv").textContent = b;
+          document.getElementById("Tv").textContent = t;
+          document.getElementById("Dv").textContent = d;
+          const steps = [
+            ["Raw text", "<code>raw_text</code>, a Python string", "str"],
+            [
+              "Token IDs",
+              "<code>tokenizer.encode(raw_text)</code> → one long list (≈5,145 for The Verdict)",
+              "list[int]",
+            ],
+            [
+              "One batch of inputs",
+              `<code>DataLoader</code> stacks ${b} windows of ${t} IDs; dtype long`,
+              sh([
+                [b, "b"],
+                [t, "t"],
+              ]),
+            ],
+            [
+              "Targets",
+              "Same shape, shifted right by 1 token",
+              sh([
+                [b, "b"],
+                [t, "t"],
+              ]),
+            ],
+            [
+              "Token embedding weights",
+              `<code>nn.Embedding(${V.toLocaleString()}, ${d})</code> — ${(V * d).toLocaleString()} trainable floats`,
+              sh([
+                [V.toLocaleString(), ""],
+                [d, "p"],
+              ]),
+            ],
+            [
+              "Token embeddings",
+              "Look up one row per ID: new axis added on the end",
+              sh([
+                [b, "b"],
+                [t, "t"],
+                [d, "p"],
+              ]),
+            ],
+            ["Position IDs", `<code>torch.arange(${t})</code>`, sh([[t, "t"]])],
+            [
+              "Positional embeddings",
+              `<code>nn.Embedding(${t}, ${d})</code> applied to the position IDs`,
+              sh([
+                [t, "t"],
+                [d, "p"],
+              ]),
+            ],
+            [
+              "Input embeddings",
+              "token + positional, broadcast over the batch axis → goes into Chapter 3",
+              sh([
+                [b, "b"],
+                [t, "t"],
+                [d, "p"],
+              ]),
+            ],
+          ];
+          pipe.innerHTML = steps
+            .map(
+              ([n, w, s]) =>
+                `<div class="step"><div class="what"><b>${n}</b><div class="note">${w}</div></div><div class="shape">${s}</div></div>`,
+            )
+            .join("");
+        }
+        [B, T, D].forEach((e) => (e.oninput = drawPipe));
+        drawPipe();
+      })();
+    </script>
+  </body>
+</html>
