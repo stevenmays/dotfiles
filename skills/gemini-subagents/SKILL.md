@@ -1,6 +1,6 @@
 ---
 name: gemini-subagents
-description: Run a planning, research, review, or implementation task on a Gemini model as a background subagent through the Antigravity CLI (`agy`), behind a wrapper that kills stalled runs and salvages partial output. Use when a workflow names Gemini, Antigravity, or `agy` as the second model. Not for images.
+description: Run a planning, research, review, or implementation task on a Gemini model as a background subagent through the Antigravity CLI (`agy`), behind a wrapper that kills stalled runs and salvages partial output. Use when a workflow names Gemini, Argon, Antigravity, or `agy` as the second model. Not for generating images.
 ---
 
 # Gemini subagents
@@ -9,7 +9,7 @@ Run a task on a Gemini model as a background subagent through the Antigravity CL
 
 Always invoke `agy` through `scripts/gemini-run.sh`, never `agy -p` directly. `agy` has no per-run switch for its network-reaching tools: `search_web`, `read_url_content`, `call_mcp_tool`, `open_browser_url`, and `browser_*`. A run that reaches for one can hang. The wrapper passes `--print-timeout` at the hard budget, and its idle watchdog kills a run that stops emitting events. Then it salvages whatever arrived before the kill.
 
-Not for images: `mays:gemini-image-generator` covers those.
+Not for generating images: `mays:gemini-image-generator` covers those.
 
 ## Preflight
 
@@ -48,13 +48,13 @@ The wrapper always pins the model. An unpinned run would take `agy`'s own defaul
 | Omitted: `gemini-3.8-flash-high` | Strong work: planning, review, a second implementation |
 | `gemini-3.8-flash-medium` | Work a deterministic check verifies: a test, lint, compile, or known-target grep |
 | `gemini-3.8-flash-low` | Trivial work |
-| `gemini-3.1-pro-high` | Opt-in only, when the user asks for it |
+| `gemini-4-argon-high` | Any role, when the user or the calling workflow names Argon |
 
 - `--model` beats `GEMINI_SUBAGENT_MODEL`, which beats the default.
 - The slug carries the effort. The wrapper reads the `-low`, `-medium`, or `-high` suffix for the provenance line, else records `model default`.
-- `gemini-3.1-pro` comes in `-high` and `-low` only. `agy models` also lists older `gemini-3.7-flash-*` and `gemini-3.6-flash-*` slugs.
+- `gemini-4-argon` comes in `-low`, `-medium`, and `-high`, the same as `gemini-3.8-flash`.
 - `agy` has its own `--effort` flag. The wrapper never passes it, because its interaction with the slug suffix is unverified.
-- The wrapper exits 2 on a slug without `gemini`. `agy` also serves 3 other slugs: `claude-sonnet-4-6`, `claude-opus-4-6-thinking`, and `gpt-oss-120b-medium`.
+- The wrapper exits 2 on a slug without `gemini`. `agy` also serves 7 other slugs: `claude-opus-5-5-*` and `claude-sonnet-5-5-*` in `-low`, `-medium`, and `-high`, and `gpt-oss-120b-medium`.
 - A Claude slug would make the second opinion same-family, and this skill exists to run Gemini.
 
 ## Roles
@@ -70,6 +70,21 @@ The wrapper always pins the model. An unpinned run would take `agy`'s own defaul
 - Plan and research: an empty `response` makes the wrapper fall back to the streamed text. That text can put the run's commentary above the deliverable. Strip everything before the first heading.
 - Implementation runs on a feature branch only, never the base branch. It gets the longest budget because it makes many more tool calls than a review.
 - The wrapper never stages, commits, or reverts. After an implementation run, `--out` is the run's own account of what it did, not evidence. Read `git diff` and `git status --porcelain --untracked-files=all` yourself, then run the tests.
+
+## Images and video
+
+A run can read image and video files, but it cannot make a video. Live runs verified this table:
+
+| Media | What a run does through `agy` | Verified on |
+| --- | --- | --- |
+| Image in | Reads a PNG under `--cd` and describes its pixels | `gemini-4-argon-high` |
+| Video in | Reads an MP4 under `--cd` and describes its segments in order, with timing | `gemini-4-argon-high`, `gemini-3.8-flash-high` |
+| Image out | Hands the request to the built-in `image-generator` subagent, which calls `generate_image` | `gemini-4-argon-high` |
+| Video out | None. `agy` has no video-generation tool, and the run says so | `gemini-4-argon-high` |
+
+- Name the media file in the prompt and keep it under `--cd`. The event stream names the read tool `read_file`, although the `init` tool list says `view_file`.
+- A generated image lands in `~/.gemini/antigravity-cli/brain/<conversation_id>/` as a timestamped JPEG, not at the path the prompt asks for. The run cannot move it, because it cannot run a command. Use `mays:gemini-image-generator` instead, which copies the image out and checks it.
+- Video output through the direct Gemini API is unverified. This skill does not wrap that API.
 
 ## Headless permissions
 

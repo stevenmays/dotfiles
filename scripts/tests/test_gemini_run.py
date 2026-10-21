@@ -127,6 +127,7 @@ class GeminiRunTests(unittest.TestCase):
             ({"GEMINI_SUBAGENT_MODEL": "gemini-3.8-flash-medium"}, (), "gemini-3.8-flash-medium", "medium"),
             ({"GEMINI_SUBAGENT_MODEL": "gemini-3.8-flash-medium"}, ("--model", "gemini-3.8-flash-low"),
              "gemini-3.8-flash-low", "low"),
+            ({}, ("--model", "gemini-4-argon-high"), "gemini-4-argon-high", "high"),
             ({}, ("--model", "Gemini-Experimental"), "Gemini-Experimental", "model default"),
         ]
         for env, args, model, effort in cases:
@@ -140,7 +141,7 @@ class GeminiRunTests(unittest.TestCase):
 
     def test_rejects_non_gemini_models(self):
         self.fake(agy_events())
-        for model in ("claude-sonnet-4-6", "claude-opus-4-6-thinking", "gpt-oss-120b-medium"):
+        for model in ("claude-opus-5-5-high", "claude-sonnet-5-5-medium", "gpt-oss-120b-medium"):
             with self.subTest(model=model):
                 result = self.run_wrapper("--model", model)
                 self.assertEqual(result.returncode, 2)
