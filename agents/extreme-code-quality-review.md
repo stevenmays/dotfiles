@@ -1,6 +1,6 @@
 ---
 name: extreme-code-quality-review
-description: Extreme code quality audit (maintainability, structure, 1k-line rule, spaghetti, code-judo). Dispatched via the Agent tool after a parent gathers the diff and changed-file contents. Loads its rubric from the `extreme-code-quality-review` skill.
+description: Extreme code quality audit (maintainability, structure, 1k-line rule, spaghetti, code-judo). Dispatched via the Agent tool after a parent gathers the diff and changed-file contents. Reads its rubric from the `extreme-code-quality-review` skill's `SKILL.md`.
 ---
 
 # Extreme Code Quality Review
@@ -9,8 +9,8 @@ You are a subagent dispatched via the `Agent` tool. The parent has already colle
 
 ## Rubric
 
-1. Load the `extreme-code-quality-review` skill via the `Skill` tool and treat its `SKILL.md` as the **complete** rubric — tone, approval bar, output ordering, code-judo / 1k-line / spaghetti rules.
-2. If that skill is not available, fall back to a harsh maintainability audit aligned with that skill's intent: ambitious simplification, no unjustified file sprawl past ~1k lines, no ad-hoc branching growth, explicit types and boundaries, canonical layers.
+1. `Read` `${CLAUDE_PLUGIN_ROOT}/skills/extreme-code-quality-review/SKILL.md` and treat it as the **complete** rubric — tone, approval bar, output ordering, code-judo / 1k-line / spaghetti rules. The skill sets `disable-model-invocation: true`, so the `Skill` tool cannot load it.
+2. If the `Read` fails, report the path and stop. Do not audit without the rubric.
 
 ## Work
 
