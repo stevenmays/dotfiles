@@ -259,6 +259,12 @@ class ExternalRunTests(unittest.TestCase):
                 self.assertPair(argv, "-c", f'model_reasoning_effort="{effort}"')
                 self.assertIn(f"Engine: codex · Model: {model} · effort {effort}", self.out.read_text())
 
+    def test_codex_skips_git_repo_check_outside_a_repo(self):
+        self.fake("codex", CODEX_EVENTS)
+        result = self.run_wrapper()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("--skip-git-repo-check", self.argv("codex"))
+
     def test_cursor_result_error_exits_126(self):
         self.fake("cursor-agent", cursor_events(is_error=True))
         result = self.run_wrapper()

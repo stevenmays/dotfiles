@@ -14,13 +14,13 @@ Reviewers read; the caller applies every fix, so one actor owns the diff.
 | Mode | Reviewers see | Brief |
 | --- | --- | --- |
 | `plan` | The plan text and the ticket, plus the model-check spec and result when the caller ran one | `references/plan-review.md` |
-| `code` | `git diff <base>...HEAD` plus untracked files from `git status --porcelain --untracked-files=all`; the ticket and approved plan when there are any | `references/code-review.md` |
+| `code` | `git diff <merge-base>` (commits, staged edits, and unstaged edits) plus untracked files from `git status --porcelain --untracked-files=all`; the ticket and approved plan when there are any | `references/code-review.md` |
 
-In code mode, `<base>` is the repo default branch (`main`, else `master`) unless the caller names another.
+In code mode, `<base>` is the repo default branch (`main`, else `master`) unless the caller names another. `<merge-base>` is the commit that `git merge-base <base> HEAD` prints.
 
-Before launching either reviewer in code mode, `git rev-parse --verify --quiet <base>` must succeed. Then `git diff --quiet <base>...HEAD` must exit 1, or `git ls-files --others --exclude-standard` must print a file. Otherwise stop and report that there is nothing to review.
+Before launching either reviewer in code mode, `git rev-parse --verify --quiet <base>` must succeed. Then `git merge-base <base> HEAD` must print a commit. If it prints nothing, stop and report that `<base>` and `HEAD` share no history. An empty merge base would make the diff compare only the index and the working tree. Then `git diff --quiet <merge-base>` must exit 1, or `git ls-files --others --exclude-standard` must print a file. Otherwise stop and report that there is nothing to review.
 
-Fill the brief's placeholders. Inline the ticket, the plan text, and any model-check spec and result; never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
+Fill the brief's placeholders first. Fill `{MERGE_BASE}` with the full commit hash, not a command, so both reviewers read the same scope. Then inline the ticket, the plan text, and any model-check spec and result, so placeholder names that appear inside them stay as written. Never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
 
 ## Launch
 
@@ -28,6 +28,7 @@ Launch both reviewers in one message so they run concurrently:
 
 - **Claude**: the reviewer role in `mays:claude-subagents`, `model:` unset.
 - **External**: the review role in `mays:external-subagents`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
+- **Working tree**: code mode reads the live working tree. Don't edit, stash, build into, or switch it until both reviewers return.
 
 ```bash
 "${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
@@ -47,7 +48,8 @@ Plan mode may pass `--effort low` to the external run when the plan touches 3 fi
 ## Triage
 
 - Triage every finding into confirmed blocker, non-blocking, or rejected with a one-line reason. A rejected finding with no reason is an unexamined one.
-- **Verify each blocker against the code yourself before acting** — both families hallucinate line numbers and control flow.
+- **Verify every finding against the code yourself before you accept or reject it**: blockers, concerns, rejections, test gaps, and simpler-path items. Both families hallucinate line numbers and control flow.
+- Record the `file:line` you read for each finding. For a finding about the plan text, cite the plan section instead. For a finding about something missing, name the search you ran, such as `grep -rn retry_webhook`.
 - The caller fixes confirmed blockers, then re-runs both reviewers scoped to the changed areas.
 
 ## Degraded mode
@@ -65,14 +67,16 @@ Claude: VERDICT <verdict> — <summary>
 GPT (codex) | Grok (cursor): VERDICT <verdict> — <summary>   (mark "partial" when salvaged)
 
 BLOCKERS (verified)
-- [file:line] <what breaks> → <fix> (<family>, or both)
+- [file:line] <what breaks> → <fix> (<family>, or both) · Checked: <file:line>
 
 CONCERNS
-- [file:line] <finding> → <fix> (<family>)
+- [file:line] <finding> → <fix> (<family>) · Checked: <file:line>
 
 REJECTED
-- <finding> (<family>) — <one-line reason>
+- <finding> (<family>) — <one-line reason> · Checked: <file:line>
 
 TEST GAPS (code mode) | SIMPLER PATH (plan mode)
-- <gap or alternative, or "none">
+- <gap or alternative, or "none"> · Checked: <file:line>
 ```
+
+`[file:line]` is where the reviewer pointed. `Checked:` is what you read.
