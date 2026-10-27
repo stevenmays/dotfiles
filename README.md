@@ -122,6 +122,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 |-------|---------|
 | `adversarial-review` | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
 | `claims-verification` | Check a plan's claims about existing code against the repo before adversarial review: one blind Claude subagent answers neutral questions with `file:line` evidence |
+| `model-check` | Model-check a stateful design with Quint before it ships: a fresh Claude subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check |
 | `claude-subagents` | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
 | `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
@@ -145,6 +146,24 @@ Wire `mays:claims-verification` into my implement-ticket skill, in the planning 
 - Replace any informal rule that sends back plans naming missing files or wrong signatures.
 - It always runs, at every plan size and under --fast, because it isn't adversarial.
 - Show its result line with the plan at approval, and log it wherever plan-review verdicts go.
+- Don't renumber steps or gates, and don't restate the skill's rules. Point to the skill instead.
+```
+
+### Using model-check
+
+`model-check` belongs in a workflow's planning stage, for plans that change a stateful flow such as a queue, retry, webhook, payment, lock, or migration ordering. A spec writer models the design, the claims check verifies the spec's mapping to the code, and the session runs every check. It needs `quint` (`brew install quint`), and `quint verify` also needs Java. To add it to an `implement-ticket` skill, install `mays` 1.34.0 or later, then paste this prompt:
+
+```text
+Wire `mays:model-check` into my implement-ticket skill, in the planning stage only.
+- Run it only when the plan changes a stateful flow, such as a queue, retry, webhook, payment, lock, or migration ordering. Skip it for UI and CRUD work.
+- When a flag such as --full forces the check on a plan with no stateful flow, the skill records "Model check: skipped — no stateful flow in the plan" and the run continues.
+- Ask the planner for an "invariants and failure modes" list in every stateful plan. The planner never writes the spec.
+- Pass the skill the ticket type (bug, feature, or new-flow), the plan file path, the code paths in scope, that list, and the scratch dir.
+- Run its write phase after the planner returns. Its writer creates <scratch>/model/<flow>.qnt and <scratch>/model/mapping.md.
+- Check the mapping's current-code rows with mays:claims-verification, in the same pass as the plan's claims.
+- After the claims check, run its run phase in the session. It writes <scratch>/model-check.md with the result line, the full mapping table, and the test hand-offs. Plan reviewers get the spec and that file.
+- Show the result line, and any "model didn't reproduce the bug" note, with the plan at approval. Give the test hand-offs to the implementer.
+- Never block a headless run: after 2 writer attempts per phase, record the failure and continue.
 - Don't renumber steps or gates, and don't restate the skill's rules. Point to the skill instead.
 ```
 

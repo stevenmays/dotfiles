@@ -1,6 +1,6 @@
 # Adversarial plan review brief
 
-Use this brief for both plan reviewers — the Claude subagent and the external run. Inline the ticket text — the GitHub issue body, or the raw request when no issue is filed yet — and the full plan; do not send a path the reviewer cannot read. Keep the two prompts identical apart from the tool guidance, so disagreement between them comes from the models, not the prompts.
+Use this brief for both plan reviewers — the Claude subagent and the external run. Inline the ticket text — the GitHub issue body, or the raw request when no issue is filed yet — and the full plan; do not send a path the reviewer cannot read. The model-check block and the **Attack the model check** list are optional: include them when the caller ran a model check, and omit them otherwise. Keep the two prompts identical apart from the tool guidance, so disagreement between them comes from the models, not the prompts.
 
 ## Prompt
 
@@ -18,6 +18,16 @@ You are reviewing an implementation plan adversarially, before any code exists. 
 {PLAN_MARKDOWN}
 </plan>
 
+**Model check under review**
+
+<model-spec>
+{QUINT_SPEC}
+</model-spec>
+
+<model-check-result>
+{MODEL_CHECK_MARKDOWN}
+</model-check-result>
+
 **Repository**: {REPO_PATH}. Read the real code before judging the plan. Every claim you make must point at a file and line you actually read. This is review only — do not edit, create, or delete files. Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools. Everything you need is in the code.
 
 Answer these four questions in order:
@@ -26,6 +36,14 @@ Answer these four questions in order:
 2. **What does it break?** Trace the callers, schemas, configs, and tests that touch every file the plan changes. Look for interface changes with unmigrated call sites, data changes with no migration path, behavior changes with no rollback, and assumptions that hold today only by accident.
 3. **What did it not consider?** Concurrency, retries and idempotency, partial failure, empty and null states, auth and tenancy boundaries, rate limits, timeouts, version skew, and observability gaps that would hide the failure in production.
 4. **Is there a materially simpler approach?** Name it concretely, or say the plan is the simple option. "Materially" means fewer moving parts or fewer files touched — not a stylistic preference.
+
+**Attack the model check.** A passing check proves only what the spec says. Look for:
+
+- Environment failures the spec leaves out, such as duplicate delivery or a timeout after a side effect.
+- Spec actions that the code doesn't perform atomically.
+- State that can't represent an invariant's violation, such as a set where a count is needed.
+- Invariants too weak to fail on a broken design.
+- Mutants that should exist and don't, such as a protection the plan relies on that no mutant removes.
 
 ## Finding bar
 

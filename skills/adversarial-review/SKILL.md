@@ -13,14 +13,14 @@ Reviewers read; the caller applies every fix, so one actor owns the diff.
 
 | Mode | Reviewers see | Brief |
 | --- | --- | --- |
-| `plan` | The plan text and the ticket | `references/plan-review.md` |
+| `plan` | The plan text and the ticket, plus the model-check spec and result when the caller ran one | `references/plan-review.md` |
 | `code` | `git diff <base>...HEAD` plus untracked files from `git status --porcelain --untracked-files=all`; the ticket and approved plan when there are any | `references/code-review.md` |
 
 In code mode, `<base>` is the repo default branch (`main`, else `master`) unless the caller names another.
 
 Before launching either reviewer in code mode, `git rev-parse --verify --quiet <base>` must succeed. Then `git diff --quiet <base>...HEAD` must exit 1, or `git ls-files --others --exclude-standard` must print a file. Otherwise stop and report that there is nothing to review.
 
-Fill the brief's placeholders. Inline the ticket and plan text; never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
+Fill the brief's placeholders. Inline the ticket, the plan text, and any model-check spec and result; never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
 
 ## Launch
 
