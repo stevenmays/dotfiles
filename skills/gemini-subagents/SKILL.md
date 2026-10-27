@@ -65,6 +65,7 @@ The wrapper always pins the model. An unpinned run would take `agy`'s own defaul
 | Review | `read-only` | `--idle 300 --hard 1800` | Findings in the brief's output format |
 | Implementation | `workspace-write` | `--idle 300 --hard 3600` | Edits in the working tree |
 
+- `gemini-4-argon-high` uses `--idle 600` in every role. A live Argon run went silent for over 300s while it wrote its answer. Reruns with `--idle 600` finished in 486s and 542s.
 - `read-only` is the default. The run can view and search files, but it cannot write a file or run a command, `git` included.
 - `workspace-write` can write files but still cannot run a command. An implementation run cannot run its tests, a build, or `git`. The caller runs the tests and reads `git diff` afterwards.
 - Plan and research: an empty `response` makes the wrapper fall back to the streamed text. That text can put the run's commentary above the deliverable. Strip everything before the first heading.
@@ -116,7 +117,7 @@ Headless `agy` cannot ask for permission, so it auto-denies any tool that needs 
 - When the `init` event reports a different model, the second line names that model too.
 - A stalled or timed-out run says `PARTIAL` in its first line and names the last tool call before the kill. Findings salvaged from a stalled run are still findings: use them, and mark them partial.
 - `--print-timeout` makes `agy` stop itself at `--hard` too. The wrapper reports that stop as exit 124.
-- Defaults are 300s idle and 1800s hard. Raise `--hard` for a large diff. Do not raise `--idle` above 600: silence that long is a hang, not thinking.
+- Defaults are 300s idle and 1800s hard. `gemini-4-argon-high` runs use `--idle 600`, as the Roles section says. Raise `--hard` for a large diff. Do not raise `--idle` above 600 for any model: silence that long is a hang, not thinking.
 
 ## Prompt contract
 
@@ -129,3 +130,4 @@ Every prompt carries the same items as the prompt list in `mays:claude-subagents
 - The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `mays:claude-subagents`, except that the run cannot run its tests. It writes the change and its tests, then stops, and the caller runs them.
 - The tool limit: "You cannot run shell commands. Read and search with your file tools." A run that reaches for a denied `run_command` can end with an empty response.
 - The no-network clause, verbatim: "Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools."
+- The no-subagent rule, verbatim: "Do not spawn subagents." A run that starts its own subagent can stay silent past `--idle`, and the watchdog kills it with no findings.

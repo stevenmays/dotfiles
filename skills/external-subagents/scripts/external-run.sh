@@ -184,8 +184,11 @@ set -m
 if [ "$ENGINE" = codex ]; then
   # No --approve-for-me here: it is mutually exclusive with -s, and `codex exec` already
   # auto-approves anything the sandbox permits, so workspace-write alone is enough.
+  # --skip-git-repo-check lets --cd name a non-git directory. Inside a repo the check passes
+  # anyway, and a probe of our own could disagree with codex's detection.
   "$BIN" exec \
     --json \
+    --skip-git-repo-check \
     -s "$SANDBOX" \
     -C "$WORKDIR" \
     -m "$MODEL" \
