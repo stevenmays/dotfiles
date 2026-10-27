@@ -49,6 +49,7 @@ type -a codex cursor-agent; jq --version
 - Give `--out` a `.md` name. The wrapper writes the raw events and stderr next to it as `.jsonl` and `.stderr`. A cursor run that resolves its model also leaves the `cursor-agent models` listing as `.models`.
 - `--label` names the run in the `--out` header. It defaults to `run`.
 - `--cd` sets the working directory. It defaults to the current one.
+- `--cd` can name a directory outside a git repository. `codex` refuses one by default, so the wrapper always passes `--skip-git-repo-check`. Outside a repository, `git diff` can't show what an implementation run changed.
 - Both engines read the prompt on stdin, so the model's context window bounds its size, not the OS argument limit.
 
 ## Models
