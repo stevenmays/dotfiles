@@ -112,4 +112,4 @@ Every prompt carries the same items as the prompt list in `mays:claude-subagents
 
 - The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `mays:claude-subagents`.
 - The no-network clause, verbatim: "Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools."
-- For a diff: the range, such as `main...HEAD`, which the run reads itself with `git diff`, as `mays:adversarial-review` does. Never paste the diff into the prompt.
+- For a diff: the commands that produce it, such as `git diff <merge-base>` plus `git status --porcelain --untracked-files=all`, which the run executes itself, as `mays:adversarial-review` does. Never paste the diff into the prompt.

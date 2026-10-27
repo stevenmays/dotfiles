@@ -18,7 +18,7 @@ You are reviewing a diff adversarially. Your job is to break confidence in this 
 {PLAN_MARKDOWN}
 </plan>
 
-**Change under review**: `git diff {BASE}...HEAD` in {REPO_PATH}, plus untracked files listed by `git status --porcelain --untracked-files=all`. Read the surrounding code, not only the diff hunks — most real defects live in the caller the diff never touched. This is review only — do not edit, create, or delete files. Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools. Everything you need is in the code.
+**Change under review**: `git diff {MERGE_BASE}` in {REPO_PATH}, plus untracked files listed by `git status --porcelain --untracked-files=all`. `{MERGE_BASE}` is the commit where this branch left `{BASE}`. The diff covers the branch's commits and its staged and unstaged edits. Read the surrounding code, not only the diff hunks — most real defects live in the caller the diff never touched. This is review only — do not edit, create, or delete files. Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools. Everything you need is in the code.
 
 Attack in this order:
 

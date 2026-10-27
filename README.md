@@ -110,7 +110,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 | `/extreme-code-quality-review` | Extremely strict maintainability audit of the current branch |
 | `/fix-merge-conflict` | Resolve merge conflicts non-interactively |
 | `/onboard-repo` | Day-one bootstrap for a new codebase — CLAUDE.md and a permissions allowlist in one run |
-| `/pre-review` | Review the branch diff for correctness, AI slop, and repo-convention drift, then offer to apply fixes |
+| `/pre-review` | Review the branch's committed and uncommitted changes for correctness, AI slop, and repo-convention drift, then offer to apply fixes |
 | `/review-pr <PR#>` | Review someone else's PR against its originating ticket (GitHub/Linear/Jira/Shortcut); findings are STE-written Conventional Comments, optionally posted to GitHub |
 | `/security-audit` | Audit home-directory dotfiles for security issues (read-only report) |
 | `/ship` | The golden path as one command: pre-review → code-review → tests → commit → push → PR |
