@@ -44,6 +44,7 @@ Answer these four questions in order:
 - State that can't represent an invariant's violation, such as a set where a count is needed.
 - Invariants too weak to fail on a broken design.
 - Mutants that should exist and don't, such as a protection the plan relies on that no mutant removes.
+- Assumptions that don't hold in the real system. Attack each item in the mapping's assumptions list, because one false assumption voids the pass.
 
 ## Finding bar
 

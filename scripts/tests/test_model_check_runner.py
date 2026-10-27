@@ -137,6 +137,30 @@ NEVER_FIRES_SPEC = """module never_fires {
 }
 """
 
+# 9 state variables, one over the limit. Otherwise it passes: the mutant breaks `safe` on its first step.
+WIDE_SPEC = """module wide {
+  var count: int
+  var broken: bool
+  var a: int
+  var b: int
+  var c: int
+  var d: int
+  var e: int
+  var f: int
+  var g: int
+  action init = all { count' = 0, broken' = false, a' = 0, b' = 0, c' = 0, d' = 0, e' = 0, f' = 0, g' = 0 }
+  action stepWith(guarded) = all {
+    count' = count + 1,
+    broken' = (broken or not(guarded)),
+    a' = a, b' = b, c' = c, d' = d, e' = e, f' = f, g' = g,
+  }
+  action stepDesign = stepWith(true)
+  action stepMutBreak = stepWith(false)
+  val safe = not(broken)
+  val moved = count > 0
+}
+"""
+
 VERIFY_OK_OUTPUT = """The outcome is: NoError                                           I@10:37:57.951
 [ok] No violation found (12791ms).
 You may increase --max-steps.
@@ -286,6 +310,24 @@ class ParseTests(unittest.TestCase):
                 "action stepMutReal(a) = z\naction stepDesign = w\n")
         self.assertEqual(check.discover_steps(text), ["stepDesign"])
 
+    def test_var_count_skips_comments(self):
+        text = ("var a: int  // var b: int\n// var c: int\n/* var d: int\n   var e: int */\n"
+                "  var f : bool\nval variant = a\n")
+        self.assertEqual(check.count_vars(text), 2)
+        self.assertEqual(check.count_vars(EXAMPLE.read_text()), 8)
+
+    def test_spec_over_budget_only_past_a_limit(self):
+        def warnings(variables, invariants):
+            args = check.build_parser().parse_args(["spec.qnt", "--main", "m", "--invariants", *invariants,
+                                                    "--terminal", "t"])
+            return check.find_warnings(args, variables)
+
+        self.assertEqual(warnings(8, ["a", "b", "c"]), [])
+        self.assertEqual(warnings(9, ["a"]), [check.problem(
+            "spec-over-budget", "the spec has 9 state variables and 1 invariant; the limit is 8 and 3, "
+            "so split it into 2 flows or trim it")])
+        self.assertEqual([w["code"] for w in warnings(2, ["a", "b", "c", "d"])], ["spec-over-budget"])
+
 
 class UsageTests(unittest.TestCase):
     def test_too_few_samples_is_a_usage_error(self):
@@ -353,6 +395,10 @@ class ExampleRun(unittest.TestCase):
         self.assertEqual((self.code, self.report["verdict"], self.report["problems"]), (0, "pass", []))
         self.assertEqual(self.report["design"]["result"], "pass")
 
+    def test_spec_at_the_size_limit_has_no_warnings(self):
+        self.assertEqual(self.report["warnings"], [])
+        self.assertNotIn("## Warnings", check.render_md(self.report))
+
     def test_every_invariant_is_killed(self):
         matrix = self.report["matrix"]
         self.assertEqual(set(matrix), {"stepMutNoLease", "stepMutAckLiveLease"})
@@ -410,6 +456,14 @@ class BrokenExamples(unittest.TestCase):
         self.assertIn("parsing failed", report["typecheck"]["error"])
         self.assertIn("broken spec: Error [QNT000]", report["result_line"])
 
+    def test_broken_spec_still_warns_over_budget(self):
+        spec = write_variant(self.tmp.name, "action init = all {", "action init = all {{")
+        code, report, _ = run_json(spec, "--main", "queue_consumer", "--invariants", *INVARIANTS, "extra",
+                                   "--terminal", "settled")
+        self.assertEqual((code, report["verdict"]), (3, "broken-spec"))
+        self.assertEqual([w["code"] for w in report["warnings"]], ["spec-over-budget"])
+        self.assertIn("8 state variables and 4 invariants", report["warnings"][0]["message"])
+
     def test_runtime_error_is_a_broken_spec(self):
         spec = write_variant(self.tmp.name, "visible.get(m) > 0,\n    receives.get(m) >= MAX_RECEIVES,",
                              'visible.get("zz") > 0,\n    receives.get(m) >= MAX_RECEIVES,')
@@ -459,6 +513,17 @@ class BrokenExamples(unittest.TestCase):
         self.assertEqual((code, report["verdict"]), (2, "invalid"))
         self.assertIn("run-timeout", codes(report))
         self.assertTrue(all(run["result"] == "timeout" for run in report["runs"]))
+
+    def test_wide_spec_passes_with_a_warning(self):
+        spec = Path(self.tmp.name) / "wide.qnt"
+        spec.write_text(WIDE_SPEC)
+        code, report, _ = run_json(spec, "--main", "wide", "--invariants", "safe", "--terminal", "moved",
+                                   "--samples", "10000", "--max-steps", "3")
+        self.assertEqual((code, report["verdict"], report["problems"]), (0, "pass", []))
+        self.assertEqual([w["code"] for w in report["warnings"]], ["spec-over-budget"])
+        self.assertIn("9 state variables", report["warnings"][0]["message"])
+        self.assertIn("## Warnings\n\n- `spec-over-budget`: the spec has 9", check.render_md(report))
+        self.assertNotIn("spec-over-budget", report["result_line"])
 
     def test_mutant_identical_to_the_design_is_useless(self):
         spec = write_variant(self.tmp.name, 'action stepDesign = designWith("retry")',

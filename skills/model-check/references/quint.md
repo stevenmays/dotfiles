@@ -37,6 +37,7 @@ The JSON output has these fields:
 | `verdict` | `pass`, `fail`, `invalid`, or `broken-spec`. |
 | `result_line` | The result line, without the caller's judgment on the current code. |
 | `problems` | One entry for each broken rule, with a `code` and a `message`. |
+| `warnings` | Problems that don't change the verdict, in the same shape. |
 | `matrix` | For each mutant and invariant: `true` for a kill, `false` for a survivor, or `null` for an error. |
 | `kills` | For each mutant and invariant: what found the kill, `sampling`, `budget`, or `verify`, or `null` for none. |
 | `current` | For `step`: its `result`, the `violated` invariants, `counterexamples` by invariant, and `explored`. It's `null` when the spec has no `step`. |
@@ -50,7 +51,7 @@ The JSON output has these fields:
 
 A counterexample is a list of steps, and step 0 is `init`. Each step holds the `action` from `mbt::actionTaken`, its `picks` from `mbt::nondetPicks`, and the full `state`. A `quint verify` counterexample has no action or picks, because Apalache traces carry no `mbt::` fields.
 
-The problem codes use the totals over the fixed runs and the budget:
+The problem codes use the totals over the fixed runs and the budget. The warning code, `spec-over-budget`, counts the spec instead:
 
 | Code | Rule | Next step |
 | --- | --- | --- |
@@ -62,6 +63,7 @@ The problem codes use the totals over the fixed runs and the budget:
 | `insufficient-samples` | A passed step and invariant explored fewer runs than `--samples`, or printed no explored count. | Rerun once, then record it in the result. |
 | `run-timeout` | A `quint run` passed `--run-timeout`. | Send the spec back to the writer for smaller bounds, or raise `--run-timeout`. |
 | `verify-incomplete` | `--verify` finished no bound on `stepDesign`: a timeout before the first bound, no Java, or an Apalache error. | Raise `--verify-budget` or fix the error, then rerun. Without Java, drop `--verify` and report random sampling only. |
+| `spec-over-budget` | The spec has more than 8 `var` declarations, or `--invariants` names more than 3. A commented-out `var` doesn't count. | Send the spec back to the writer once to split it into 2 flows or trim it. A spec still over the limit after that runs as is, and the result notes the warning. |
 
 ## Sampling budget
 

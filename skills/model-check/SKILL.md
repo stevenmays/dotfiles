@@ -1,11 +1,11 @@
 ---
 name: model-check
-description: Model-check a stateful design with Quint before it ships — a fresh subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check. Use for queues, retries, webhooks, payments, locks, and migration ordering. Not for UI or CRUD work.
+description: Model-check the failure paths of a design with Quint before it ships — races, crashes, redelivery, duplicate delivery, out-of-order events, and timeouts. A fresh subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check. Use when a plan relies on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. Not for UI work, CRUD work, or pure money math such as rounding or proration, because property-based tests catch those more cheaply.
 ---
 
 # Model check
 
-A Quint spec models a stateful design, and the checker searches for executions that break an invariant. The spec checks the design, not the code. Each spec action must map to one atomic unit in the code, or a pass proves nothing about the code.
+A Quint spec models a stateful design, and the checker searches for executions that break an invariant. The spec models only the failure paths that can break the plan's protections, never the whole system. The spec checks the design, not the code. Each spec action must map to one atomic unit in the code, or a pass proves nothing about the code.
 
 ## Scope
 
@@ -26,7 +26,7 @@ The caller passes:
 
 ## Preflight
 
-1. If the plan has no stateful flow to model, write `Model check: skipped — no stateful flow in the plan` to `<scratch>/model-check.md` and stop. This applies even when a caller forces the check, for example with `--full`. The caller continues without the gate.
+1. If the plan relies on no protection against a race or a failure, write `Model check: skipped — no failure path to model` to `<scratch>/model-check.md` and stop. This applies even when a caller forces the check, for example with `--full`. The caller continues without the gate.
 2. Run `quint --version`. If `quint` is missing, write `Model check: skipped — quint is missing; install it with brew install quint` to `<scratch>/model-check.md` and stop. The caller continues without the gate.
 
 ## Phases
@@ -55,7 +55,11 @@ The writer's prompt follows `mays:claude-subagents` and carries every input. It 
 
 ## Write the spec
 
-- **Environment failures:** model them, not only the happy path. Cover duplicate delivery, redelivery after a crash or timeout, out-of-order events, concurrent deliveries, a timeout after a side effect, and a partial failure between side effects.
+- **Failure paths:** each spec asks whether environment failures can break the protections the plan relies on. The protections and invariants in the plan's "invariants and failure modes" list set the scope. When that input is missing, the list the writer derived sets it. Cut any invariant, action, or variable outside that scope.
+  - **Abstraction:** keep a state variable only if an invariant, an action guard, or a witness reads it. Model business logic as one action that can succeed or fail. Give an external system only the behavior the race depends on, such as delivering twice, delivering out of order, or timing out after a side effect. Reduce payloads to IDs and counters. Model the happy path only as far as the terminal witness.
+  - **Size limit:** use at most 8 state variables and 3 invariants per spec. Each `var` declaration is one state variable. Trim a bigger spec by the abstraction rule first. If it's still over either limit, split it into 2 flows. The runner reports a spec over either limit with the warning `spec-over-budget`.
+  - **Assumptions:** list in `mapping.md` every behavior the spec assumes instead of modeling, such as "the Postgres row lock holds" or "SQS delivers every message at least once". A pass holds only while those assumptions hold.
+- **Environment failures:** check each protection against these 6: duplicate delivery, redelivery after a crash or timeout, out-of-order events, concurrent deliveries, a timeout after a side effect, and a partial failure between side effects. Model each one that can reach a protection, even when the plan's list leaves it out. Skip each one that can't.
 - **Countable state:** the state must be able to represent each invariant's violation. Count anything that can happen twice or concurrently, such as owners, sends, or charges, in a map of integers. Never use a set for those: a set merges 2 concurrent owners into 1 and hides the bug the invariant guards against.
 - **Atomicity:** one action is one atomic unit. That's one SQL statement, one conditional write, one external call, or a transaction only when its isolation level makes it atomic.
   - Split a read-then-write into 2 actions unless one statement or a lock makes it atomic.
@@ -75,6 +79,14 @@ The writer's prompt follows `mays:claude-subagents` and carries every input. It 
 ```
 
 `Model` is `current` or `design`. `Code` is `path:line` for the current code, or the intended statement for the design.
+
+Below the table, `mapping.md` has an `## Assumptions` list with one line per assumption:
+
+```
+## Assumptions
+
+- <behavior the spec assumes instead of modeling>
+```
 
 ## Write mutants
 
@@ -120,6 +132,8 @@ After the fixed runs, the budget spends 60 seconds of sampling on every core. It
 | `3` | `broken-spec` | A parse, type, or runtime error. Send the error to the writer. |
 | `4` | none | `quint` is missing. Skip the gate, as "Preflight" says. |
 
+A spec over the size limit in "Write the spec" gets a `spec-over-budget` warning in the output's `## Warnings` section. The warning never changes the verdict or the exit status. On that warning, the caller sends the spec back to the writer once to trim or split it. That return counts as a run-phase attempt under "Retries". If the returned spec is still over the limit, the caller runs it as is, and the result notes the warning.
+
 The caller makes the judgment calls, never the runner:
 
 - Does a current-code counterexample match the reported cause, and what does a failure mean for the ticket type? See "Ticket types".
@@ -143,10 +157,10 @@ Each phase gets at most 2 writer attempts: the write phase, the claims phase, an
 
 ## Result
 
-Build `<scratch>/model-check.md` from each flow's runner output. That output holds the result line, a table of every command with its result, the mutant matrix, and each counterexample as numbered steps. Add these parts:
+Build `<scratch>/model-check.md` from each flow's runner output. That output holds the result line, a table of every command with its result, the mutant matrix, each counterexample as numbered steps, and any warnings. Add these parts:
 
 - The judgment on the current code in the result line.
-- The full mapping table from `mapping.md`. Plan reviewers get only the spec and this file, and they need the table to attack the atomicity claims.
+- The full mapping table and the assumptions list from `mapping.md`. Plan reviewers get only the spec and this file. They need the table to attack the atomicity claims, and the list to attack what the spec didn't model.
 - On each counterexample step, the `path:line` from that action's mapping row.
 - The test hand-offs.
 

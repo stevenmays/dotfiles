@@ -24,12 +24,15 @@ VERIFY_FIRST_BOUND = 6
 VERIFY_BOUND_STEP = 2
 # Enough samples to cover a nondeterministic init, and still well under a second at --max-steps=0.
 INIT_PROBE_SAMPLES = 1000
+MAX_SPEC_VARS = 8
+MAX_SPEC_INVARIANTS = 3
 EXIT_CODES = {"pass": 0, "fail": 1, "invalid": 2, "broken-spec": 3}
 EXIT_ENVIRONMENT = 4
 
 COMMENT_RE = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)
 STEP_RE = re.compile(r"^\s*action\s+(\w+)\s*=", re.M)
 STEP_NAME_RE = re.compile(r"step\w+")
+VAR_RE = re.compile(r"^\s*var\s+\w+\s*:", re.M)
 TRACE_RE = re.compile(r"^Trace length statistics: max=(\d+)", re.M)
 MUTANT_RE = re.compile(r"stepMut\w+")
 RESULT_RE = re.compile(r"^\[(ok|violation)\]", re.M)
@@ -63,6 +66,10 @@ def discover_steps(text):
         raise UsageError(f"{', '.join(misnamed)}: a step must be named step, stepDesign, or stepMut<Name>")
     order = {"current": 0, "design": 1, "mutant": 2}
     return sorted((name for name in names if role(name)), key=lambda name: order[role(name)])
+
+
+def count_vars(text):
+    return len(VAR_RE.findall(COMMENT_RE.sub("", text)))
 
 
 def error_text(output):
@@ -468,6 +475,14 @@ def find_problems(args, steps, totals, kills, mutants, init_probe, verify):
     return problems
 
 
+def find_warnings(args, variables):
+    if variables <= MAX_SPEC_VARS and len(args.invariants) <= MAX_SPEC_INVARIANTS:
+        return []
+    return [problem("spec-over-budget", f"the spec has {plural(variables, 'state variable')} and "
+                    f"{plural(len(args.invariants), 'invariant')}; the limit is {MAX_SPEC_VARS} and "
+                    f"{MAX_SPEC_INVARIANTS}, so split it into 2 flows or trim it")]
+
+
 def summary(records, totals, step, invariants, verify=None):
     selected = [record for record in records if record["step"] == step]
     found = {}
@@ -551,11 +566,11 @@ def validate(args):
     unknown = [step for step in args.verify_step or [] if step not in steps or role(step) == "current"]
     if unknown:
         raise UsageError(f"--verify-step takes stepDesign or a mutant that runs: {', '.join(unknown)}")
-    return str(spec_path.resolve()), list(dict.fromkeys(steps))
+    return str(spec_path.resolve()), list(dict.fromkeys(steps)), count_vars(text)
 
 
 def check(args):
-    spec, steps = validate(args)
+    spec, steps, variables = validate(args)
     args.verify = args.verify or bool(args.verify_step)
     mutants = [step for step in steps if role(step) == "mutant"]
     witnesses = list(dict.fromkeys([args.terminal, *args.witnesses]))
@@ -571,7 +586,7 @@ def check(args):
               "chunk_samples": args.samples, "targets": []} if args.budget else None
     skipped_verify = {step: verify_record("skipped", "typecheck failed") for step in args.verify_step or ["stepDesign"]}
     report.update(init_probe=None, runs=[], matrix={}, kills={}, current=None, design=None, budget=budget, problems=[],
-                  verify=skipped_verify if args.verify else {})
+                  warnings=find_warnings(args, variables), verify=skipped_verify if args.verify else {})
     if code != 0:
         if budget:
             budget["reason"] = "typecheck failed"
@@ -726,6 +741,8 @@ def render_md(report):
 
     if report["problems"]:
         lines += ["", "## Problems", ""] + [f"- `{p['code']}`: {p['message']}" for p in report["problems"]]
+    if report["warnings"]:
+        lines += ["", "## Warnings", ""] + [f"- `{w['code']}`: {w['message']}" for w in report["warnings"]]
     errors = [(run["command"], run["error"]) for run in report["runs"] if run["error"]]
     errors += [(target["command"], error) for target in (budget or {}).get("targets", []) for error in target["errors"]]
     if typecheck["error"]:

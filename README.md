@@ -122,7 +122,7 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 |-------|---------|
 | `adversarial-review` | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
 | `claims-verification` | Check a plan's claims about existing code against the repo before adversarial review: one blind Claude subagent answers neutral questions with `file:line` evidence |
-| `model-check` | Model-check a stateful design with Quint before it ships: a fresh Claude subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check |
+| `model-check` | Model-check the failure paths of a design with Quint before it ships: a fresh Claude subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check |
 | `claude-subagents` | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
 | `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
@@ -151,13 +151,13 @@ Wire `mays:claims-verification` into my implement-ticket skill, in the planning 
 
 ### Using model-check
 
-`model-check` belongs in a workflow's planning stage, for plans that change a stateful flow such as a queue, retry, webhook, payment, lock, or migration ordering. A spec writer models the design, the claims check verifies the spec's mapping to the code, and the session runs every check. It needs `quint` (`brew install quint`), and `quint verify` also needs Java. To add it to an `implement-ticket` skill, install `mays` 1.35.0 or later, then paste this prompt:
+`model-check` belongs in a workflow's planning stage, for plans that rely on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. A spec writer models the design, the claims check verifies the spec's mapping to the code, and the session runs every check. It needs `quint` (`brew install quint`), and `quint verify` also needs Java. To add it to an `implement-ticket` skill, install `mays` 1.35.0 or later, then paste this prompt:
 
 ```text
 Wire `mays:model-check` into my implement-ticket skill, in the planning stage only.
-- Run it only when the plan changes a stateful flow, such as a queue, retry, webhook, payment, lock, or migration ordering. Skip it for UI and CRUD work.
-- When a flag such as --full forces the check on a plan with no stateful flow, the skill records "Model check: skipped — no stateful flow in the plan" and the run continues.
-- Ask the planner for an "invariants and failure modes" list in every stateful plan. The planner never writes the spec.
+- Run it only when the plan relies on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. Skip it for UI work, CRUD work, and pure money math such as rounding or proration.
+- When a flag such as --full forces the check on a plan that relies on no protection against a race or a failure, the skill records "Model check: skipped — no failure path to model" and the run continues.
+- Ask the planner for an "invariants and failure modes" list in every plan that relies on a protection against a race or a failure. The planner never writes the spec.
 - Pass the skill the ticket type (bug, feature, or new-flow), the plan file path, the code paths in scope, that list, and the scratch dir.
 - Run its write phase after the planner returns. Its writer creates <scratch>/model/<flow>.qnt and <scratch>/model/mapping.md.
 - Check the mapping's current-code rows with mays:claims-verification, in the same pass as the plan's claims.
