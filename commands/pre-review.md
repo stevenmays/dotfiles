@@ -9,7 +9,7 @@ Review the current branch's changes before opening a PR. Catch the feedback revi
 
 ## Steps
 
-1. **Get the change**: Base = `$ARGUMENTS` if given, else `main` (fall back to `master`). Run `git diff <base>...HEAD`, `git diff --name-only <base>...HEAD`, and `git status --porcelain --untracked-files=all` — diffs never show untracked files, so without the status check a brand-new file that was never `git add`ed is invisible. If the branch diff is empty, review uncommitted work instead: `git diff HEAD` plus the untracked files from that same status output.
+1. **Get the change**: Base = `$ARGUMENTS` if given, else `main` (fall back to `master`). `git rev-parse --verify --quiet <base>` must succeed. Otherwise stop and report that `<base>` does not exist. Run `git merge-base <base> HEAD` and call the commit it prints `<merge-base>`. If it prints nothing, stop and report that `<base>` and `HEAD` share no history. Run `git diff <merge-base>`, `git diff --name-only <merge-base>`, and `git status --porcelain --untracked-files=all`. The diff covers commits, staged edits, and unstaged edits. Diffs never show untracked files, so without the status check a brand-new file that was never `git add`ed is invisible.
    - Read the full current contents of every changed file — the diff alone gives you hunks with three lines of context, and an untracked file has no diff at all. On a large branch (roughly 10+ changed files), dispatch `Explore` subagents with `model: "sonnet"` to read them and return condensed summaries instead of pulling everything into the main context.
    - For any exported signature that changed, grep the repo for callers and check them too — the diff cannot show you a caller it didn't touch.
 2. **Check every changed file** against:
