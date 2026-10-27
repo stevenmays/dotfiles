@@ -85,7 +85,7 @@ End with a summary count per severity. If everything passes, say so explicitly p
 
 ## Applying fixes
 
-After the report, ask which fixes to apply (the cooldown config is the most common one). Rules:
+After the report, ask which fixes to apply (the cooldown config is the most common one). When nobody can answer (a headless run), apply nothing and end with the report. Rules:
 
 - Back up any file before editing it (`cp file file.pre-audit`)
 - Apply only the fixes the user selected, one at a time

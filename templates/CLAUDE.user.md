@@ -43,7 +43,7 @@ Code comments: default to none. A comment must carry a fact the code cannot: a w
 
 Tests: every bug fix gets a test that fails before the fix. Never weaken or delete a test to make a suite pass. If a test was wrong, say so explicitly.
 
-Standards: when I correct the same kind of mistake twice in one session, offer once to record the pattern in the repo's `CLAUDE.md` under `## Conventions`. Create the section if it doesn't exist. Two corrections trigger the offer, at most once per session. If I decline, drop it silently.
+Standards: when I correct the same kind of mistake twice in one session, classify the correction first. A mechanical rule is one a tool can check, such as a banned import or a naming pattern. Offer once to add it as a rule in the repo's existing linter config. When no linter there can express it, offer a test instead. Offer once to record a judgment call in the repo's `CLAUDE.md` under `## Conventions`. Create the section if it doesn't exist. Two corrections trigger the offer, at most once per session. If I decline, drop it silently.
 
 Dependencies: don't add a package without asking. Prefer the standard library or something already in the manifest.
 
