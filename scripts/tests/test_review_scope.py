@@ -17,6 +17,7 @@ SCOPE_FILES = [
     "commands/pre-review.md",
     "commands/extreme-code-quality-review.md",
     "agents/extreme-code-quality-review.md",
+    "commands/test-and-fix.md",
 ]
 # The brief receives `{MERGE_BASE}` already filled in, so it names no `git merge-base` command.
 NO_MERGE_BASE_COMMAND = {"skills/adversarial-review/references/code-review.md"}
