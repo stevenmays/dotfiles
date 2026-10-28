@@ -20,9 +20,9 @@ Personal Claude Code and Codex configuration, packaged as separate versions of t
 /extreme-code-quality-review   # structural audit — only for large or structural changes
 ```
 
-`pre-review` checks your branch against the repo's CLAUDE.md conventions, an always-on correctness checklist (inverted conditions, missing awaits, swallowed errors, untested branches), and a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, single-use abstractions), then offers to apply the fixes.
+`pre-review` checks your branch against the repo's conventions (`CLAUDE.md`, `AGENTS.md`, `CONTRIBUTING.md`, `CODING_STANDARDS.md`), an always-on correctness checklist (inverted conditions, missing awaits, swallowed errors, untested branches), and a baseline AI-slop checklist (obvious comments, gratuitous defensive checks, `as any`, new lint and test suppressions, single-use abstractions), then offers to apply the fixes.
 
-New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the repo, writes a real CLAUDE.md, and proposes a toolchain-matched permissions allowlist — with a choice between committing the files or keeping them local-only (`.git/info/exclude` + `settings.local.json`).
+New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the repo, writes a real CLAUDE.md with a proposed risk map, and proposes a toolchain-matched permissions allowlist — with a choice between committing the files or keeping them local-only (`.git/info/exclude` + `settings.local.json`). A headless run writes CLAUDE.md local-only and only prints the allowlist.
 
 ## Install
 
