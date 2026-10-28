@@ -13,14 +13,14 @@ Reviewers read; the caller applies every fix, so one actor owns the diff.
 
 | Mode | Reviewers see | Brief |
 | --- | --- | --- |
-| `plan` | The plan text and the ticket | `references/plan-review.md` |
+| `plan` | The plan text and the ticket, plus the model-check spec and result when the caller ran one | `references/plan-review.md` |
 | `code` | `git diff <merge-base>` (commits, staged edits, and unstaged edits) plus untracked files from `git status --porcelain --untracked-files=all`; the ticket and approved plan when there are any | `references/code-review.md` |
 
 In code mode, `<base>` is the repo default branch (`main`, else `master`) unless the caller names another. `<merge-base>` is the commit that `git merge-base <base> HEAD` prints.
 
 Before launching either reviewer in code mode, `git rev-parse --verify --quiet <base>` must succeed. Then `git merge-base <base> HEAD` must print a commit. If it prints nothing, stop and report that `<base>` and `HEAD` share no history. An empty merge base would make the diff compare only the index and the working tree. Then `git diff --quiet <merge-base>` must exit 1, or `git ls-files --others --exclude-standard` must print a file. Otherwise stop and report that there is nothing to review.
 
-Fill the brief's placeholders first. Fill `{MERGE_BASE}` with the full commit hash, not a command, so both reviewers read the same scope. Then inline the ticket and plan text, so placeholder names that appear inside the plan stay as written. Never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
+Fill the brief's placeholders first. Fill `{MERGE_BASE}` with the full commit hash, not a command, so both reviewers read the same scope. Then inline the ticket, the plan text, and any model-check spec and result, so placeholder names that appear inside them stay as written. Never send a path the reviewer cannot read. Keep the two prompts identical apart from tool guidance, so disagreement comes from the models, not the prompts.
 
 ## Launch
 
