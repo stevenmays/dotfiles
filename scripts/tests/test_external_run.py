@@ -239,6 +239,7 @@ class ExternalRunTests(unittest.TestCase):
         argv = self.argv("codex")
         self.assertPair(argv, "-m", "gpt-6.1-sol")
         self.assertPair(argv, "-c", 'model_reasoning_effort="high"')
+        self.assertPair(argv, "-c", 'model_reasoning_summary="detailed"')
         text = self.out.read_text()
         self.assertTrue(text.startswith("# Codex run — complete"), text)
         self.assertIn("Engine: codex · Model: gpt-6.1-sol · effort high", text)
