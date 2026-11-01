@@ -186,6 +186,7 @@ if [ "$ENGINE" = codex ]; then
   # auto-approves anything the sandbox permits, so workspace-write alone is enough.
   # --skip-git-repo-check lets --cd name a non-git directory. Inside a repo the check passes
   # anyway, and a probe of our own could disagree with codex's detection.
+  # Reasoning summaries stream as events, so the idle watchdog can tell a thinking run from a hung one.
   "$BIN" exec \
     --json \
     --skip-git-repo-check \
@@ -193,6 +194,7 @@ if [ "$ENGINE" = codex ]; then
     -C "$WORKDIR" \
     -m "$MODEL" \
     -c "model_reasoning_effort=\"$EFFORT\"" \
+    -c 'model_reasoning_summary="detailed"' \
     -c 'tools.web_search=false' \
     -c 'mcp_servers={}' \
     --disable browser_use \

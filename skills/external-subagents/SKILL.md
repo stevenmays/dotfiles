@@ -100,7 +100,8 @@ The wrapper always pins the model. An unset Codex model inherits `~/.codex/confi
 
 - The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: cursor · Model: grok-4.7-high · effort high`. Codex's event stream carries no model, so this line is the only record of what produced a run. On cursor the line also names the model Cursor reported when that differs from the requested slug.
 - A stalled or timed-out run's output says `PARTIAL` in its first line and names the last tool call before the kill. Findings salvaged from a stalled run are still findings — use them, and mark them partial.
-- Defaults are 300s idle and 1800s hard. Raise `--hard` for a large diff; do not raise `--idle` above 600 — silence that long is a hang, not thinking.
+- Defaults are 300s idle and 1800s hard. Raise `--hard` for a large diff. Do not raise `--idle` above 600.
+- On codex, the wrapper turns on reasoning summaries with `model_reasoning_summary="detailed"`. Codex writes a summary event after each block of reasoning, so the watchdog sees a run that is still thinking. Without summaries, a codex run that makes no tool calls writes nothing until its final answer.
 
 ## Prompt contract
 
