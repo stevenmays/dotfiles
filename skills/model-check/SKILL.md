@@ -1,6 +1,6 @@
 ---
 name: model-check
-description: Model-check the failure paths of a design with Quint before it ships — races, crashes, redelivery, duplicate delivery, out-of-order events, and timeouts. A fresh subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check. Use when a plan relies on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. Not for UI work, CRUD work, or pure money math such as rounding or proration, because property-based tests catch those more cheaply.
+description: Model-check the failure paths of a design with Quint before it ships — races, crashes, redelivery, duplicate delivery, out-of-order events, and timeouts. A fresh subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check. After implementation, a conformance phase checks the code against the mapping's design rows. Use when a plan relies on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. Not for UI work, CRUD work, or pure money math such as rounding or proration, because property-based tests catch those more cheaply.
 ---
 
 # Model check
@@ -34,6 +34,7 @@ The caller passes:
 1. Write phase: the writer creates the spec and the mapping. See "Roles", "Write the spec", and "Write mutants".
 2. Claims phase: see "Verify the mapping".
 3. Run phase: the caller runs the runner and writes `<scratch>/model-check.md`. See "Run", "Witnesses", and "Result".
+4. Conformance phase: after implementation, the caller checks the code against the mapping's design rows. See "Check conformance".
 
 ## Roles
 
@@ -71,7 +72,7 @@ The writer's prompt follows `mays:claude-subagents` and carries every input. It 
   - Each mutant gets one `stepMut<Name>`.
   - A new flow has `stepDesign` and its mutants only.
 - **Comments:** each action gets one short comment that says why it's atomic.
-- **Mapping:** `mapping.md` is a table with one row per action. Each current-code row is one claim that `mays:claims-verification` can check.
+- **Mapping:** `mapping.md` is a table with one row per action. Each current-code row is one claim that `mays:claims-verification` can check. Each design row becomes one claim in the conformance phase.
 
 ```
 | Model | Action | Code | Why it's atomic |
@@ -124,13 +125,13 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/model-check/scripts/check.py" <scratch>/mo
 
 After the fixed runs, the budget spends 60 seconds of sampling on every core. It first samples each mutant against the invariants that no mutant killed, then samples `stepDesign`. Add `--verify` only when a mutant survives the budget, or when an invariant guards money or security. Examples are a double charge, a cross-tenant leak, and an auth bypass. Act on the exit status:
 
-| Exit | Verdict | Next step |
-| --- | --- | --- |
-| `0` | `pass` | Make the judgment calls that follow. |
-| `1` | `fail` | The design violates an invariant. Record it as a finding for the plan, with its counterexample. |
-| `2` | `invalid` | The check proves nothing. `references/quint.md` lists each problem code and its next step. A usage error also exits `2`, with its message on stderr. |
-| `3` | `broken-spec` | A parse, type, or runtime error. Send the error to the writer. |
-| `4` | none | `quint` is missing. Skip the gate, as "Preflight" says. |
+| Exit | Verdict       | Next step                                                                                                                                            |
+| ---- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `0`  | `pass`        | Make the judgment calls that follow.                                                                                                                 |
+| `1`  | `fail`        | The design violates an invariant. Record it as a finding for the plan, with its counterexample.                                                      |
+| `2`  | `invalid`     | The check proves nothing. `references/quint.md` lists each problem code and its next step. A usage error also exits `2`, with its message on stderr. |
+| `3`  | `broken-spec` | A parse, type, or runtime error. Send the error to the writer.                                                                                       |
+| `4`  | none          | `quint` is missing. Skip the gate, as "Preflight" says.                                                                                              |
 
 A spec over the size limit in "Write the spec" gets a `spec-over-budget` warning in the output's `## Warnings` section. The warning never changes the verdict or the exit status. On that warning, the caller sends the spec back to the writer once to trim or split it. That return counts as a run-phase attempt under "Retries". If the returned spec is still over the limit, the caller runs it as is, and the result notes the warning.
 
@@ -153,7 +154,7 @@ A Quint witness is a state predicate. Quint reports the percentage of runs in wh
 
 ## Retries
 
-Each phase gets at most 2 writer attempts: the write phase, the claims phase, and the run phase. After that, record the failure in the result and continue. Never block a headless run.
+Each phase gets at most 2 writer attempts: the write phase, the claims phase, and the run phase. After that, record the failure in the result and continue. Never block a headless run. The conformance phase sends nothing back to the writer, because it only reports.
 
 ## Result
 
@@ -175,7 +176,32 @@ Test hand-offs come from 2 sources only: each killed mutant's counterexample, an
 - The hand-off is a regression test at an honest seam. Reverting the protection in the real code must make that test fail.
 - A race that no test seam can reproduce is recorded as untested, with its trace.
 
+## Check conformance
+
+A pass proves nothing about the code unless each spec action maps to one atomic unit in the code. The claims phase checks only the current-code rows, because the design code doesn't exist yet. The conformance phase checks the design rows after implementation. Inside `implement-ticket`, it runs before code review.
+
+When the write phase didn't run, or the model check was skipped, skip this phase. Write `Model conformance: skipped — <reason>` to `<scratch>/model-conformance.md` instead.
+
+Run `mays:claims-verification` on the design rows of `<scratch>/model/mapping.md`, against the implemented working tree. Each design row is one claim with 2 parts:
+
+- The code implements the row's action as the row's intended statement.
+- That code is atomic for the reason in the row's "Why it's atomic" column.
+
+When that reason rests on a behavior in the mapping's `## Assumptions` list, such as "the Postgres row lock holds", the verifier checks only that the code uses that mechanism. The assumption stays an assumption, as in the run phase. When the reason rests on a behavior outside the repo that the list omits, the row scores `unverifiable`, and its false-row entry names the missing assumption.
+
+The verifier cites the `path:line` that implements each row. A row holds only when its claim scores `supported`. Every other score makes it a false row.
+
+Write `<scratch>/model-conformance.md`. Its first line is the result line:
+
+```
+Model conformance: <k>/<n> design rows hold
+```
+
+Below the result line, list each false row: its action, its intended statement, and what the code at `path:line` does instead. For an unsupported row, write `not found` and the search the verifier ran. For an unverifiable row, write why no oracle is in reach.
+
+A false row means the code breaks an assumption that the spec's pass depends on, so the pass no longer covers the code. The model check only reports. Skip the "Act" step of `mays:claims-verification`, because the caller decides what to do with a false row.
+
 ## Artifacts
 
-- Specs and traces live in `<scratch>` and are never committed to the repo. A committed spec drifts from the code unless conformance tests replay it.
+- Specs and traces live in `<scratch>` and are never committed to the repo. A committed spec drifts from the code unless tests replay its traces.
 - The caller attaches the specs and key traces wherever it logs results.

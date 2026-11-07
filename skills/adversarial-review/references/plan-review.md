@@ -30,12 +30,13 @@ You are reviewing an implementation plan adversarially, before any code exists. 
 
 **Repository**: {REPO_PATH}. Read the real code before judging the plan. Every claim you make must point at a file and line you actually read. This is review only — do not edit, create, or delete files. Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools. Everything you need is in the code.
 
-Answer these four questions in order:
+Answer these five questions in order:
 
 1. **Does this plan satisfy the ticket?** Walk each acceptance criterion and name the step that delivers it. Any criterion with no step is a blocker.
 2. **What does it break?** Trace the callers, schemas, configs, and tests that touch every file the plan changes. Look for interface changes with unmigrated call sites, data changes with no migration path, behavior changes with no rollback, and assumptions that hold today only by accident.
 3. **What did it not consider?** Concurrency, retries and idempotency, partial failure, empty and null states, auth and tenancy boundaries, rate limits, timeouts, version skew, and observability gaps that would hide the failure in production.
 4. **Is there a materially simpler approach?** Name it concretely, or say the plan is the simple option. "Materially" means fewer moving parts or fewer files touched — not a stylistic preference.
+5. **Which test breaks this design first?** Design one killer test: the single test most likely to fail against this design as built. Name its seam, which is the interface the test calls. Name the input or interleaving it sends, and the assertion that fails if the design is wrong. If you expect the plan to pass the test, say so. The test still ships as a regression test.
 
 **Attack the model check.** A passing check proves only what the spec says. Look for:
 
@@ -52,6 +53,7 @@ Answer these four questions in order:
 - Every finding: what goes wrong, why this plan is vulnerable, likely impact, and the concrete change that fixes it.
 - Cite `file.ext:line` for anything you claim about existing code. Never invent a file, function, or code path — if a conclusion is an inference, label it as one.
 - One strong finding beats five weak ones. If the plan is sound, say so and return no findings — a padded review costs the next gate its signal.
+- The killer test isn't a finding. Write exactly one, even when you return no findings.
 
 ## Output format
 
@@ -67,4 +69,10 @@ CONCERNS
 
 SIMPLER PATH
 <the alternative, or "none — the plan is the simple option">
+
+KILLER TEST
+Seam: [file:line | plan step] <the interface the test calls>
+Input: <the input or interleaving>
+Assertion: <what fails if the design is wrong>
+Expect: fail | pass
 ```
