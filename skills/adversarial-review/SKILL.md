@@ -11,9 +11,9 @@ Reviewers read; the caller applies every fix, so one actor owns the diff.
 
 ## Modes
 
-| Mode | Reviewers see | Brief |
-| --- | --- | --- |
-| `plan` | The plan text and the ticket, plus the model-check spec and result when the caller ran one | `references/plan-review.md` |
+| Mode   | Reviewers see                                                                                                                                                                                 | Brief                       |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+| `plan` | The plan text and the ticket, plus the model-check spec and result when the caller ran one                                                                                                    | `references/plan-review.md` |
 | `code` | `git diff <merge-base>` (commits, staged edits, and unstaged edits) plus untracked files from `git status --porcelain --untracked-files=all`; the ticket and approved plan when there are any | `references/code-review.md` |
 
 In code mode, `<base>` is the repo default branch (`main`, else `master`) unless the caller names another. `<merge-base>` is the commit that `git merge-base <base> HEAD` prints.
@@ -48,8 +48,10 @@ Plan mode may pass `--effort low` to the external run when the plan touches 3 fi
 ## Triage
 
 - Triage every finding into confirmed blocker, non-blocking, or rejected with a one-line reason. A rejected finding with no reason is an unexamined one.
-- **Verify every finding against the code yourself before you accept or reject it**: blockers, concerns, rejections, test gaps, and simpler-path items. Both families hallucinate line numbers and control flow.
+- **Verify every finding against the code yourself before you accept or reject it**: blockers, concerns, rejections, test gaps, simpler-path items, and killer tests. Both families hallucinate line numbers and control flow.
 - Record the `file:line` you read for each finding. For a finding about the plan text, cite the plan section instead. For a finding about something missing, name the search you ran, such as `grep -rn retry_webhook`.
+- In plan mode, merge both reviewers' killer tests when they call the same seam with the same assertion. Otherwise keep both.
+- To verify a killer test, confirm that its seam exists at the cited `file:line` or plan step. Then confirm that its input or interleaving can reach the seam. A killer test that fails this check goes under REJECTED.
 - The caller fixes confirmed blockers, then re-runs both reviewers scoped to the changed areas.
 
 ## Degraded mode
@@ -77,6 +79,9 @@ REJECTED
 
 TEST GAPS (code mode) | SIMPLER PATH (plan mode)
 - <gap or alternative, or "none"> · Checked: <file:line>
+
+KILLER TESTS (plan mode)
+- [file:line | plan step] <seam>: <input or interleaving>; asserts <assertion>; expects <fail | pass> (<family>, or both) · Checked: <file:line>
 ```
 
 `[file:line]` is where the reviewer pointed. `Checked:` is what you read.
