@@ -45,14 +45,16 @@ The wrapper always pins the model. An unpinned run would take `agy`'s own defaul
 
 | `--model` | Use for |
 | --- | --- |
-| Omitted: `gemini-3.8-flash-high` | Strong work: planning, review, a second implementation |
+| Omitted: `gemini-4-neon-high` | Strong work: planning, review, a second implementation |
+| `gemini-4-neon-xhigh` | The hardest plan or review, when the user asks for maximum effort |
+| `gemini-3.8-flash-high` | Strong work when speed matters more than depth |
 | `gemini-3.8-flash-medium` | Work a deterministic check verifies: a test, lint, compile, or known-target grep |
 | `gemini-3.8-flash-low` | Trivial work |
 | `gemini-4-argon-high` | Any role, when the user or the calling workflow names Argon |
 
 - `--model` beats `GEMINI_SUBAGENT_MODEL`, which beats the default.
-- The slug carries the effort. The wrapper reads the `-low`, `-medium`, or `-high` suffix for the provenance line, else records `model default`.
-- `gemini-4-argon` comes in `-low`, `-medium`, and `-high`, the same as `gemini-3.8-flash`.
+- The slug carries the effort. The wrapper reads the `-low`, `-medium`, `-high`, or `-xhigh` suffix for the provenance line, else records `model default`.
+- `gemini-4-neon` comes in `-low`, `-medium`, `-high`, and `-xhigh`. `gemini-4-argon` and `gemini-3.8-flash` stop at `-high`.
 - `agy` has its own `--effort` flag. The wrapper never passes it, because its interaction with the slug suffix is unverified.
 - The wrapper exits 2 on a slug without `gemini`. `agy` also serves 7 other slugs: `claude-opus-5-5-*` and `claude-sonnet-5-5-*` in `-low`, `-medium`, and `-high`, and `gpt-oss-120b-medium`.
 - A Claude slug would make the second opinion same-family, and this skill exists to run Gemini.
@@ -66,6 +68,7 @@ The wrapper always pins the model. An unpinned run would take `agy`'s own defaul
 | Implementation | `workspace-write` | `--idle 300 --hard 3600` | Edits in the working tree |
 
 - `gemini-4-argon-high` uses `--idle 600` in every role. A live Argon run went silent for over 300s while it wrote its answer. Reruns with `--idle 600` finished in 486s and 542s.
+- Whether a long `gemini-4-neon-high` run goes silent like Argon is unverified. If a Neon run exits 125, rerun it once with `--idle 600`.
 - `read-only` is the default. The run can view and search files, but it cannot write a file or run a command, `git` included.
 - `workspace-write` can write files but still cannot run a command. An implementation run cannot run its tests, a build, or `git`. The caller runs the tests and reads `git diff` afterwards.
 - Plan and research: an empty `response` makes the wrapper fall back to the streamed text. That text can put the run's commentary above the deliverable. Strip everything before the first heading.
@@ -113,7 +116,7 @@ Headless `agy` cannot ask for permission, so it auto-denies any tool that needs 
 | 126 | `agy` failed: a nonzero exit, or a `result` event whose `status` is not `SUCCESS` | Read the `.stderr` file next to the output. Do not retry blindly |
 | 2 | Bad usage, `agy` not on `PATH`, or a non-Gemini model | Fix the call |
 
-- The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: gemini · Model: gemini-3.8-flash-high · effort high`.
+- The `--out` file always exists. Its second line names the engine, model, and effort, such as `Engine: gemini · Model: gemini-4-neon-high · effort high`.
 - When the `init` event reports a different model, the second line names that model too.
 - A stalled or timed-out run says `PARTIAL` in its first line and names the last tool call before the kill. Findings salvaged from a stalled run are still findings: use them, and mark them partial.
 - `--print-timeout` makes `agy` stop itself at `--hard` too. The wrapper reports that stop as exit 124.

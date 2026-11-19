@@ -61,7 +61,7 @@ Every subagent family has a default model and effort. An env var under `env` in 
 | Claude | The session model | `CLAUDE_CODE_SUBAGENT_MODEL`, set to `opus` | Not set by the plugin | None |
 | Codex (GPT) | `gpt-6.1-sol` | `CODEX_SUBAGENT_MODEL` | `high` | `CODEX_SUBAGENT_EFFORT` |
 | Cursor (Grok) | The highest Grok version at the effort | `CURSOR_SUBAGENT_MODEL`; a pinned slug carries its own effort | `high` | `CURSOR_SUBAGENT_EFFORT` |
-| Gemini | `gemini-3.8-flash-high` | `GEMINI_SUBAGENT_MODEL` | The slug's `-low`, `-medium`, or `-high` suffix | None |
+| Gemini | `gemini-4-neon-high` | `GEMINI_SUBAGENT_MODEL` | The slug's `-low`, `-medium`, `-high`, or `-xhigh` suffix | None |
 
 For one call, `--model` and `--effort` on the wrapper scripts beat the env vars. A pinned Cursor slug carries its own effort and ignores both. The Gemini wrapper takes only `--model`. A Claude spawn overrides its model with `model:` on the Agent tool.
 
