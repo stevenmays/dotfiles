@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Check this repository's plugin boundaries and packaged resources."""
+"""Check the Claude plugin's structure and that every skill folder installs on its own."""
 
 import json
 from pathlib import Path
 import re
 import sys
-
-from sync_codex_resources import sync
 
 
 def require(condition, message):
@@ -29,70 +27,21 @@ def check(root):
         require((root / name).is_dir(), f"Missing Claude directory: {name}")
     read_object(root / "hooks/hooks.json")
 
-    market = read_object(root / ".agents/plugins/marketplace.json")
-    entries = market["plugins"]
-    require(len({p["name"] for p in entries}) == len(entries), "Duplicate marketplace plugin names")
-    entry = next(p for p in entries if p["name"] == "mays")
-    require(entry["source"] == {"source": "local", "path": "./codex"}, "Codex source must be ./codex")
-    require(entry["policy"]["installation"] in {"AVAILABLE", "INSTALLED_BY_DEFAULT", "NOT_AVAILABLE"},
-            "Invalid installation policy")
-    require(entry["policy"]["authentication"] in {"ON_INSTALL", "ON_USE"}, "Invalid authentication policy")
-    require(bool(entry["category"]), "Missing marketplace category")
-
-    package = root / "codex"
-    manifest = read_object(package / ".codex-plugin/plugin.json")
-    require(manifest["name"] == entry["name"], "Plugin name does not match marketplace")
-    require(re.fullmatch(r"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:[-+][0-9A-Za-z.-]+)?",
-                         manifest["version"]), "Invalid version")
-    require(manifest["skills"] == "./skills/", "Unexpected Codex skills path")
-    for field in ("description", "author", "interface"):
-        require(bool(manifest[field]), f"Missing manifest field: {field}")
-    require(isinstance(manifest["description"], str), "Description must be a string")
-    for field in ("author", "interface"):
-        require(isinstance(manifest[field], dict), f"{field} must be an object")
-    require(isinstance(manifest["author"].get("name"), str) and manifest["author"]["name"].strip(),
-            "Author name must be a nonempty string")
-    for field in ("displayName", "shortDescription", "longDescription", "developerName", "category"):
-        value = manifest["interface"].get(field)
-        require(isinstance(value, str) and value.strip(), f"Missing interface string: {field}")
-    require(not (root / ".codex-plugin/plugin.json").exists(), "Remove the legacy root Codex manifest")
-    for name in (".claude-plugin", "commands", "hooks", ".codex-plugin/migrated-command-skills"):
-        require(not (package / name).exists(), f"Unexpected legacy content in Codex package: {name}")
-    for path in package.rglob("*"):
-        require(not path.is_symlink(), f"Packaged symlink is not portable: {path}")
-
+    # `npx skills add` discovers a skill by its frontmatter `name` and `description`.
     names = set()
-    for skill in sorted((package / "skills").iterdir()):
-        require(skill.is_dir(), f"Unexpected entry in skills/: {skill}")
+    for skill in sorted(path for path in (root / "skills").iterdir() if path.is_dir()):
         path = skill / "SKILL.md"
-        text = path.read_text()
-        frontmatter = re.match(r"\A---\nname: ([a-z0-9-]+)\ndescription: ([^\n]+)\n---\n", text)
+        frontmatter = re.match(r"\A---\nname: ([a-z0-9-]+)\ndescription: \S[^\n]*\n", path.read_text())
         require(frontmatter is not None, f"Use name and a single-line description in {path}")
-        name, description = frontmatter.groups()
-        require(name == skill.name and name not in names, f"Duplicate or mismatched skill name: {name}")
-        require(len(name) <= 64 and not name.startswith("source-command-"), f"Invalid skill name: {name}")
-        require(len(description) <= 300, f"Description too broad or long: {name}")
-        require(name != "ste-writing", f"Disabled skill packaged: {name}")
-        require(not re.search(r"ste-writing|claude -p|AskUserQuestion|CLAUDE_CODE_SUBAGENT_MODEL", text),
-                f"Legacy runtime instruction: {name}")
-        names.add(name)
-
-    for path in (package / "skills").rglob("*.md"):
-        for link in re.findall(r"\]\(([^)]+)\)", path.read_text()):
-            if re.match(r"[a-z]+://|#", link):
-                continue
-            target = (path.parent / link.split("#")[0]).resolve()
-            require(target.is_relative_to(package.resolve()) and target.is_file(),
-                    f"Missing or escaping resource in {path}: {link}")
-    require(len(names) == 8, f"Expected eight Codex skills, found {len(names)}")
-    sync(root, check=True)
+        require(frontmatter.group(1) == skill.name, f"Skill name does not match its folder: {skill.name}")
+        names.add(skill.name)
     return names
 
 
 if __name__ == "__main__":
     try:
         names = check(Path(__file__).resolve().parents[1])
-    except (OSError, ValueError, KeyError, TypeError, StopIteration) as error:
+    except (OSError, ValueError, KeyError, TypeError) as error:
         print(f"Plugin check failed: {error}", file=sys.stderr)
         raise SystemExit(1)
-    print(f"Plugin boundaries and resources valid; {len(names)} Codex skills")
+    print(f"Plugin structure valid; {len(names)} skills")

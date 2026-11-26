@@ -5,11 +5,11 @@ description: Run a planning, research, review, or implementation task on a Gemin
 
 # Gemini subagents
 
-Run a task on a Gemini model as a background subagent through the Antigravity CLI, `agy`. This skill mirrors `mays:external-subagents`: the same flags, exit codes, and `--out` file, without `--engine` and `--effort`.
+Run a task on a Gemini model as a background subagent through the Antigravity CLI, `agy`. This skill mirrors `external-subagents`: the same flags, exit codes, and `--out` file, without `--engine` and `--effort`.
 
 Always invoke `agy` through `scripts/gemini-run.sh`, never `agy -p` directly. `agy` has no per-run switch for its network-reaching tools: `search_web`, `read_url_content`, `call_mcp_tool`, `open_browser_url`, and `browser_*`. A run that reaches for one can hang. The wrapper passes `--print-timeout` at the hard budget, and its idle watchdog kills a run that stops emitting events. Then it salvages whatever arrived before the kill.
 
-Not for generating images: `mays:gemini-image-generator` covers those.
+Not for generating images: `gemini-image-generator` covers those.
 
 ## Preflight
 
@@ -25,7 +25,7 @@ command -v agy; jq --version; agy models
 ## Run it
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/skills/gemini-subagents/scripts/gemini-run.sh" \
+"${CLAUDE_SKILL_DIR}/scripts/gemini-run.sh" \
   --prompt <scratch>/gemini-<role>-prompt.md --out <scratch>/gemini-<role>.md \
   --label <role> \
   [--model SLUG] [--sandbox read-only|workspace-write] [--idle 300] [--hard 1800] [--cd <repo>]
@@ -87,7 +87,7 @@ A run can read image and video files, but it cannot make a video. Live runs veri
 | Video out | None. `agy` has no video-generation tool, and the run says so | `gemini-4-argon-high` |
 
 - Name the media file in the prompt and keep it under `--cd`. The event stream names the read tool `read_file`, although the `init` tool list says `view_file`.
-- A generated image lands in `~/.gemini/antigravity-cli/brain/<conversation_id>/` as a timestamped JPEG, not at the path the prompt asks for. The run cannot move it, because it cannot run a command. Use `mays:gemini-image-generator` instead, which copies the image out and checks it.
+- A generated image lands in `~/.gemini/antigravity-cli/brain/<conversation_id>/` as a timestamped JPEG, not at the path the prompt asks for. The run cannot move it, because it cannot run a command. Use `gemini-image-generator` instead, which copies the image out and checks it.
 - Video output through the direct Gemini API is unverified. This skill does not wrap that API.
 
 ## Headless permissions
@@ -128,9 +128,9 @@ Write the prompt to a file in a scratch directory outside the repo: the session 
 
 The Gemini model cannot see the conversation. Do not count on it loading any `CLAUDE.md`. By Antigravity convention, `agy` reads `~/.gemini/GEMINI.md` and any `AGENTS.md` or `GEMINI.md` in the workspace. That loading is unverified, so verify which files it reads before relying on it. Carry the rules that apply in the prompt, and name the project `CLAUDE.md` path for the run to read.
 
-Every prompt carries the same items as the prompt list in `mays:claude-subagents`. That includes the decisions already made and the judgment calls the run owns. Add these:
+Every prompt carries the same items as the prompt list in `claude-subagents`. That includes the decisions already made and the judgment calls the run owns. Add these:
 
-- The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `mays:claude-subagents`, except that the run cannot run its tests. It writes the change and its tests, then stops, and the caller runs them.
+- The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `claude-subagents`, except that the run cannot run its tests. It writes the change and its tests, then stops, and the caller runs them.
 - The tool limit: "You cannot run shell commands. Read and search with your file tools." A run that reaches for a denied `run_command` can end with an empty response.
 - The no-network clause, verbatim: "Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools."
 - The no-subagent rule, verbatim: "Do not spawn subagents." A run that starts its own subagent can stay silent past `--idle`, and the watchdog kills it with no findings.

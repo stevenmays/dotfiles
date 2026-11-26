@@ -26,12 +26,12 @@ Fill the brief's placeholders first. Fill `{MERGE_BASE}` with the full commit ha
 
 Launch both reviewers in one message so they run concurrently:
 
-- **Claude**: the reviewer role in `mays:claude-subagents`, `model:` unset.
-- **External**: the review role in `mays:external-subagents`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
+- **Claude**: the reviewer role in `claude-subagents`, `model:` unset.
+- **External**: the review role in `external-subagents`, launched with `Bash(run_in_background: true)`. The wrapper picks the engine and pins that engine's default model.
 - **Working tree**: code mode reads the live working tree. Don't edit, stash, build into, or switch it until both reviewers return.
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
+"${CLAUDE_SKILL_DIR}/../external-subagents/scripts/external-run.sh" \
   --prompt <scratch>/external-<mode>-review-prompt.md --out <scratch>/external-<mode>-review.md \
   --label review --idle 300 --hard 1800
 ```

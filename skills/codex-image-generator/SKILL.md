@@ -12,7 +12,7 @@ Codex CLI ships an `image_gen` tool and a bundled `imagegen` skill that shapes p
 Delegate the run to a `general-purpose` subagent pinned to `model: "sonnet"`. A Codex run takes about 50 seconds and the result is a file check, so the session must not block on it. Give the subagent the exact command and the verification rule below.
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/skills/codex-image-generator/scripts/generate.sh" \
+"${CLAUDE_SKILL_DIR}/scripts/generate.sh" \
   --prompt "<image description>" \
   --output <path>.png \
   [--reference <image>]... [--model gpt-6-astra] [--open]

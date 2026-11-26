@@ -38,12 +38,12 @@ The caller passes:
 
 ## Roles
 
-- A fresh `general-purpose` subagent writes the spec and the mapping. Dispatch it through `mays:claude-subagents` with `model:` unset.
+- A fresh `general-purpose` subagent writes the spec and the mapping. Dispatch it through `claude-subagents` with `model:` unset.
 - The planner never writes specs, so the author never checks its own design.
 - The writer can run `quint typecheck`, but never `quint run`, `quint verify`, or the runner. A writer that sees results can tune the spec until it passes.
 - The caller runs the runner itself and reads its output. A subagent's account of a run isn't evidence.
 
-The writer's prompt follows `mays:claude-subagents` and carries every input. It tells the writer to load `mays:model-check` and follow "Write the spec" and "Write mutants", plus `references/quint.md`. The writer creates one `<scratch>/model/<flow>.qnt` per flow, plus `<scratch>/model/mapping.md`, and nothing else.
+The writer's prompt follows `claude-subagents` and carries every input. It tells the writer to load `model-check` and follow "Write the spec" and "Write mutants", plus `references/quint.md`. The writer creates one `<scratch>/model/<flow>.qnt` per flow, plus `<scratch>/model/mapping.md`, and nothing else.
 
 ## Ticket types
 
@@ -72,7 +72,7 @@ The writer's prompt follows `mays:claude-subagents` and carries every input. It 
   - Each mutant gets one `stepMut<Name>`.
   - A new flow has `stepDesign` and its mutants only.
 - **Comments:** each action gets one short comment that says why it's atomic.
-- **Mapping:** `mapping.md` is a table with one row per action. Each current-code row is one claim that `mays:claims-verification` can check. Each design row becomes one claim in the conformance phase.
+- **Mapping:** `mapping.md` is a table with one row per action. Each current-code row is one claim that `claims-verification` can check. Each design row becomes one claim in the conformance phase.
 
 ```
 | Model | Action | Code | Why it's atomic |
@@ -109,14 +109,14 @@ Then report which cause applies. A weak invariant or a state that can't represen
 
 ## Verify the mapping
 
-Run `mays:claims-verification` on the mapping's current-code rows. Inside `implement-ticket`, that happens in the same pass as the plan's claims. A standalone caller runs it alone. A false mapping claim sends the spec back to the writer once. If a claim is still false, record the gate as unverified and continue.
+Run `claims-verification` on the mapping's current-code rows. Inside `implement-ticket`, that happens in the same pass as the plan's claims. A standalone caller runs it alone. A false mapping claim sends the spec back to the writer once. If a claim is still false, record the gate as unverified and continue.
 
 ## Run
 
 Run the runner on each spec, and save its output:
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/skills/model-check/scripts/check.py" <scratch>/model/<flow>.qnt \
+python3 "${CLAUDE_SKILL_DIR}/scripts/check.py" <scratch>/model/<flow>.qnt \
   --main MODULE --invariants INVARIANTS --terminal TERMINAL --witnesses WITNESSES \
   --budget 60 --format md > <scratch>/model/<flow>.md
 ```
@@ -182,7 +182,7 @@ A pass proves nothing about the code unless each spec action maps to one atomic 
 
 When the write phase didn't run, or the model check was skipped, skip this phase. Write `Model conformance: skipped — <reason>` to `<scratch>/model-conformance.md` instead.
 
-Run `mays:claims-verification` on the design rows of `<scratch>/model/mapping.md`, against the implemented working tree. Each design row is one claim with 2 parts:
+Run `claims-verification` on the design rows of `<scratch>/model/mapping.md`, against the implemented working tree. Each design row is one claim with 2 parts:
 
 - The code implements the row's action as the row's intended statement.
 - That code is atomic for the reason in the row's "Why it's atomic" column.
@@ -199,7 +199,7 @@ Model conformance: <k>/<n> design rows hold
 
 Below the result line, list each false row: its action, its intended statement, and what the code at `path:line` does instead. For an unsupported row, write `not found` and the search the verifier ran. For an unverifiable row, write why no oracle is in reach.
 
-A false row means the code breaks an assumption that the spec's pass depends on, so the pass no longer covers the code. The model check only reports. Skip the "Act" step of `mays:claims-verification`, because the caller decides what to do with a false row.
+A false row means the code breaks an assumption that the spec's pass depends on, so the pass no longer covers the code. The model check only reports. Skip the "Act" step of `claims-verification`, because the caller decides what to do with a false row.
 
 ## Artifacts
 

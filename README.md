@@ -1,6 +1,6 @@
 # dotfiles
 
-Personal Claude Code and Codex configuration, packaged as separate versions of the `mays` plugin in one repository. Claude uses the root package; Codex uses [`codex/`](codex/README.md).
+Personal Claude Code configuration, packaged as the `mays` plugin. The skills also install alone into other agents through the `skills` CLI.
 
 ## The Claude system
 
@@ -26,31 +26,59 @@ New codebase? `/onboard-repo` bootstraps all of this on day one: surveys the rep
 
 ## Install
 
-From within Claude Code:
+Install in 1 of 2 ways:
+
+- **The plugin, inside Claude Code:** the full package, with the commands, the skills, the review agent, and the safety hooks.
+- **`npx skills`, from a terminal:** the skills only, for Claude Code or for another agent such as Codex or Cursor.
+
+In Claude Code, pick one way. Installing both loads every skill twice, once as `mays:<name>` and once as `<name>`.
+
+### Install the plugin in Claude Code
+
+From within Claude Code, run the following commands:
 
 ```
 /plugin marketplace add stevenmays/dotfiles
 /plugin install mays@dotfiles
 ```
 
-For Codex:
+When developing from a local checkout, replace `stevenmays/dotfiles` with the checkout path.
+
+### Install the skills with npx
+
+The [`skills` CLI](https://github.com/vercel-labs/skills) copies skill folders from this repo into an agent's skills directory. The commands, the review agent, and the hooks come only with the plugin.
+
+To pick the skills and the agents from a prompt, run the following command:
 
 ```bash
-codex plugin marketplace add stevenmays/dotfiles
-codex plugin add mays@dotfiles
+npx skills add stevenmays/dotfiles
 ```
 
-When developing from a local checkout, replace `stevenmays/dotfiles` with the checkout path.
-Codex installs the self-contained `codex/` package with nine adapted skills. It excludes
-`ste-writing`; frontend work uses Codex's built-in image capability
-when available. Claude commands, agents, and hooks stay outside that package. See the
-[Codex package guide](codex/README.md) for its skills, validation, and optional personal template.
+To install every skill for Claude Code, run the following command:
 
-Optional: install the user template. The next command replaces all of `~/.claude/CLAUDE.md` with the template's managed block, so back up anything you keep in that file first:
+```bash
+npx skills add stevenmays/dotfiles --skill '*' -a claude-code
+```
+
+To install one skill for another agent, name both:
+
+```bash
+npx skills add stevenmays/dotfiles --skill ste-writing -a codex
+```
+
+- Add `-g` to install for every project, not only the current one.
+- The **Works in** column of the [skills table](#skills) shows which skills run outside Claude Code.
+- Install `adversarial-review` together with `external-subagents`, because the review calls that skill's wrapper script.
+
+### Optional: install the user template
+
+The template ships with the plugin. The next command replaces all of `~/.claude/CLAUDE.md` with the template's managed block, so back up anything you keep in that file first:
 
 ```bash
 sed -n '/mays:managed:start/,/mays:managed:end/p' ~/.claude/plugins/marketplaces/dotfiles/templates/CLAUDE.user.md > ~/.claude/CLAUDE.md
 ```
+
+### Set the subagent models
 
 Strong-model spawns leave `model:` unset and resolve through `CLAUDE_CODE_SUBAGENT_MODEL`. Set it to `opus` under `env` in `~/.claude/settings.json` on every machine, and run the session itself on the strongest model you have (`/model`). Unset, it falls back to the session model. Never set it to `sonnet`: that routes implementation and review to Sonnet.
 
@@ -90,14 +118,11 @@ Non-interactive equivalent:
 claude plugin marketplace update dotfiles
 ```
 
-For a local Codex checkout, update the version cachebuster in `codex/.codex-plugin/plugin.json`
-with the plugin-creator helper, then reinstall:
+To update skills that the `skills` CLI installed, run the following command:
 
 ```bash
-codex plugin add mays@dotfiles
+npx skills update
 ```
-
-Start a new Codex thread after reinstalling to load the updated catalog.
 
 ## What's in the Claude plugin
 
@@ -118,23 +143,24 @@ Start a new Codex thread after reinstalling to load the updated catalog.
 
 ### Skills
 
-| Skill | Purpose |
-|-------|---------|
-| `adversarial-review` | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
-| `claims-verification` | Check a plan's claims about existing code against the repo before adversarial review: one blind Claude subagent answers neutral questions with `file:line` evidence |
-| `model-check` | Model-check the failure paths of a design with Quint before it ships: a fresh Claude subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check |
-| `claude-subagents` | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
-| `external-subagents` | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
-| `extreme-code-quality-review` | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
-| `frontend-craft` | Companion to Anthropic's `frontend-design`: seed-string variety, screenshot-only design-critic loop, generated images and video, and a subtraction pass that removes AI tells |
-| `codex-image-generator` | Default image path: Codex CLI's built-in `image_gen` tool, run in a subagent, no API key |
-| `gemini-image-generator` | Nano Banana images through the Antigravity CLI's `generate_image` tool, run in a subagent, no API key; use when the user names Gemini, Nano Banana, or Antigravity |
-| `gemini-subagents` | Run any task on a Gemini model as a background subagent through the Antigravity CLI, behind a wrapper that cannot hang the session |
-| `teach-me` | Learn a technical concept to long-term mastery: an interactive HTML lesson page first, then practice and quizzes with confidence ratings in chat, drills on gaps and shaky right answers, and spaced reviews tracked in an in-chat progress card or a ledger file |
-| `serverless-aws` | AWS Lambda/DynamoDB/SQS patterns |
-| `skill-optimizer` | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
-| `ste-writing` | Simplified Technical English for docs, PR descriptions, and review comments — every review command drafts findings with it |
-| `writing-style` | Personal writing voice for technical content |
+The **Works in** column shows where a skill runs when the `skills` CLI installs it. A skill marked Claude Code dispatches Claude subagents or calls its scripts through `${CLAUDE_SKILL_DIR}`, which only Claude Code sets.
+
+| Skill | Works in | Purpose |
+|-------|----------|---------|
+| `adversarial-review` | Claude Code | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
+| `claims-verification` | Claude Code | Check a plan's claims about existing code against the repo before adversarial review: one blind Claude subagent answers neutral questions with `file:line` evidence |
+| `model-check` | Claude Code | Model-check the failure paths of a design with Quint before it ships: a fresh Claude subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check |
+| `claude-subagents` | Claude Code | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
+| `external-subagents` | Claude Code | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
+| `deslop` | Any agent | Clean up AI slop in existing code: measure complexity, delete dead code, refactor the worst hotspots first, and prove behavior is unchanged |
+| `extreme-code-quality-review` | Any agent | Rubric for the strict maintainability audit (code-judo, 1k-line rule, spaghetti) |
+| `codex-image-generator` | Claude Code | Default image path: Codex CLI's built-in `image_gen` tool, run in a subagent, no API key |
+| `gemini-image-generator` | Claude Code | Nano Banana images through the Antigravity CLI's `generate_image` tool, run in a subagent, no API key; use when the user names Gemini, Nano Banana, or Antigravity |
+| `gemini-subagents` | Claude Code | Run any task on a Gemini model as a background subagent through the Antigravity CLI, behind a wrapper that cannot hang the session |
+| `teach-me` | Any agent | Learn a technical concept to long-term mastery: an interactive HTML lesson page first, then practice and quizzes with confidence ratings in chat, drills on gaps and shaky right answers, and spaced reviews tracked in an in-chat progress card or a ledger file |
+| `skill-optimizer` | Any agent | Mutation-and-scoring loop that benchmarks a skill with binary evals and keeps only measured improvements |
+| `ste-writing` | Any agent | Simplified Technical English for docs, PR descriptions, and review comments — every review command drafts findings with it |
+| `writing-style` | Any agent | Personal writing voice for technical content |
 
 ### Using claims-verification
 
@@ -187,18 +213,10 @@ Wire `mays:model-check` into my implement-ticket skill, in the planning stage on
 .claude-plugin/
 ├── plugin.json        # Plugin manifest
 └── marketplace.json   # Lets this repo act as a marketplace
-.agents/plugins/
-└── marketplace.json   # Codex marketplace; source is ./codex
-codex/
-├── .codex-plugin/     # Independent Codex manifest and version
-├── skills/            # Nine adapted skills; no STE skill
-├── templates/         # Optional personal AGENTS.md preferences
-├── evals/             # Behavioral cases and validation results
-└── shared-resources.json # Explicit copies from canonical source files
-scripts/               # Package validation and shared-resource synchronization
+scripts/               # Plugin checks and tests
 commands/              # Slash commands
 agents/                # Subagents
-skills/                # Auto-activated skills
+skills/                # Auto-activated skills; `npx skills add` installs these folders
 hooks/
 ├── hooks.json         # Hook configuration
 └── scripts/           # Hook implementations

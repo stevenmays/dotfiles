@@ -24,10 +24,25 @@ class SkillReferenceTests(unittest.TestCase):
                         self.assertFalse("`Skill`" in line and f"`{name}`" in line, line)
 
     def test_plugin_root_paths_exist(self):
-        for path in markdown("agents", "commands", "skills"):
+        for path in markdown("agents", "commands"):
             for rel in re.findall(r"\$\{CLAUDE_PLUGIN_ROOT\}/([^\s`\"']+)", path.read_text()):
                 with self.subTest(file=str(path.relative_to(ROOT)), path=rel):
                     self.assertTrue((ROOT / rel).exists())
+
+    def test_skills_work_outside_the_plugin(self):
+        # `npx skills add` installs a skill folder with no plugin around it, so `${CLAUDE_PLUGIN_ROOT}` is
+        # unset there and sibling skills carry no `mays:` prefix.
+        for path in markdown("skills"):
+            for number, line in enumerate(path.read_text().splitlines(), 1):
+                with self.subTest(file=str(path.relative_to(ROOT)), line=number):
+                    self.assertNotRegex(line, r"CLAUDE_PLUGIN_ROOT|`mays:")
+
+    def test_skill_dir_paths_exist(self):
+        # Claude Code replaces `${CLAUDE_SKILL_DIR}` in SKILL.md only, with that skill's own folder.
+        for path in sorted((ROOT / "skills").glob("*/SKILL.md")):
+            for rel in re.findall(r"\$\{CLAUDE_SKILL_DIR\}/([^\s`\"']+)", path.read_text()):
+                with self.subTest(file=str(path.relative_to(ROOT)), path=rel):
+                    self.assertTrue((path.parent / rel).exists())
 
 
 if __name__ == "__main__":
