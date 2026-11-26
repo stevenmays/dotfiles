@@ -214,6 +214,21 @@ class ParseTests(unittest.TestCase):
         self.assertEqual(check.parse_run(OK_OUTPUT),
                          ("ok", 10000, {"settled": 10000, "orphanClaim": 7465}, None))
 
+    def test_ok_reads_the_observed_wording_of_quint_0_34(self):
+        output = OK_OUTPUT.replace("Witnesses:", "Observations:").replace("was witnessed", "was observed")
+        self.assertEqual(check.parse_run(output), ("ok", 10000, {"settled": 10000, "orphanClaim": 7465}, None))
+
+    def test_unreached_witness_warning_of_quint_0_34_is_an_ok(self):
+        output = (OK_OUTPUT
+                  .replace("[ok] No violation found", "[warning] No violation found, but no trace reached settled")
+                  .replace("settled was witnessed in 10000 trace(s) out of 10000 explored (100.00%)",
+                           "settled was observed in 0 trace(s) out of 10000 explored (0.00%)"))
+        self.assertEqual(check.parse_run(output), ("ok", 10000, {"settled": 0, "orphanClaim": 7465}, None))
+
+    def test_unknown_warning_is_an_error(self):
+        output = OK_OUTPUT.replace("[ok] No violation found", "[warning] No violation found, but runs were truncated")
+        self.assertEqual(check.parse_run(output)[0], "error")
+
     def test_violation_ignores_its_error_line(self):
         self.assertEqual(check.parse_run(VIOLATION_OUTPUT),
                          ("violation", 1, {"settled": 0, "orphanClaim": 1}, None))
