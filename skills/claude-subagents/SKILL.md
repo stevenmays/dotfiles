@@ -32,7 +32,7 @@ Fresh context, small prompt. The subagent sees none of this conversation. Give i
 
 A `general-purpose` subagent loads the user and project `CLAUDE.md`; an `Explore` agent loads neither, so state any convention its answer depends on.
 
-Inline text a reviewer must judge, such as the ticket and the plan, instead of a path. The external counterpart in `mays:external-subagents` then gets identical input.
+Inline text a reviewer must judge, such as the ticket and the plan, instead of a path. The external counterpart in `external-subagents` then gets identical input.
 
 ## Roles
 

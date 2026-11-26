@@ -5,7 +5,7 @@ description: Check the factual claims a plan makes about existing code against t
 
 # Claims verification
 
-A plan can reason soundly from a wrong fact about the code. Claims verification catches the wrong fact. It can't flag a claim the plan never made, and it can't judge reasoning or omissions: `mays:adversarial-review` owns those. So verification runs first, and the adversaries attack reasoning built on checked facts.
+A plan can reason soundly from a wrong fact about the code. Claims verification catches the wrong fact. It can't flag a claim the plan never made, and it can't judge reasoning or omissions: `adversarial-review` owns those. So verification runs first, and the adversaries attack reasoning built on checked facts.
 
 ## Oracle
 
@@ -43,7 +43,7 @@ The verifier must not anchor on the claim, so it never sees one.
 
 ## Dispatch a blind verifier
 
-Dispatch through `mays:claude-subagents`:
+Dispatch through `claude-subagents`:
 
 - Use `subagent_type: "Explore"`, which has no `Edit` or `Write` tool, with `model: "sonnet"`. Sonnet is enough because every answer carries a citation you check.
 - Split more than about 15 questions into batches. Launch the batches concurrently in one message.

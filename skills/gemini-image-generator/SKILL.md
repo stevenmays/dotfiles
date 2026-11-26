@@ -12,7 +12,7 @@ The Antigravity CLI (`agy`) has a built-in `generate_image` tool backed by Googl
 Delegate the run to a `general-purpose` subagent pinned to `model: "sonnet"`. A run takes about 15 to 30 seconds and the result is a file check, so the session must not block on it. Give the subagent the exact command and the exit codes below.
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/skills/gemini-image-generator/scripts/generate.sh" \
+"${CLAUDE_SKILL_DIR}/scripts/generate.sh" \
   --prompt "<image description>" \
   --output <path>.jpg \
   [--aspect 16:9] [--reference <image>]... [--open]

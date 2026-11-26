@@ -9,7 +9,7 @@ Run a task on a non-Claude model as a background subagent. The engine the machin
 
 Always invoke an engine through `scripts/external-run.sh`, never `codex exec` or `cursor-agent -p` directly. Neither CLI has a timeout of its own, and a run that reaches for web search, a browser tool, or an MCP server can block for an hour with no output. The wrapper prevents that three ways: it switches off every network-reaching tool the engine allows, it kills a run that stops emitting events, and it salvages whatever arrived before the kill.
 
-Not for images: `mays:codex-image-generator` covers those.
+Not for images: `codex-image-generator` covers those.
 
 ## Preflight
 
@@ -38,7 +38,7 @@ type -a codex cursor-agent; jq --version
 ## Run it
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/skills/external-subagents/scripts/external-run.sh" \
+"${CLAUDE_SKILL_DIR}/scripts/external-run.sh" \
   --prompt <scratch>/external-<role>-prompt.md --out <scratch>/external-<role>.md \
   --label <role> \
   [--sandbox read-only|workspace-write] [--idle 300] [--hard 1800] [--cd <repo>]
@@ -109,8 +109,8 @@ Write the prompt to a file in a scratch directory outside the repo — the sessi
 
 The external model cannot see the conversation, and it never loads the user-level `CLAUDE.md`. Codex reads only `AGENTS.md`; Cursor reads the project-root `AGENTS.md`, `CLAUDE.md`, and `.cursor/rules`. So carry the rules that apply in the prompt, and on codex name the project `CLAUDE.md` path for the run to read.
 
-Every prompt carries the same items as the prompt list in `mays:claude-subagents`, including the decisions already made and the judgment calls the run owns, plus:
+Every prompt carries the same items as the prompt list in `claude-subagents`, including the decisions already made and the judgment calls the run owns, plus:
 
-- The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `mays:claude-subagents`.
+- The role's rule. Read-only roles: "do not edit, create, or delete files." Implementation: the implementer contract in `claude-subagents`.
 - The no-network clause, verbatim: "Work only from this prompt and the repository in front of you: no web search, no fetching URLs, no external tools."
-- For a diff: the commands that produce it, such as `git diff <merge-base>` plus `git status --porcelain --untracked-files=all`, which the run executes itself, as `mays:adversarial-review` does. Never paste the diff into the prompt.
+- For a diff: the commands that produce it, such as `git diff <merge-base>` plus `git status --porcelain --untracked-files=all`, which the run executes itself, as `adversarial-review` does. Never paste the diff into the prompt.
