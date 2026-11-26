@@ -147,7 +147,7 @@ A Quint witness is a state predicate. Quint reports the percentage of runs in wh
 
 - **Reachability witnesses** prove that a failure path happened, such as a crash that leaves an orphaned claim. Pass them as `--witnesses`. The runner reports one at 0% on `stepDesign` as `unreached-failure-path`. Rerun with a larger `--budget` and a higher `--max-steps`. A witness still at 0% goes back to the writer.
 - **A forbidden state** is an invariant. Never use it as a witness.
-- **Terminal witness:** use one, such as `settled`, to show that runs reach a finished state. Pass it as `--terminal`. The runner reports `vacuous` for an `[ok]` run with the terminal witness at 0%, or with every run stopped at the initial state. The step never fires or never settles, so the spec goes back to the writer.
+- **Terminal witness:** use one, such as `settled`, to show that runs reach a finished state. Pass it as `--terminal`. The runner reports `vacuous` for a run with no violation and the terminal witness at 0%, or with every run stopped at the initial state. The step never fires or never settles, so the spec goes back to the writer.
   - The terminal witness must be reachable only through the full flow. Quint ends a run silently when no action is enabled, so a flow that deadlocks early can still pass.
   - Don't judge by other trace-length statistics: they flag healthy runs and miss broken ones.
 - **Branch coverage:** to show that a particular branch fires, add a ghost variable that the branch sets.

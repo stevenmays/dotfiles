@@ -1,6 +1,6 @@
 # Quint reference
 
-These facts hold for `quint` `0.33.0`. The runner, `scripts/check.py`, runs every command and parses all output. Read the format notes here to debug the runner or to run a command by hand. Before you use a flag by hand, confirm it in `quint <command> --help` for the installed version. `quint verify --help` prints without Java.
+These facts hold for `quint` `0.33.0`. Each known difference in `0.34.0` is named where it applies, and the runner reads both versions. The runner, `scripts/check.py`, runs every command and parses all output. Read the format notes here to debug the runner or to run a command by hand. Before you use a flag by hand, confirm it in `quint <command> --help` for the installed version. `quint verify --help` prints without Java.
 
 ## Commands
 
@@ -118,23 +118,24 @@ quint verify example-queue-consumer.qnt --main=queue_consumer --step=stepDesign 
 
 ## Read a result
 
-`quint run` exits `1` for a violation, a parse error, a misspelled name, and a runtime error alike. It exits `0` for a vacuous `[ok]`. So the runner judges each run by its output, never by its exit status. quint colors its output when `FORCE_COLOR` is set, so the runner sets `NO_COLOR=1` and `FORCE_COLOR=0` for every `quint` call:
+`quint run` exits `1` for a violation, a parse error, a misspelled name, and a runtime error alike. It exits `0` for a vacuous `[ok]`, and for the `[warning]` that `0.34.0` prints in its place. So the runner judges each run by its output, never by its exit status. quint colors its output when `FORCE_COLOR` is set, so the runner sets `NO_COLOR=1` and `FORCE_COLOR=0` for every `quint` call:
 
 | Output | Meaning |
 | --- | --- |
 | `[ok] No violation found (...)` | No sampled run broke an invariant. It's a pass only when the `[ok]` rules hold. |
+| `[warning] No violation found, but no trace reached NAME[, NAME...] (...)` | `quint` `0.34.0` prints this in place of `[ok]` when a witness is never observed. It lists every unobserved witness. The runner reads it as an `[ok]` with a zero count for each. |
 | `[violation] Found an issue (...)` | A run broke an invariant. The trace printed before this line is the counterexample. |
 | `❌ NAME` after `[violation]` | Printed only for 2 or more invariants. It names the invariants that failed in the first failing run. |
 | `[error] Runtime error (...)` | The spec failed while it ran, for example `Called 'get' with a non-existing key`. The spec is broken. |
 | `error: parsing failed` or `error: typechecking failed` | The spec is broken. |
 | `error: [QNT404] Name 'NAME' not found` | A misspelled `--step`, `--invariant`, or `--witnesses` name. The run is broken. |
 
-A witness line reads `NAME was witnessed in N trace(s) out of M explored (P%)`. A witness counts a run when its predicate holds in any state of that run.
+A witness line reads `NAME was witnessed in N trace(s) out of M explored (P%)`. `quint` `0.34.0` prints `was observed` instead, and the runner reads both. A witness counts a run when its predicate holds in any state of that run.
 
-Rules for an `[ok]`:
+Rules for an `[ok]`, and for the `[warning]` that stands in for it:
 
 - Reject it when M, the explored count, is under 10000.
-- Reject it when the terminal witness is at 0%. A step that is never enabled ends every run at once and still prints `[ok]` with exit `0`.
+- Reject it when the terminal witness is at 0%. A step that is never enabled ends every run at once and still prints `[ok]` with exit `0`. On `0.34.0` it prints the `[warning]` line, also with exit `0`.
 - Reject it when `Trace length statistics` shows `max=1`. Every run then stopped at the initial state, so no step ever fired.
 - Reject it when a witness holds at the initial state. Quint counts a run when the witness holds in any state, so such a witness is above 0% even when no step fires. The runner checks with `quint run --max-steps=0`, which samples initial states only.
 - Quint ends a run silently when no action is enabled. So an `[ok]` never shows that the flow can't get stuck.

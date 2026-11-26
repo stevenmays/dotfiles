@@ -9,8 +9,9 @@ import unittest
 SPEC = Path(__file__).resolve().parents[2] / "skills/model-check/references/example-queue-consumer.qnt"
 SAMPLES = 20000
 RUN = ["--main=queue_consumer", f"--max-samples={SAMPLES}", "--max-steps=30", "--seed=7"]
-VERDICT = re.compile(r"^\[(ok|violation)\]", re.M)
-WITNESS = re.compile(r"^(\w+) was witnessed in \d+ trace\(s\) out of (\d+) explored \(([\d.]+)%\)$", re.M)
+VERDICT = re.compile(r"^\[(ok|violation|warning)\]", re.M)
+WITNESS = re.compile(r"^(\w+) was (?:witnessed|observed) in \d+ trace\(s\) out of (\d+) explored \(([\d.]+)%\)$",
+                     re.M)
 
 
 def quint(*args):
@@ -27,7 +28,8 @@ class ExampleVerdicts(unittest.TestCase):
         verdict = VERDICT.search(output)
         self.assertIsNotNone(verdict, output)
         witnesses = {name: (int(explored), float(percent)) for name, explored, percent in WITNESS.findall(output)}
-        return verdict.group(1), witnesses
+        # quint 0.34 prints [warning] in place of [ok] when a witness is never observed.
+        return verdict.group(1).replace("warning", "ok"), witnesses
 
     def test_typecheck(self):
         result = quint("typecheck", str(SPEC))

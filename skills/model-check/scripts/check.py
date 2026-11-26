@@ -36,7 +36,11 @@ VAR_RE = re.compile(r"^\s*var\s+\w+\s*:", re.M)
 TRACE_RE = re.compile(r"^Trace length statistics: max=(\d+)", re.M)
 MUTANT_RE = re.compile(r"stepMut\w+")
 RESULT_RE = re.compile(r"^\[(ok|violation)\]", re.M)
-WITNESS_RE = re.compile(r"^(\w+) was witnessed in (\d+) trace\(s\) out of (\d+) explored \([\d.]+%\)$", re.M)
+# quint 0.34 prints this in place of [ok] when a witness is never observed. The witness counts carry that fact.
+UNOBSERVED_RE = re.compile(r"^\[warning\] No violation found, but no trace reached ", re.M)
+# quint 0.33 prints "witnessed"; 0.34 prints "observed".
+WITNESS_RE = re.compile(r"^(\w+) was (?:witnessed|observed) in (\d+) trace\(s\) out of (\d+) explored \([\d.]+%\)$",
+                        re.M)
 FAILED_RE = re.compile(r"^\s*❌ (\w+)\s*$", re.M)
 SEED_RE = re.compile(r"Use --seed=(0x[0-9a-fA-F]+)")
 ERROR_RE = re.compile(r"^\s*(\[error\].*|error: .*|Error \[QNT\d+\].*)$", re.M)
@@ -87,6 +91,8 @@ def parse_run(output):
     match = RESULT_RE.search(output)
     if match:
         return match.group(1), explored, witnesses, None
+    if UNOBSERVED_RE.search(output):
+        return "ok", explored, witnesses, None
     return "error", explored, witnesses, error_text(output)
 
 
