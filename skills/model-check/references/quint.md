@@ -13,7 +13,9 @@ These facts hold for `quint` `0.33.0`. Each known difference in `0.34.0` is name
 
 ## Runner
 
-`check.py SPEC --main MODULE --invariants NAMES --terminal WITNESS` takes these options:
+This file covers a `.qnt` spec. For a `.py` spec, see `python.md`.
+
+`check.py SPEC.qnt --main MODULE --invariants NAMES --terminal WITNESS` takes these options:
 
 - `--witnesses NAMES`: the reachability witnesses.
 - `--steps NAMES`: the steps to run. The default is `step`, `stepDesign`, and every `stepMut<Name>` action in the spec. The list must hold `stepDesign`. Any other action without parameters whose name starts with `step` is a usage error, so a misnamed mutant can't drop out silently.
@@ -47,7 +49,7 @@ The JSON output has these fields:
 | `budget` | `null` without `--budget`. Otherwise `status`, `spent` seconds, `workers`, `chunk_samples`, and one entry for each target: the first chunk's `command`, every chunk's seed in `seeds`, the summed `explored` and witness trace counts, and the `violated` invariants with their `counterexamples`. |
 | `typecheck` | `ok`, the `command`, and the `error` text. |
 | `verify` | One entry for each verified step: `status`, the `invariants` it checked, the largest finished `bound`, the `result`, the `violated` invariants with their `counterexamples`, `timed_out`, and each attempt with its `command`. It's empty without `--verify`. |
-| `quint_version`, `java`, `spec`, `main`, `samples`, `max_steps`, `seed`, `workers`, `invariants`, `terminal`, `witnesses`, `steps` | The inputs and the tool versions. |
+| `engine`, `quint_version`, `java`, `spec`, `main`, `samples`, `max_steps`, `seed`, `workers`, `invariants`, `terminal`, `witnesses`, `steps` | The inputs and the tool versions. `engine` is `quint`. |
 
 A counterexample is a list of steps, and step 0 is `init`. Each step holds the `action` from `mbt::actionTaken`, its `picks` from `mbt::nondetPicks`, and the full `state`. A `quint verify` counterexample has no action or picks, because Apalache traces carry no `mbt::` fields.
 

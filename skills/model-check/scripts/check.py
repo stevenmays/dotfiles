@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Run every quint check for one model-check spec and print one verdict."""
+"""Run every check for one model-check spec and print one verdict. A `.qnt` spec runs through quint, and a `.py`
+spec gets a breadth-first search in `explore.py`."""
 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -18,6 +20,8 @@ import tempfile
 import time
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
+
+import explore
 
 MIN_SAMPLES = 10000
 VERIFY_FIRST_BOUND = 6
@@ -62,14 +66,17 @@ def role(step):
     return "mutant" if MUTANT_RE.fullmatch(step) else None
 
 
-def discover_steps(text):
-    """Returns the spec's step actions by naming convention: current, design, then mutants in file order."""
-    names = list(dict.fromkeys(STEP_RE.findall(COMMENT_RE.sub("", text))))
+def order_steps(names):
+    """Returns the steps by naming convention: current, design, then mutants in file order."""
     misnamed = [name for name in names if STEP_NAME_RE.fullmatch(name) and role(name) is None]
     if misnamed:
         raise UsageError(f"{', '.join(misnamed)}: a step must be named step, stepDesign, or stepMut<Name>")
     order = {"current": 0, "design": 1, "mutant": 2}
     return sorted((name for name in names if role(name)), key=lambda name: order[role(name)])
+
+
+def discover_steps(text):
+    return order_steps(list(dict.fromkeys(STEP_RE.findall(COMMENT_RE.sub("", text)))))
 
 
 def count_vars(text):
@@ -468,17 +475,44 @@ def find_problems(args, steps, totals, kills, mutants, init_probe, verify):
         if design and all(total["witnesses"].get(witness, 0) == 0 for total in design):
             problems.append(problem("unreached-failure-path",
                                     f"reachability witness `{witness}` is 0% on `stepDesign`"))
-    for invariant in args.invariants:
-        if not any(kills[mutant][invariant] for mutant in mutants):
-            problems.append(problem("unkilled-invariant", f"no mutant violates `{invariant}`"))
-    for mutant in mutants:
-        if not any(kills[mutant].values()):
-            problems.append(problem("useless-mutant", f"`{mutant}` violates no invariant"))
+    problems += mutant_problems(args, kills, mutants)
     design = verify.get("stepDesign")
     if design and design["bound"] is None:
         reason = design["reason"] or design["error"] or ("it timed out" if design["timed_out"] else "it stopped")
         problems.append(problem("verify-incomplete", f"`quint verify` finished no bound on `stepDesign`: {reason}"))
     return problems
+
+
+def mutant_problems(args, kills, mutants):
+    return [problem("unkilled-invariant", f"no mutant violates `{invariant}`") for invariant in args.invariants
+            if not any(kills[mutant][invariant] for mutant in mutants)] + \
+        [problem("useless-mutant", f"`{mutant}` violates no invariant") for mutant in mutants
+         if not any(kills[mutant].values())]
+
+
+def find_search_problems(args, searches, kills, mutants):
+    """The problem rules for a `.py` spec. A search counts states, so a count of 0 means no run gets there."""
+    problems = [problem("witness-true-at-init", f"witness `{name}` holds at the initial state, so it counts runs "
+                        "in which no step fired") for name in searches["stepDesign"]["init_witnesses"]]
+    for step, search in searches.items():
+        passed = ", ".join(invariant for invariant in args.invariants if invariant not in search["violated"])
+        if not passed:
+            continue
+        if search["transitions"] == 0:
+            problems.append(problem("vacuous", f"`{step}` passed {passed}, but every run stopped at the initial "
+                                    "state: the step never fires"))
+        elif search["witnesses"][args.terminal] == 0:
+            problems.append(problem("vacuous", f"`{step}` passed {passed}, but terminal witness `{args.terminal}` "
+                                    "holds in no state: the step never settles"))
+        limit = {"state limit": ("state-limit", f"--max-states of {args.max_states}"),
+                 "time limit": ("run-timeout", f"--run-timeout of {args.run_timeout:g} seconds")}.get(search["stopped"])
+        if limit:
+            problems.append(problem(limit[0], f"`{step}` passed {passed} only to {plural(search['depth'], 'step')}: "
+                                    f"the search stopped past {limit[1]}"))
+        if step == "stepDesign":
+            problems += [problem("unreached-failure-path", f"reachability witness `{witness}` holds in no state of "
+                                 "`stepDesign`") for witness in args.witnesses if search["witnesses"][witness] == 0]
+    return problems + mutant_problems(args, kills, mutants)
 
 
 def find_warnings(args, variables):
@@ -522,6 +556,8 @@ def plural(count, word):
 
 
 def first_error(report):
+    if report.get("error"):
+        return report["error"].splitlines()[0]
     texts = [report["typecheck"]["error"], *(run["error"] for run in report["runs"]),
              *(error for target in (report["budget"] or {}).get("targets", []) for error in target["errors"])]
     lines = [line for text in texts if text for line in text.splitlines() if line.strip()]
@@ -534,10 +570,15 @@ def build_result_line(report):
         return f"Model check: {flow} — broken spec: {first_error(report)}"
     mutants = report["matrix"]
     killed = sum(any(row.values()) for row in mutants.values())
-    bound = report["verify"].get("stepDesign", {}).get("bound")
-    runs = report["design"]["explored"] or report["samples"]
-    method = (f"bounded check to {bound} steps" if bound else
-              f"random sampling, {runs} runs ≤{report['max_steps']} steps")
+    if report["engine"] == "python":
+        design = report["searches"]["stepDesign"]
+        method = ("full search" if design["stopped"] is None else f"search to {plural(design['depth'], 'step')}") + \
+            f", {plural(design['states'], 'state')}"
+    else:
+        bound = report["verify"].get("stepDesign", {}).get("bound")
+        runs = report["design"]["explored"] or report["samples"]
+        method = (f"bounded check to {bound} steps" if bound else
+                  f"random sampling, {runs} runs ≤{report['max_steps']} steps")
     parts = [f"Model check: {flow} — {plural(len(report['invariants']), 'invariant')}, "
              f"{killed}/{len(mutants)} mutants killed", method]
     if report["current"] is not None:
@@ -550,38 +591,111 @@ def build_result_line(report):
     return "; ".join(parts)
 
 
-def validate(args):
+def read_spec(args):
     spec_path = Path(args.spec)
     if not spec_path.is_file():
         raise UsageError(f"{args.spec} is not a file")
-    if args.samples < MIN_SAMPLES:
-        raise UsageError(f"--samples must be {MIN_SAMPLES} or more, got {args.samples}")
-    if args.budget < 0 or args.workers < 1 or args.run_timeout <= 0:
-        raise UsageError("--budget must be 0 or more, --workers 1 or more, and --run-timeout above 0")
     try:
-        text = spec_path.read_text()
+        return str(spec_path.resolve()), spec_path.read_text()
     except (OSError, UnicodeDecodeError) as error:
         raise UsageError(f"can't read {args.spec} as UTF-8 text: {error}") from error
-    discovered = discover_steps(text)
+
+
+def select_steps(args, discovered):
     steps = args.steps or discovered
     unnamed = [step for step in steps if role(step) is None]
     if unnamed:
         raise UsageError(f"{', '.join(unnamed)}: a step must be named step, stepDesign, or stepMut<Name>")
     if "stepDesign" not in steps:
-        raise UsageError(f"{args.spec} has no `action stepDesign`, and the design step is required")
+        raise UsageError(f"{args.spec} has no `stepDesign`, and the design step is required")
     unknown = [step for step in args.verify_step or [] if step not in steps or role(step) == "current"]
     if unknown:
         raise UsageError(f"--verify-step takes stepDesign or a mutant that runs: {', '.join(unknown)}")
-    return str(spec_path.resolve()), list(dict.fromkeys(steps)), count_vars(text)
+    return list(dict.fromkeys(steps))
+
+
+def validate(args):
+    if not args.main:
+        raise UsageError("a .qnt spec needs --main, the module name")
+    if args.samples < MIN_SAMPLES:
+        raise UsageError(f"--samples must be {MIN_SAMPLES} or more, got {args.samples}")
+    if args.budget < 0 or args.workers < 1 or args.run_timeout <= 0:
+        raise UsageError("--budget must be 0 or more, --workers 1 or more, and --run-timeout above 0")
+    spec, text = read_spec(args)
+    return spec, select_steps(args, discover_steps(text)), count_vars(text)
+
+
+def conclude(report, broken=False):
+    if broken:
+        report["verdict"] = "broken-spec"
+    elif report["design"]["result"] == "fail":
+        report["verdict"] = "fail"
+    else:
+        report["verdict"] = "invalid" if report["problems"] else "pass"
+    report["result_line"] = build_result_line(report)
+    return report
+
+
+def check_python(args):
+    """Searches every step of a `.py` spec. The report shares its verdict, problem, and mutant fields with quint's."""
+    if args.budget or args.verify or args.verify_step:
+        raise UsageError("--budget, --verify, and --verify-step apply to a .qnt spec: a .py spec gets a full search")
+    if args.max_states < 1 or args.max_steps < 0 or args.run_timeout <= 0:
+        raise UsageError("--max-states must be 1 or more, --max-steps 0 or more, and --run-timeout above 0")
+    spec, text = read_spec(args)
+    witnesses = list(dict.fromkeys([args.terminal, *args.witnesses]))
+    report = {"engine": "python", "python": sys.version.split()[0], "spec": spec, "max_steps": args.max_steps,
+              "max_states": args.max_states, "invariants": args.invariants, "terminal": args.terminal,
+              "witnesses": args.witnesses, "steps": [], "searches": {}, "matrix": {}, "kills": {}, "current": None,
+              "design": None, "problems": [], "warnings": find_warnings(args, 0), "error": None}
+    try:
+        # A `print` in the spec goes to stderr, so it can't land in the report on stdout.
+        with contextlib.redirect_stdout(sys.stderr):
+            names = explore.load(spec, text)
+            named = [name for name in names
+                     if name.startswith("step") and (role(name) or isinstance(names[name], list))]
+            steps = select_steps(args, order_steps(named))
+            # A mutant defined as a function or a tuple must not drop out silently.
+            not_lists = [step for step in dict.fromkeys([*named, *steps]) if not isinstance(names.get(step), list)]
+            if not_lists:
+                raise UsageError(f"{args.spec}: {', '.join(not_lists)} must be a module-level list of moves")
+            inits = explore.initial_states(names, spec)
+            invariants, observed = explore.predicates(names, args.invariants), explore.predicates(names, witnesses)
+            report.update(steps=steps, warnings=find_warnings(args, max(len(state) for state in inits)))
+            searches = report["searches"] = {
+                step: explore.search(spec, step, inits, names[step], invariants, observed, args.max_steps,
+                                     args.max_states, args.run_timeout) for step in steps}
+    except explore.SpecError as error:
+        report["error"] = str(error)
+        return conclude(report, broken=True)
+    report["error"] = next((search["error"] for search in searches.values() if search["error"]), None)
+    if report["error"]:
+        return conclude(report, broken=True)
+
+    def summary_of(search):
+        return {"result": "fail" if search["violated"] else "pass", "violated": search["violated"],
+                "counterexamples": search["counterexamples"], "explored": search["states"]}
+
+    mutants = [step for step in steps if role(step) == "mutant"]
+    report["kills"] = {mutant: {invariant: "search" if invariant in searches[mutant]["violated"] else None
+                                for invariant in args.invariants} for mutant in mutants}
+    report["matrix"] = {mutant: {invariant: bool(kill) for invariant, kill in row.items()}
+                        for mutant, row in report["kills"].items()}
+    report["design"] = summary_of(searches["stepDesign"])
+    report["current"] = summary_of(searches["step"]) if "step" in steps else None
+    report["problems"] = find_search_problems(args, searches, report["kills"], mutants)
+    return conclude(report)
 
 
 def check(args):
+    if Path(args.spec).suffix == ".py":
+        return check_python(args)
     spec, steps, variables = validate(args)
     args.verify = args.verify or bool(args.verify_step)
     mutants = [step for step in steps if role(step) == "mutant"]
     witnesses = list(dict.fromkeys([args.terminal, *args.witnesses]))
 
-    report = {"quint_version": quint_version(), "java": java_version(), "spec": spec, "main": args.main,
+    report = {"engine": "quint", "quint_version": quint_version(), "java": java_version(), "spec": spec, "main": args.main,
               "samples": args.samples, "max_steps": args.max_steps, "seed": args.seed, "workers": args.workers,
               "invariants": args.invariants, "terminal": args.terminal, "witnesses": args.witnesses,
               "steps": steps}
@@ -596,9 +710,7 @@ def check(args):
     if code != 0:
         if budget:
             budget["reason"] = "typecheck failed"
-        report["verdict"] = "broken-spec"
-        report["result_line"] = build_result_line(report)
-        return report
+        return conclude(report, broken=True)
 
     with tempfile.TemporaryDirectory() as tmp:
         report["init_probe"] = probe_init(args, spec, witnesses, tmp)
@@ -645,14 +757,7 @@ def check(args):
         report["current"] = summary(records, totals, "step", args.invariants)
     report["problems"] = find_problems(args, steps, totals, kills, mutants, report["init_probe"], report["verify"])
 
-    if broken:
-        report["verdict"] = "broken-spec"
-    elif report["design"]["result"] == "fail":
-        report["verdict"] = "fail"
-    else:
-        report["verdict"] = "invalid" if report["problems"] else "pass"
-    report["result_line"] = build_result_line(report)
-    return report
+    return conclude(report, broken)
 
 
 def show(value):
@@ -693,10 +798,19 @@ def table(header, rows):
         ["| " + " | ".join(str(item) for item in row) + " |" for row in rows]
 
 
-def render_md(report):
-    witnesses = [report["terminal"], *(w for w in report["witnesses"] if w != report["terminal"])]
-    lines = [report["result_line"], "", "## Commands", "",
-             f"`quint` {report['quint_version']}; Java: {report['java'] or 'missing'}.", ""]
+def render_search(report, witnesses):
+    lines = ["## Search", "", f"Python {report['python']} searched every run of each step breadth-first, to at most "
+             f"{plural(report['max_steps'], 'step')} and {plural(report['max_states'], 'state')}. "
+             "A witness column counts the states in which the witness holds.", ""]
+    return lines + table(
+        ["Step", "States", "Steps", "Search", "Violated", *(f"`{w}`" for w in witnesses), "Seconds"],
+        [[f"`{step}`", s["states"], s["depth"], f"stopped: {s['stopped']}" if s["stopped"] else "full",
+          ", ".join(f"`{i}`" for i in s["violated"]) or "none", *(s["witnesses"][w] for w in witnesses), s["seconds"]]
+         for step, s in report["searches"].items()])
+
+
+def render_runs(report, witnesses):
+    lines = ["## Commands", "", f"`quint` {report['quint_version']}; Java: {report['java'] or 'missing'}.", ""]
     typecheck = report["typecheck"]
     rows = [["typecheck", "", "ok" if typecheck["ok"] else "error", "", *[""] * len(witnesses),
              f"`{cell(typecheck['command'])}`"]]
@@ -724,47 +838,62 @@ def render_md(report):
                              f"`{cell(t['command'])}`"] for t in budget["targets"]])
         else:
             lines.append(f"Skipped: {budget['reason']}.")
+    return lines
+
+
+def render_md(report):
+    python = report["engine"] == "python"
+    witnesses = [report["terminal"], *(w for w in report["witnesses"] if w != report["terminal"])]
+    lines = [report["result_line"], ""]
+    lines += render_search(report, witnesses) if python and report["searches"] else []
+    lines += [] if python else render_runs(report, witnesses)
+    budget, verify = report.get("budget"), report.get("verify", {})
 
     if report["matrix"]:
-        marks = {"sampling": "killed", "budget": "killed by the budget", "verify": "killed by the bounded check"}
+        marks = {"sampling": "killed", "search": "killed", "budget": "killed by the budget",
+                 "verify": "killed by the bounded check"}
         lines += ["", "## Mutants", ""]
         lines += table(["Mutant", *(f"`{i}`" for i in report["invariants"])],
                        [[f"`{mutant}`", *(marks[report["kills"][mutant][i]] if report["kills"][mutant][i] else
                                           "error" if row[i] is None else "survived" for i in report["invariants"])]
                         for mutant, row in report["matrix"].items()])
 
-    lines += ["", "## Bounded check", ""]
+    lines += [] if python else ["", "## Bounded check", ""]
     attempts = [[f"`{step}`", ", ".join(f"`{i}`" for i in a["invariants"]), a["max_steps"], a["result"], a["seconds"],
-                 f"`{cell(a['command'])}`"] for step, record in report["verify"].items() for a in record["attempts"]]
+                 f"`{cell(a['command'])}`"] for step, record in verify.items() for a in record["attempts"]]
     if attempts:
         lines += table(["Step", "Invariants", "Max steps", "Result", "Seconds", "Command"], attempts)
     notes = [f"`{step}`: skipped, {record['reason']}." if record["status"] == "skipped" else
-             f"`{step}`: {record['error']}." for step, record in report["verify"].items()
+             f"`{step}`: {record['error']}." for step, record in verify.items()
              if record["status"] == "skipped" or record["error"]]
     lines += ([""] if attempts and notes else []) + notes
-    if not report["verify"]:
+    if not verify and not python:
         lines.append("Skipped: not requested.")
 
     if report["problems"]:
         lines += ["", "## Problems", ""] + [f"- `{p['code']}`: {p['message']}" for p in report["problems"]]
     if report["warnings"]:
         lines += ["", "## Warnings", ""] + [f"- `{w['code']}`: {w['message']}" for w in report["warnings"]]
-    errors = [(run["command"], run["error"]) for run in report["runs"] if run["error"]]
+    errors = [(run["command"], run["error"]) for run in report.get("runs", []) if run["error"]]
     errors += [(target["command"], error) for target in (budget or {}).get("targets", []) for error in target["errors"]]
-    if typecheck["error"]:
-        errors.append((typecheck["command"], typecheck["error"]))
+    if python and report["error"]:
+        errors.append((report["spec"], report["error"]))
+    elif not python and report["typecheck"]["error"]:
+        errors.append((report["typecheck"]["command"], report["typecheck"]["error"]))
     if errors:
         lines += ["", "## Errors", ""]
         for command, error in errors:
             lines += [f"`{command}`", "", "```", error, "```", ""]
 
     traces = [(f"`{run['step']}` violates `{run['invariant']}`", run["counterexample"])
-              for run in report["runs"] if run["counterexample"]]
+              for run in report.get("runs", []) if run["counterexample"]]
+    traces += [(f"`{step}` violates `{invariant}`", trace) for step, search in report.get("searches", {}).items()
+               for invariant, trace in search["counterexamples"].items()]
     traces += [(f"`{target['step']}` violates `{invariant}` (budget)", trace)
                for target in (budget or {}).get("targets", [])
                for invariant, trace in target["counterexamples"].items()]
     traces += [(f"`{step}` violates `{invariant}` (bounded check to {record['bound']} steps)", trace)
-               for step, record in report["verify"].items() for invariant, trace in record["counterexamples"].items()]
+               for step, record in verify.items() for invariant, trace in record["counterexamples"].items()]
     if traces:
         lines += ["", "## Counterexamples"]
         for title, trace in traces:
@@ -774,8 +903,8 @@ def render_md(report):
 
 def build_parser():
     parser = argparse.ArgumentParser(prog="check.py", description=__doc__)
-    parser.add_argument("spec", help="the .qnt file")
-    parser.add_argument("--main", required=True, help="the module name")
+    parser.add_argument("spec", help="the .qnt file or the .py file")
+    parser.add_argument("--main", help="the module name of a .qnt spec")
     parser.add_argument("--invariants", nargs="+", required=True, metavar="NAME")
     parser.add_argument("--terminal", required=True, metavar="WITNESS", help="the witness for a finished run")
     parser.add_argument("--witnesses", nargs="+", default=[], metavar="NAME", help="reachability witnesses")
@@ -783,12 +912,14 @@ def build_parser():
                         help="step actions to run (default: step, stepDesign, and every stepMut<Name>)")
     parser.add_argument("--samples", type=int, default=20000, help="--max-samples for every run and budget chunk")
     parser.add_argument("--max-steps", type=int, default=30, help="--max-steps for runs, and the verify ceiling")
+    parser.add_argument("--max-states", type=int, default=500000,
+                        help="for a .py spec: stop a step's search past this many states")
     parser.add_argument("--seed", default="7")
     parser.add_argument("--budget", type=float, default=0, metavar="SECONDS",
                         help="extra sampling time: unkilled invariants against each mutant, then the design")
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1, help="quint processes at once")
     parser.add_argument("--run-timeout", type=float, default=600, metavar="SECONDS",
-                        help="time limit for each quint run")
+                        help="time limit for each quint run, or for the search of each step of a .py spec")
     parser.add_argument("--verify", action="store_true",
                         help="also run quint verify on stepDesign and on each mutant against each unkilled invariant")
     parser.add_argument("--verify-step", action="append", metavar="NAME",
