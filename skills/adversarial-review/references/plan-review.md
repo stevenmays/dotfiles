@@ -21,7 +21,7 @@ You are reviewing an implementation plan adversarially, before any code exists. 
 **Model check under review**
 
 <model-spec>
-{QUINT_SPEC}
+{MODEL_SPEC}
 </model-spec>
 
 <model-check-result>

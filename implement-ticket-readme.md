@@ -2,7 +2,7 @@
 
 The `mays` plugin gives you the building blocks for taking a ticket to a pull request, but no workflow that composes them. This prompt carries the principles and the order of checks from a private `implement-ticket` skill. Claude reads it and writes you an `implement-ticket` skill of your own, built from the `mays` skills.
 
-Prerequisites: the latest `mays` plugin from this repository, installed as the [README](README.md#install) describes, `gh` logged in, `quint` for model checks, and, optionally, the Codex or Cursor CLI for a second model family in reviews.
+Prerequisites: the latest `mays` plugin from this repository, installed as the [README](README.md#install) describes, `gh` logged in, and, optionally, `quint` for model checks in Quint and the Codex or Cursor CLI for a second model family in reviews.
 
 Paste this prompt into Claude Code:
 

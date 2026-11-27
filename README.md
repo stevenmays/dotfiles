@@ -149,7 +149,7 @@ The **Works in** column shows where a skill runs when the `skills` CLI installs 
 |-------|----------|---------|
 | `adversarial-review` | Claude Code | Two-family review of a plan or a diff: one Claude subagent and one external run (GPT or Grok) on identical briefs, then triaged |
 | `claims-verification` | Claude Code | Check a plan's claims about existing code against the repo before adversarial review: one blind Claude subagent answers neutral questions with `file:line` evidence |
-| `model-check` | Claude Code | Model-check the failure paths of a design with Quint before it ships: a fresh Claude subagent writes the spec and its code mapping, mutants prove each invariant can fail, and the caller runs every check |
+| `model-check` | Claude Code | Check the failure paths of a design before it ships: a fresh Claude subagent writes a small model of the design in Quint or in Python, mutants prove each rule can fail, and the caller runs every check |
 | `claude-subagents` | Claude Code | Dispatch plan, review, or implementation work to a fresh Claude subagent: type, model, prompt contract, escalation |
 | `external-subagents` | Claude Code | Run any task on a second model family as a background subagent: Codex with GPT, else Cursor with the newest Grok, behind a wrapper that cannot hang the session |
 | `deslop` | Any agent | Clean up AI slop in existing code: measure complexity, delete dead code, refactor the worst hotspots first, and prove behavior is unchanged |
@@ -177,7 +177,7 @@ Wire `mays:claims-verification` into my implement-ticket skill, in the planning 
 
 ### Using model-check
 
-`model-check` belongs in a workflow's planning stage, for plans that rely on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. A spec writer models the design, the claims check verifies the spec's mapping to the code, and the session runs every check. It needs `quint` (`brew install quint`), and `quint verify` also needs Java. To add it to an `implement-ticket` skill, install `mays` 1.35.0 or later, then paste this prompt:
+`model-check` belongs in a workflow's planning stage, for plans that rely on a protection against a race or a failure, such as a lease, dedup, lock, conditional write, ordering guard, or idempotency key. A spec writer models the design, the claims check verifies the spec's mapping to the code, and the session runs every check. The writer writes the spec in Quint or in Python. Quint needs `quint` (`brew install quint`), and `quint verify` also needs Java. Python needs nothing more, and the skill uses it when `quint` is missing. To add it to an `implement-ticket` skill, install `mays` 1.40.0 or later, then paste this prompt:
 
 ```text
 Wire `mays:model-check` into my implement-ticket skill, in the planning stage only.
@@ -185,7 +185,7 @@ Wire `mays:model-check` into my implement-ticket skill, in the planning stage on
 - When a flag such as --full forces the check on a plan that relies on no protection against a race or a failure, the skill records "Model check: skipped — no failure path to model" and the run continues.
 - Ask the planner for an "invariants and failure modes" list in every plan that relies on a protection against a race or a failure. The planner never writes the spec.
 - Pass the skill the ticket type (bug, feature, or new-flow), the plan file path, the code paths in scope, that list, and the scratch dir.
-- Run its write phase after the planner returns. Its writer creates <scratch>/model/<flow>.qnt and <scratch>/model/mapping.md.
+- Run its write phase after the planner returns. Its writer creates one spec per flow in <scratch>/model/, as <flow>.qnt or <flow>.py, plus <scratch>/model/mapping.md.
 - Check the mapping's current-code rows with mays:claims-verification, in the same pass as the plan's claims.
 - After the claims check, run its run phase in the session. It writes <scratch>/model-check.md with the result line, the full mapping table, and the test hand-offs. Plan reviewers get the spec and that file.
 - Show the result line, and any "model didn't reproduce the bug" note, with the plan at approval. Give the test hand-offs to the implementer.
